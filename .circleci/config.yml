@@ -1,0 +1,15 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: golang
+    working_directory: /go/src/github.com/raviqqe/stg
+    steps:
+      - checkout
+      - run: go get -d -t ./...
+      - run: go get -u github.com/alecthomas/gometalinter
+      - run: gometalinter --install
+      - run: gometalinter ./...
+      - run: go build
+      - run: go test -covermode atomic -coverprofile coverage.txt -race
+      - run: bash <(curl -s https://codecov.io/bash)
