@@ -1,4 +1,4 @@
-package stg
+package ast
 
 // Let is a let binding.
 type Let struct {

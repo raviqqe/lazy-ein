@@ -1,4 +1,4 @@
-package stg
+package ast
 
 // Number is a number literal.
 type Number float64

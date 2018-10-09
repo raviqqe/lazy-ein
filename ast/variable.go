@@ -1,4 +1,4 @@
-package stg
+package ast
 
 // Variable is a variable.
 type Variable string
