@@ -2,7 +2,7 @@ package ast
 
 // Let is a let binding.
 type Let struct {
-	variable   Variable
+	binds      []Bind
 	expression Expression
 }
 
