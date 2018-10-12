@@ -10,11 +10,11 @@ func TestNewModuleGenerator(t *testing.T) {
 	NewModuleGenerator("foo")
 }
 
-func TestModuleGeneratorGenerateModule(t *testing.T) {
+func TestModuleGeneratorGenerate(t *testing.T) {
 	for _, bs := range [][]ast.Bind{
 		nil,
 		{ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42)))},
 	} {
-		NewModuleGenerator("foo").GenerateModule(bs)
+		NewModuleGenerator("foo").Generate(bs)
 	}
 }

@@ -15,8 +15,8 @@ func NewModuleGenerator(s string) *ModuleGenerator {
 	return &ModuleGenerator{llvm.NewModule(s)}
 }
 
-// GenerateModule generates codes for modules.
-func (g *ModuleGenerator) GenerateModule(bs []ast.Bind) {
+// Generate generates a module.
+func (g *ModuleGenerator) Generate(bs []ast.Bind) {
 	for _, b := range bs {
 		t := llvm.FunctionType(
 			llvm.DoubleType(),
