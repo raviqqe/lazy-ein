@@ -5,18 +5,18 @@ import (
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
-// CodeGenerator is a code generator.
-type CodeGenerator struct {
+// ModuleGenerator is a code generator.
+type ModuleGenerator struct {
 	module llvm.Module
 }
 
-// NewCodeGenerator creates a new code generator.
-func NewCodeGenerator(s string) *CodeGenerator {
-	return &CodeGenerator{llvm.NewModule(s)}
+// NewModuleGenerator creates a new code generator.
+func NewModuleGenerator(s string) *ModuleGenerator {
+	return &ModuleGenerator{llvm.NewModule(s)}
 }
 
 // GenerateModule generates codes for modules.
-func (g *CodeGenerator) GenerateModule(bs []ast.Bind) {
+func (g *ModuleGenerator) GenerateModule(bs []ast.Bind) {
 	for _, b := range bs {
 		t := llvm.FunctionType(
 			llvm.DoubleType(),
