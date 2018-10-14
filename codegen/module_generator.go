@@ -5,18 +5,15 @@ import (
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
-// ModuleGenerator is a code generator.
-type ModuleGenerator struct {
+type moduleGenerator struct {
 	module llvm.Module
 }
 
-// NewModuleGenerator creates a new code generator.
-func NewModuleGenerator(s string) *ModuleGenerator {
-	return &ModuleGenerator{llvm.NewModule(s)}
+func newModuleGenerator(s string) *moduleGenerator {
+	return &moduleGenerator{llvm.NewModule(s)}
 }
 
-// Generate generates a module.
-func (g *ModuleGenerator) Generate(bs []ast.Bind) error {
+func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 	for _, b := range bs {
 		f := llvm.AddFunction(
 			g.module,
@@ -39,7 +36,7 @@ func (g *ModuleGenerator) Generate(bs []ast.Bind) error {
 	return llvm.VerifyModule(g.module, llvm.AbortProcessAction)
 }
 
-func (g *ModuleGenerator) createClosure(s string, f llvm.Value) {
+func (g *moduleGenerator) createClosure(s string, f llvm.Value) {
 	llvm.AddGlobal(
 		g.module,
 		llvm.StructType([]llvm.Type{f.Type()}, false),
