@@ -16,7 +16,7 @@ func NewModuleGenerator(s string) *ModuleGenerator {
 }
 
 // Generate generates a module.
-func (g *ModuleGenerator) Generate(bs []ast.Bind) {
+func (g *ModuleGenerator) Generate(bs []ast.Bind) error {
 	for _, b := range bs {
 		f := llvm.AddFunction(
 			g.module,
@@ -29,8 +29,14 @@ func (g *ModuleGenerator) Generate(bs []ast.Bind) {
 		)
 		newFunctionGenerator(f).Generate(b.Lambda().Body())
 
+		if err := llvm.VerifyFunction(f, llvm.AbortProcessAction); err != nil {
+			return err
+		}
+
 		g.createClosure(b.Name(), f)
 	}
+
+	return llvm.VerifyModule(g.module, llvm.AbortProcessAction)
 }
 
 func (g *ModuleGenerator) createClosure(s string, f llvm.Value) {
