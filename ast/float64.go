@@ -13,5 +13,5 @@ func (n Float64) Value() float64 {
 	return float64(n)
 }
 
+func (Float64) isAtom()       {}
 func (Float64) isExpression() {}
-func (Float64) isLiteral()    {}
