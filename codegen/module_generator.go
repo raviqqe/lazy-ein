@@ -18,28 +18,25 @@ func NewModuleGenerator(s string) *ModuleGenerator {
 // Generate generates a module.
 func (g *ModuleGenerator) Generate(bs []ast.Bind) {
 	for _, b := range bs {
-		t := llvm.FunctionType(
-			llvm.DoubleType(),
-			append(
-				[]llvm.Type{voidPointerType},
-				thunkPointerArrayType(len(b.Lambda().Arguments()))...,
-			),
-			false,
-		)
-
-		f := llvm.AddFunction(g.module, toEntryName(b.Name()), t)
-		newFunctionGenerator(f).Generate(b.Lambda().Body())
-
-		llvm.AddGlobal(
+		f := llvm.AddFunction(
 			g.module,
-			llvm.StructType(
-				[]llvm.Type{
-					t,
-					llvm.ArrayType(thunkPointerType, len(b.Lambda().FreeVariables())),
-				},
+			toEntryName(b.Name()),
+			llvm.FunctionType(
+				llvm.DoubleType(),
+				append([]llvm.Type{voidPointerType}),
 				false,
 			),
-			b.Name(),
 		)
+		newFunctionGenerator(f).Generate(b.Lambda().Body())
+
+		g.createClosure(b.Name(), f)
 	}
+}
+
+func (g *ModuleGenerator) createClosure(s string, f llvm.Value) {
+	llvm.AddGlobal(
+		g.module,
+		llvm.StructType([]llvm.Type{f.Type()}, false),
+		s,
+	).SetInitializer(llvm.ConstStruct([]llvm.Value{f}, false))
 }
