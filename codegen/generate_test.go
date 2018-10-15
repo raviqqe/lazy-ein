@@ -11,7 +11,9 @@ import (
 func TestGenerate(t *testing.T) {
 	m, err := Generate(
 		"foo",
-		[]ast.Bind{ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42)))},
+		[]ast.Bind{
+			ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), llvm.DoubleType())),
+		},
 	)
 
 	assert.NotEqual(t, llvm.Module{}, m)

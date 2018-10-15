@@ -15,16 +15,7 @@ func newModuleGenerator(s string) *moduleGenerator {
 
 func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 	for _, b := range bs {
-		f := llvm.AddFunction(
-			g.module,
-			toEntryName(b.Name()),
-			llvm.FunctionType(
-				llvm.DoubleType(),
-				[]llvm.Type{thunkPointerType},
-				false,
-			),
-		)
-		newFunctionGenerator(f).Generate(b.Lambda().Body())
+		f := generateFunction(b, g.module)
 
 		if err := llvm.VerifyFunction(f, llvm.AbortProcessAction); err != nil {
 			return err
