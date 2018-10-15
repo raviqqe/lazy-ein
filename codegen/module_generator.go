@@ -20,7 +20,7 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 			toEntryName(b.Name()),
 			llvm.FunctionType(
 				llvm.DoubleType(),
-				append([]llvm.Type{voidPointerType}),
+				[]llvm.Type{thunkPointerType},
 				false,
 			),
 		)
