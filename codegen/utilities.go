@@ -2,8 +2,8 @@ package codegen
 
 import "llvm.org/llvm/bindings/go/llvm"
 
-var voidPointerType = llvm.PointerType(llvm.VoidType(), 0)
-var thunkPointerType = voidPointerType
+var genericPointerType = llvm.PointerType(llvm.Int8Type(), 0)
+var thunkPointerType = genericPointerType
 
 func toEntryName(s string) string {
 	return s + "-entry"
