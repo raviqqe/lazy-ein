@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/raviqqe/stg/ast"
-	"llvm.org/llvm/bindings/go/llvm"
+	"github.com/raviqqe/stg/types"
 )
 
 func TestNewModuleGenerator(t *testing.T) {
@@ -15,7 +15,7 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 	for _, bs := range [][]ast.Bind{
 		nil,
 		{
-			ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), llvm.DoubleType())),
+			ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
 		},
 		{
 			ast.NewBind(
@@ -23,9 +23,9 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				ast.NewLambda(
 					nil,
 					false,
-					[]ast.Argument{ast.NewArgument("x", llvm.DoubleType())},
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewApplication(ast.NewVariable("x"), nil),
-					llvm.DoubleType(),
+					types.NewFloat64(),
 				),
 			),
 		},

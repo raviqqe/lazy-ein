@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"github.com/raviqqe/stg/ast"
+	"github.com/raviqqe/stg/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
@@ -17,8 +18,11 @@ func newFunctionGenerator(b ast.Bind, m llvm.Module) *functionGenerator {
 		m,
 		toEntryName(b.Name()),
 		llvm.FunctionType(
-			b.Lambda().ResultType(),
-			append([]llvm.Type{thunkPointerType}, b.Lambda().ArgumentTypes()...),
+			b.Lambda().ResultType().LLVMType(),
+			append(
+				[]llvm.Type{thunkPointerType},
+				types.ToLLVMTypes(b.Lambda().ArgumentTypes())...,
+			),
 			false,
 		),
 	)

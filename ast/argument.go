@@ -1,15 +1,15 @@
 package ast
 
-import "llvm.org/llvm/bindings/go/llvm"
+import "github.com/raviqqe/stg/types"
 
 // Argument is a argument.
 type Argument struct {
 	name string
-	typ  llvm.Type
+	typ  types.Type
 }
 
 // NewArgument creates a new argument.
-func NewArgument(n string, t llvm.Type) Argument {
+func NewArgument(n string, t types.Type) Argument {
 	return Argument{n, t}
 }
 
@@ -19,6 +19,6 @@ func (v Argument) Name() string {
 }
 
 // Type returns a type.
-func (v Argument) Type() llvm.Type {
+func (v Argument) Type() types.Type {
 	return v.typ
 }

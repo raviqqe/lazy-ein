@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/raviqqe/stg/ast"
+	"github.com/raviqqe/stg/types"
 	"github.com/stretchr/testify/assert"
 	"llvm.org/llvm/bindings/go/llvm"
 )
@@ -12,7 +13,7 @@ func TestGenerate(t *testing.T) {
 	m, err := Generate(
 		"foo",
 		[]ast.Bind{
-			ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), llvm.DoubleType())),
+			ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
 		},
 	)
 

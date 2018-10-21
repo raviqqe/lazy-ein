@@ -1,18 +1,18 @@
 package ast
 
-import "llvm.org/llvm/bindings/go/llvm"
+import "github.com/raviqqe/stg/types"
 
 // Lambda is a lambda form.
 type Lambda struct {
 	arguments     []Argument
 	body          Expression
-	resultType    llvm.Type
+	resultType    types.Type
 	freeVariables []string
 	updatable     bool
 }
 
 // NewLambda creates a new lambda form.
-func NewLambda(fs []string, u bool, as []Argument, e Expression, t llvm.Type) Lambda {
+func NewLambda(fs []string, u bool, as []Argument, e Expression, t types.Type) Lambda {
 	return Lambda{as, e, t, fs, u}
 }
 
@@ -28,8 +28,8 @@ func (l Lambda) ArgumentNames() []string {
 }
 
 // ArgumentTypes returns argument types.
-func (l Lambda) ArgumentTypes() []llvm.Type {
-	ts := make([]llvm.Type, 0, len(l.arguments))
+func (l Lambda) ArgumentTypes() []types.Type {
+	ts := make([]types.Type, 0, len(l.arguments))
 
 	for _, a := range l.arguments {
 		ts = append(ts, a.Type())
@@ -44,7 +44,7 @@ func (l Lambda) Body() Expression {
 }
 
 // ResultType returns a result type.
-func (l Lambda) ResultType() llvm.Type {
+func (l Lambda) ResultType() types.Type {
 	return l.resultType
 }
 
