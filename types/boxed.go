@@ -18,9 +18,14 @@ func (b Boxed) LLVMType() llvm.Type {
 		llvm.StructType(
 			[]llvm.Type{
 				llvm.PointerType(
-					llvm.FunctionType(b.internalType.LLVMType(), nil, false),
+					llvm.FunctionType(
+						b.internalType.LLVMType(),
+						[]llvm.Type{EnvironmentPointerType},
+						false,
+					),
 					0,
 				),
+				EnvironmentType,
 			},
 			false,
 		),

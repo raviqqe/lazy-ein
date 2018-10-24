@@ -66,7 +66,7 @@ func (g *functionGenerator) generateExpression(e ast.Expression) llvm.Value {
 
 		return g.builder.CreateCall(
 			g.builder.CreateLoad(g.builder.CreateStructGEP(f, 0, ""), ""),
-			vs,
+			append([]llvm.Value{g.builder.CreateStructGEP(f, 1, "")}, vs...),
 			"",
 		)
 	case ast.Float64:

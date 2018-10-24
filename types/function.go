@@ -21,11 +21,12 @@ func (f Function) LLVMType() llvm.Type {
 				llvm.PointerType(
 					llvm.FunctionType(
 						f.result.LLVMType(),
-						ToLLVMTypes(f.arguments),
+						append([]llvm.Type{EnvironmentPointerType}, ToLLVMTypes(f.arguments)...),
 						false,
 					),
 					0,
 				),
+				EnvironmentType,
 			},
 			false,
 		),
