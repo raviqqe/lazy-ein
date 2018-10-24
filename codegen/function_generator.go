@@ -20,7 +20,7 @@ func newFunctionGenerator(b ast.Bind, m llvm.Module) *functionGenerator {
 		llvm.FunctionType(
 			b.Lambda().ResultType().LLVMType(),
 			append(
-				[]llvm.Type{environmentPointerType},
+				[]llvm.Type{types.EnvironmentPointerType},
 				types.ToLLVMTypes(b.Lambda().ArgumentTypes())...,
 			),
 			false,
