@@ -39,7 +39,7 @@ func newFunctionGenerator(b ast.Bind, m llvm.Module) *functionGenerator {
 }
 
 func (g *functionGenerator) Generate() {
-	b := llvm.AddBasicBlock(g.function, "entry")
+	b := llvm.AddBasicBlock(g.function, "")
 	g.builder.SetInsertPointAtEnd(b)
 	g.builder.CreateRet(g.generateExpression(g.body))
 }
