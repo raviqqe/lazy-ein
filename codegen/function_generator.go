@@ -47,11 +47,28 @@ func (g *functionGenerator) Generate() {
 func (g *functionGenerator) generateExpression(e ast.Expression) llvm.Value {
 	switch e := e.(type) {
 	case ast.Application:
-		if len(e.Arguments()) != 0 {
-			panic("unimplemented")
+		f := g.namedValues[e.Function().Name()]
+
+		if len(e.Arguments()) == 0 {
+			return f
 		}
 
-		return g.namedValues[e.Function().Name()]
+		vs := make([]llvm.Value, 0, len(e.Arguments()))
+
+		for _, a := range e.Arguments() {
+			switch a := a.(type) {
+			case ast.Float64:
+				vs = append(vs, llvm.ConstFloat(llvm.DoubleType(), a.Value()))
+			default:
+				vs = append(vs, g.namedValues[a.(ast.Variable).Name()])
+			}
+		}
+
+		return g.builder.CreateCall(
+			g.builder.CreateLoad(g.builder.CreateStructGEP(f, 0, ""), ""),
+			vs,
+			"",
+		)
 	case ast.Float64:
 		return llvm.ConstFloat(llvm.DoubleType(), e.Value())
 	}

@@ -16,7 +16,12 @@ func NewBoxed(t Type) Boxed {
 func (b Boxed) LLVMType() llvm.Type {
 	return llvm.PointerType(
 		llvm.StructType(
-			[]llvm.Type{llvm.FunctionType(b.internalType.LLVMType(), nil, false)},
+			[]llvm.Type{
+				llvm.PointerType(
+					llvm.FunctionType(b.internalType.LLVMType(), nil, false),
+					0,
+				),
+			},
 			false,
 		),
 		0,

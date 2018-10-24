@@ -41,6 +41,23 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
+		{
+			ast.NewBind(
+				"foo",
+				ast.NewLambda(
+					nil,
+					false,
+					[]ast.Argument{
+						ast.NewArgument(
+							"x",
+							types.NewFunction([]types.Type{types.NewFloat64()}, types.NewFloat64()),
+						),
+					},
+					ast.NewApplication(ast.NewVariable("x"), []ast.Atom{ast.Float64(42)}),
+					types.NewFloat64(),
+				),
+			),
+		},
 	} {
 		newModuleGenerator("foo").Generate(bs)
 	}
