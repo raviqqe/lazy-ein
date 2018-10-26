@@ -2,8 +2,22 @@ package types
 
 import "llvm.org/llvm/bindings/go/llvm"
 
-// EnvironmentType is an environment type.
-var EnvironmentType = llvm.ArrayType(llvm.Int8Type(), 0)
+// Environment is an environment type.
+type Environment struct {
+	size int
+}
 
-// EnvironmentPointerType is an environment pointer type.
-var EnvironmentPointerType = llvm.PointerType(EnvironmentType, 0)
+// NewEnvironment creates a new environment type.
+func NewEnvironment(n int) Environment {
+	return Environment{n}
+}
+
+// LLVMType returns a LLVM type.
+func (e Environment) LLVMType() llvm.Type {
+	return llvm.ArrayType(llvm.Int8Type(), e.size)
+}
+
+// LLVMPointerType returns a LLVM pointer type.
+func (e Environment) LLVMPointerType() llvm.Type {
+	return llvm.PointerType(e.LLVMType(), 0)
+}

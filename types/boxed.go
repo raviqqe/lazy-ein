@@ -14,18 +14,20 @@ func NewBoxed(t Type) Boxed {
 
 // LLVMType returns a LLVM type.
 func (b Boxed) LLVMType() llvm.Type {
+	e := NewEnvironment(0)
+
 	return llvm.PointerType(
 		llvm.StructType(
 			[]llvm.Type{
 				llvm.PointerType(
 					llvm.FunctionType(
 						b.internalType.LLVMType(),
-						[]llvm.Type{EnvironmentPointerType},
+						[]llvm.Type{e.LLVMPointerType()},
 						false,
 					),
 					0,
 				),
-				EnvironmentType,
+				e.LLVMType(),
 			},
 			false,
 		),

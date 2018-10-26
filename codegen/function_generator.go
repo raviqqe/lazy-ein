@@ -15,16 +15,17 @@ type functionGenerator struct {
 	name        string
 	lambda      ast.Lambda
 	module      llvm.Module
+	environment types.Environment
 }
 
-func newFunctionGenerator(b ast.Bind, m llvm.Module) *functionGenerator {
+func newFunctionGenerator(b ast.Bind, e types.Environment, m llvm.Module) *functionGenerator {
 	f := llvm.AddFunction(
 		m,
 		toEntryName(b.Name()),
 		llvm.FunctionType(
 			b.Lambda().ResultType().LLVMType(),
 			append(
-				[]llvm.Type{types.EnvironmentPointerType},
+				[]llvm.Type{e.LLVMPointerType()},
 				types.ToLLVMTypes(b.Lambda().ArgumentTypes())...,
 			),
 			false,
@@ -46,6 +47,7 @@ func newFunctionGenerator(b ast.Bind, m llvm.Module) *functionGenerator {
 		b.Name(),
 		b.Lambda(),
 		m,
+		e,
 	}
 }
 
@@ -69,6 +71,7 @@ func (g *functionGenerator) Generate() {
 				g.module,
 				toUpdatedEntryName(g.name),
 				g.lambda.ResultType().LLVMType(),
+				g.environment,
 			),
 			g.builder.CreateGEP(
 				g.builder.CreateBitCast(
@@ -77,7 +80,7 @@ func (g *functionGenerator) Generate() {
 						llvm.PointerType(
 							llvm.FunctionType(
 								g.lambda.ResultType().LLVMType(),
-								[]llvm.Type{types.EnvironmentPointerType},
+								[]llvm.Type{g.environment.LLVMPointerType()},
 								false,
 							),
 							0,
@@ -127,13 +130,13 @@ func (g *functionGenerator) generateExpression(e ast.Expression) llvm.Value {
 	panic("unreachable")
 }
 
-func generateUpdatedEntryFunction(m llvm.Module, s string, t llvm.Type) llvm.Value {
+func generateUpdatedEntryFunction(m llvm.Module, s string, t llvm.Type, e types.Environment) llvm.Value {
 	f := llvm.AddFunction(
 		m,
 		s,
 		llvm.FunctionType(
 			t,
-			[]llvm.Type{types.EnvironmentPointerType},
+			[]llvm.Type{e.LLVMPointerType()},
 			false,
 		),
 	)
