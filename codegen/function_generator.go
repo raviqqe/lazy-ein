@@ -6,11 +6,15 @@ import (
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
+const environment = "environment"
+
 type functionGenerator struct {
 	function    llvm.Value
 	builder     llvm.Builder
 	namedValues map[string]llvm.Value
-	body        ast.Expression
+	name        string
+	lambda      ast.Lambda
+	module      llvm.Module
 }
 
 func newFunctionGenerator(b ast.Bind, m llvm.Module) *functionGenerator {
@@ -29,19 +33,66 @@ func newFunctionGenerator(b ast.Bind, m llvm.Module) *functionGenerator {
 
 	vs := make(map[string]llvm.Value, len(b.Lambda().ArgumentNames()))
 
-	for i, n := range append([]string{"environment"}, b.Lambda().ArgumentNames()...) {
+	for i, n := range append([]string{environment}, b.Lambda().ArgumentNames()...) {
 		v := f.Param(i)
 		v.SetName(n)
 		vs[n] = v
 	}
 
-	return &functionGenerator{f, llvm.NewBuilder(), vs, b.Lambda().Body()}
+	return &functionGenerator{
+		f,
+		llvm.NewBuilder(),
+		vs,
+		b.Name(),
+		b.Lambda(),
+		m,
+	}
 }
 
 func (g *functionGenerator) Generate() {
 	b := llvm.AddBasicBlock(g.function, "")
 	g.builder.SetInsertPointAtEnd(b)
-	g.builder.CreateRet(g.generateExpression(g.body))
+	v := g.generateExpression(g.lambda.Body())
+
+	if g.lambda.IsUpdatable() {
+		g.builder.CreateStore(
+			v,
+			g.builder.CreateBitCast(
+				g.namedValues[environment],
+				llvm.PointerType(v.Type(), 0),
+				"",
+			),
+		)
+
+		g.builder.CreateStore(
+			generateUpdatedEntryFunction(
+				g.module,
+				toUpdatedEntryName(g.name),
+				g.lambda.ResultType().LLVMType(),
+			),
+			g.builder.CreateGEP(
+				g.builder.CreateBitCast(
+					g.namedValues[environment],
+					llvm.PointerType(
+						llvm.PointerType(
+							llvm.FunctionType(
+								g.lambda.ResultType().LLVMType(),
+								[]llvm.Type{types.EnvironmentPointerType},
+								false,
+							),
+							0,
+						),
+						0,
+					),
+					"",
+				),
+				[]llvm.Value{llvm.ConstIntFromString(llvm.Int32Type(), "-1", 10)},
+				"",
+			),
+		)
+	}
+
+	g.builder.CreateRet(v)
 }
 
 func (g *functionGenerator) generateExpression(e ast.Expression) llvm.Value {
@@ -74,4 +125,23 @@ func (g *functionGenerator) generateExpression(e ast.Expression) llvm.Value {
 	}
 
 	panic("unreachable")
+}
+
+func generateUpdatedEntryFunction(m llvm.Module, s string, t llvm.Type) llvm.Value {
+	f := llvm.AddFunction(
+		m,
+		s,
+		llvm.FunctionType(
+			t,
+			[]llvm.Type{types.EnvironmentPointerType},
+			false,
+		),
+	)
+
+	bb := llvm.AddBasicBlock(f, "")
+	b := llvm.NewBuilder()
+	b.SetInsertPointAtEnd(bb)
+	b.CreateRet(b.CreateLoad(b.CreateBitCast(f.FirstParam(), llvm.PointerType(t, 0), ""), ""))
+
+	return f
 }
