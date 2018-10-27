@@ -10,8 +10,8 @@ type moduleGenerator struct {
 	module llvm.Module
 }
 
-func newModuleGenerator(s string) *moduleGenerator {
-	return &moduleGenerator{llvm.NewModule(s)}
+func newModuleGenerator(m llvm.Module) *moduleGenerator {
+	return &moduleGenerator{m}
 }
 
 func (g *moduleGenerator) Generate(bs []ast.Bind) error {

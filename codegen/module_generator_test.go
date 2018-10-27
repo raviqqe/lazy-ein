@@ -5,10 +5,11 @@ import (
 
 	"github.com/raviqqe/stg/ast"
 	"github.com/raviqqe/stg/types"
+	"llvm.org/llvm/bindings/go/llvm"
 )
 
 func TestNewModuleGenerator(t *testing.T) {
-	newModuleGenerator("foo")
+	newModuleGenerator(llvm.NewModule("foo"))
 }
 
 func TestModuleGeneratorGenerate(t *testing.T) {
@@ -80,6 +81,6 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 			),
 		},
 	} {
-		newModuleGenerator("foo").Generate(bs)
+		newModuleGenerator(llvm.NewModule("foo")).Generate(bs)
 	}
 }

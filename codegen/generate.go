@@ -7,11 +7,11 @@ import (
 
 // Generate generates a code for a module.
 func Generate(s string, bs []ast.Bind) (llvm.Module, error) {
-	g := newModuleGenerator(s)
+	m := llvm.NewModule(s)
 
-	if err := g.Generate(bs); err != nil {
+	if err := newModuleGenerator(m).Generate(bs); err != nil {
 		return llvm.Module{}, err
 	}
 
-	return g.module, nil
+	return m, nil
 }
