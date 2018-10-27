@@ -104,9 +104,8 @@ func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type, e ty
 		),
 	)
 
-	bb := llvm.AddBasicBlock(f, "")
 	b := llvm.NewBuilder()
-	b.SetInsertPointAtEnd(bb)
+	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
 	b.CreateRet(b.CreateLoad(b.CreateBitCast(f.FirstParam(), llvm.PointerType(t, 0), ""), ""))
 
 	return f
