@@ -25,11 +25,7 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 			return err
 		}
 
-		g.createClosure(
-			b.Name(),
-			f,
-			types.NewEnvironment(g.getTypeSize(b.Lambda().ResultType().LLVMType())),
-		)
+		g.createClosure(b.Name(), f)
 	}
 
 	return llvm.VerifyModule(g.module, llvm.AbortProcessAction)
@@ -61,7 +57,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 	p := g.environmentToEntryFunctionPointer(b, f.FirstParam(), t)
 
 	if _, ok := l.ResultType().(types.Boxed); ok {
-		v = g.unboxReturnedType(b, v, p)
+		v = g.unboxResultType(b, v, p)
 	}
 
 	if l.IsUpdatable() {
@@ -74,7 +70,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 	return f, nil
 }
 
-func (g *moduleGenerator) unboxReturnedType(b llvm.Builder, v, p llvm.Value) llvm.Value {
+func (g *moduleGenerator) unboxResultType(b llvm.Builder, v, p llvm.Value) llvm.Value {
 	return b.CreateCall(
 		b.CreateLoad(b.CreateStructGEP(v, 0, ""), ""),
 		[]llvm.Value{
@@ -88,14 +84,17 @@ func (g *moduleGenerator) unboxReturnedType(b llvm.Builder, v, p llvm.Value) llv
 	)
 }
 
-func (g *moduleGenerator) createClosure(n string, f llvm.Value, e types.Environment) {
-	llvm.AddGlobal(
-		g.module,
-		llvm.StructType([]llvm.Type{f.Type(), e.LLVMType()}, false),
-		n,
-	).SetInitializer(llvm.ConstStruct([]llvm.Value{f, llvm.ConstNull(e.LLVMType())}, false))
+func (g *moduleGenerator) createClosure(n string, f llvm.Value) {
+	e := types.NewEnvironment(g.getTypeSize(f.Type().ElementType().ReturnType())).LLVMType()
 
-	g.globalVariables[n] = g.module.NamedGlobal(n)
+	v := llvm.AddGlobal(
+		g.module,
+		llvm.StructType([]llvm.Type{f.Type(), e}, false),
+		n,
+	)
+	v.SetInitializer(llvm.ConstStruct([]llvm.Value{f, llvm.ConstNull(e)}, false))
+
+	g.globalVariables[n] = v
 }
 
 func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm.Value {
