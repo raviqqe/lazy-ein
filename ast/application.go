@@ -1,6 +1,6 @@
 package ast
 
-// Application is a function application
+// Application is a function application.
 type Application struct {
 	function  Variable
 	arguments []Atom
