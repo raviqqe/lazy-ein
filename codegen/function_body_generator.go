@@ -1,6 +1,7 @@
 package codegen
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/raviqqe/stg/ast"
@@ -39,7 +40,7 @@ func (g *functionBodyGenerator) Generate(e ast.Expression) (llvm.Value, error) {
 func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value, error) {
 	switch e := e.(type) {
 	case ast.Application:
-		f, err := g.resolveName(e.Function().Name())
+		f, err := g.resolveVariable(e.Function())
 
 		if err != nil {
 			return llvm.Value{}, err
@@ -50,12 +51,13 @@ func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value
 		vs := make([]llvm.Value, 0, len(e.Arguments()))
 
 		for _, a := range e.Arguments() {
-			switch a := a.(type) {
-			case ast.Float64:
-				vs = append(vs, llvm.ConstFloat(llvm.DoubleType(), a.Value()))
-			default:
-				vs = append(vs, g.variables[a.(ast.Variable).Name()])
+			v, err := g.generateAtom(a)
+
+			if err != nil {
+				return llvm.Value{}, err
 			}
+
+			vs = append(vs, v)
 		}
 
 		return g.builder.CreateCall(
@@ -65,17 +67,67 @@ func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value
 		), nil
 	case ast.Float64:
 		return llvm.ConstFloat(llvm.DoubleType(), e.Value()), nil
+	case ast.PrimitiveOperation:
+		l, r, err := g.generatePrimitiveArguments(e.Arguments())
+
+		if err != nil {
+			return llvm.Value{}, err
+		}
+
+		switch e.Primitive() {
+		case ast.AddFloat64:
+			return g.builder.CreateFAdd(l, r, ""), nil
+		case ast.SubtractFloat64:
+			return g.builder.CreateFSub(l, r, ""), nil
+		case ast.MultiplyFloat64:
+			return g.builder.CreateFMul(l, r, ""), nil
+		case ast.DivideFloat64:
+			return g.builder.CreateFDiv(l, r, ""), nil
+		}
+
+		panic("unreachable")
 	}
 
 	panic("unreachable")
 }
 
-func (g *functionBodyGenerator) resolveName(n string) (llvm.Value, error) {
-	v, ok := g.variables[n]
+func (g *functionBodyGenerator) resolveVariable(x ast.Variable) (llvm.Value, error) {
+	v, ok := g.variables[x.Name()]
 
 	if !ok {
-		return llvm.Value{}, fmt.Errorf(`variable "%v" not found`, n)
+		return llvm.Value{}, fmt.Errorf(`variable "%v" not found`, x.Name())
 	}
 
 	return v, nil
+}
+
+func (g *functionBodyGenerator) generateAtom(a ast.Atom) (llvm.Value, error) {
+	switch a := a.(type) {
+	case ast.Float64:
+		return llvm.ConstFloat(llvm.DoubleType(), a.Value()), nil
+	default:
+		return g.resolveVariable(a.(ast.Variable))
+	}
+}
+
+func (g *functionBodyGenerator) generatePrimitiveArguments(as []ast.Atom) (llvm.Value, llvm.Value, error) {
+	if len(as) != 2 {
+		return llvm.Value{}, llvm.Value{}, errors.New(
+			"invalid number of arguments to a binary primitive operation",
+		)
+	}
+
+	vs := make([]llvm.Value, 0, len(as))
+
+	for _, a := range as {
+		v, err := g.generateAtom(a)
+
+		if err != nil {
+			return llvm.Value{}, llvm.Value{}, err
+		}
+
+		vs = append(vs, v)
+	}
+
+	return vs[0], vs[1], nil
 }
