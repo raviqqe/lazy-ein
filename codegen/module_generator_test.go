@@ -80,6 +80,19 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
+		{
+			ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
+			ast.NewBind(
+				"bar",
+				ast.NewLambda(
+					nil,
+					true,
+					nil,
+					ast.NewApplication(ast.NewVariable("foo"), nil),
+					types.NewBoxed(types.NewFloat64()),
+				),
+			),
+		},
 	} {
 		newModuleGenerator(llvm.NewModule("foo")).Generate(bs)
 	}

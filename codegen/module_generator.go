@@ -36,11 +36,13 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 }
 
 func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, error) {
+	t := types.Unbox(l.ResultType()).LLVMType()
+
 	f := llvm.AddFunction(
 		g.module,
 		toEntryName(n),
 		llvm.FunctionType(
-			l.ResultType().LLVMType(),
+			t,
 			append(
 				[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
 				types.ToLLVMTypes(l.ArgumentTypes())...,
@@ -54,17 +56,36 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 
 	if err != nil {
 		return llvm.Value{}, err
-	} else if l.IsUpdatable() {
+	}
+
+	p := g.environmentToEntryFunctionPointer(b, f.FirstParam(), t)
+
+	if _, ok := l.ResultType().(types.Boxed); ok {
+		v = g.unboxReturnedType(b, v, p)
+	}
+
+	if l.IsUpdatable() {
 		b.CreateStore(v, b.CreateBitCast(f.FirstParam(), llvm.PointerType(v.Type(), 0), ""))
-		b.CreateStore(
-			g.createUpdatedEntryFunction(n, l.ResultType().LLVMType()),
-			g.environmentToEntryFunctionPointer(b, f.FirstParam(), l.ResultType().LLVMType()),
-		)
+		b.CreateStore(g.createUpdatedEntryFunction(n, t), p)
 	}
 
 	b.CreateRet(v)
 
 	return f, nil
+}
+
+func (g *moduleGenerator) unboxReturnedType(b llvm.Builder, v, p llvm.Value) llvm.Value {
+	return b.CreateCall(
+		b.CreateLoad(b.CreateStructGEP(v, 0, ""), ""),
+		[]llvm.Value{
+			b.CreateBitCast(
+				b.CreateStructGEP(v, 1, ""),
+				types.NewEnvironment(0).LLVMPointerType(),
+				"",
+			),
+		},
+		"",
+	)
 }
 
 func (g *moduleGenerator) createClosure(n string, f llvm.Value, e types.Environment) {
