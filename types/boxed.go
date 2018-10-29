@@ -12,6 +12,11 @@ func NewBoxed(t Type) Boxed {
 	return Boxed{t}
 }
 
+// InternalType returns an internal type.
+func (b Boxed) InternalType() Type {
+	return b.internalType
+}
+
 // LLVMType returns a LLVM type.
 func (b Boxed) LLVMType() llvm.Type {
 	return NewFunction(nil, b.internalType).LLVMType()
