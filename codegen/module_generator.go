@@ -17,8 +17,7 @@ func newModuleGenerator(m llvm.Module) *moduleGenerator {
 
 func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 	for _, b := range bs {
-		e := types.NewEnvironment(g.getTypeSize(b.Lambda().ResultType().LLVMType()))
-		f, err := g.createLambda(b.Name(), b.Lambda(), e)
+		f, err := g.createLambda(b.Name(), b.Lambda())
 
 		if err != nil {
 			return err
@@ -26,20 +25,24 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 			return err
 		}
 
-		g.createClosure(b.Name(), f, e)
+		g.createClosure(
+			b.Name(),
+			f,
+			types.NewEnvironment(g.getTypeSize(b.Lambda().ResultType().LLVMType())),
+		)
 	}
 
 	return llvm.VerifyModule(g.module, llvm.AbortProcessAction)
 }
 
-func (g *moduleGenerator) createLambda(n string, l ast.Lambda, e types.Environment) (llvm.Value, error) {
+func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, error) {
 	f := llvm.AddFunction(
 		g.module,
 		toEntryName(n),
 		llvm.FunctionType(
 			l.ResultType().LLVMType(),
 			append(
-				[]llvm.Type{e.LLVMPointerType()},
+				[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
 				types.ToLLVMTypes(l.ArgumentTypes())...,
 			),
 			false,
@@ -54,8 +57,8 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda, e types.Environme
 	} else if l.IsUpdatable() {
 		b.CreateStore(v, b.CreateBitCast(f.FirstParam(), llvm.PointerType(v.Type(), 0), ""))
 		b.CreateStore(
-			g.createUpdatedEntryFunction(n, l.ResultType().LLVMType(), e),
-			g.environmentToEntryFunctionPointer(b, f.FirstParam(), l.ResultType().LLVMType(), e),
+			g.createUpdatedEntryFunction(n, l.ResultType().LLVMType()),
+			g.environmentToEntryFunctionPointer(b, f.FirstParam(), l.ResultType().LLVMType()),
 		)
 	}
 
@@ -74,11 +77,11 @@ func (g *moduleGenerator) createClosure(n string, f llvm.Value, e types.Environm
 	g.globalVariables[n] = g.module.NamedGlobal(n)
 }
 
-func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type, e types.Environment) llvm.Value {
+func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm.Value {
 	f := llvm.AddFunction(
 		g.module,
 		toUpdatedEntryName(n),
-		llvm.FunctionType(t, []llvm.Type{e.LLVMPointerType()}, false),
+		llvm.FunctionType(t, []llvm.Type{types.NewEnvironment(0).LLVMPointerType()}, false),
 	)
 
 	b := llvm.NewBuilder()
@@ -93,14 +96,14 @@ func (g *moduleGenerator) getTypeSize(t llvm.Type) int {
 }
 
 func (g *moduleGenerator) environmentToEntryFunctionPointer(
-	b llvm.Builder, v llvm.Value, t llvm.Type, e types.Environment,
+	b llvm.Builder, v llvm.Value, t llvm.Type,
 ) llvm.Value {
 	return b.CreateGEP(
 		b.CreateBitCast(
 			v,
 			llvm.PointerType(
 				llvm.PointerType(
-					llvm.FunctionType(t, []llvm.Type{e.LLVMPointerType()}, false),
+					llvm.FunctionType(t, []llvm.Type{types.NewEnvironment(0).LLVMPointerType()}, false),
 					0,
 				),
 				0,
