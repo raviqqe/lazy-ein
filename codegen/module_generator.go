@@ -6,6 +6,8 @@ import (
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
+const environmentArgumentName = "environment"
+
 type moduleGenerator struct {
 	module llvm.Module
 }
@@ -49,7 +51,12 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda, vs map[string]llv
 	)
 
 	b := llvm.NewBuilder()
-	v, err := newFunctionBodyGenerator(f, b, l.ArgumentNames(), vs).Generate(l.Body())
+	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
+
+	v, err := newFunctionBodyGenerator(
+		b,
+		createLogicalEnvironment(f, l.ArgumentNames(), vs),
+	).Generate(l.Body())
 
 	if err != nil {
 		return llvm.Value{}, err
@@ -104,6 +111,7 @@ func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm
 		toUpdatedEntryName(n),
 		llvm.FunctionType(t, []llvm.Type{types.NewEnvironment(0).LLVMPointerType()}, false),
 	)
+	f.FirstParam().SetName(environmentArgumentName)
 
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
@@ -134,4 +142,16 @@ func (g *moduleGenerator) environmentToEntryFunctionPointer(
 		[]llvm.Value{llvm.ConstIntFromString(llvm.Int32Type(), "-1", 10)},
 		"",
 	)
+}
+
+func createLogicalEnvironment(f llvm.Value, as []string, vs map[string]llvm.Value) map[string]llvm.Value {
+	vs = copyVariables(vs)
+
+	for i, n := range append([]string{environmentArgumentName}, as...) {
+		v := f.Param(i)
+		v.SetName(n)
+		vs[n] = v
+	}
+
+	return vs
 }

@@ -8,32 +8,16 @@ import (
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
-const environmentArgumentName = "environment"
-
 type functionBodyGenerator struct {
-	function  llvm.Value
 	builder   llvm.Builder
 	variables map[string]llvm.Value
 }
 
-func newFunctionBodyGenerator(f llvm.Value, b llvm.Builder, as []string, gs map[string]llvm.Value) *functionBodyGenerator {
-	vs := make(map[string]llvm.Value, len(as)+len(gs))
-
-	for k, v := range gs {
-		vs[k] = v
-	}
-
-	for i, n := range append([]string{environmentArgumentName}, as...) {
-		v := f.Param(i)
-		v.SetName(n)
-		vs[n] = v
-	}
-
-	return &functionBodyGenerator{f, b, vs}
+func newFunctionBodyGenerator(b llvm.Builder, vs map[string]llvm.Value) *functionBodyGenerator {
+	return &functionBodyGenerator{b, vs}
 }
 
 func (g *functionBodyGenerator) Generate(e ast.Expression) (llvm.Value, error) {
-	g.builder.SetInsertPointAtEnd(llvm.AddBasicBlock(g.function, ""))
 	return g.generateExpression(e)
 }
 
