@@ -68,22 +68,28 @@ func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value
 	case ast.Float64:
 		return llvm.ConstFloat(llvm.DoubleType(), e.Value()), nil
 	case ast.PrimitiveOperation:
-		l, r, err := g.generatePrimitiveArguments(e.Arguments())
+		return g.generatePrimitiveOperation(e)
+	}
 
-		if err != nil {
-			return llvm.Value{}, err
-		}
+	panic("unreachable")
+}
 
-		switch e.Primitive() {
-		case ast.AddFloat64:
-			return g.builder.CreateFAdd(l, r, ""), nil
-		case ast.SubtractFloat64:
-			return g.builder.CreateFSub(l, r, ""), nil
-		case ast.MultiplyFloat64:
-			return g.builder.CreateFMul(l, r, ""), nil
-		case ast.DivideFloat64:
-			return g.builder.CreateFDiv(l, r, ""), nil
-		}
+func (g *functionBodyGenerator) generatePrimitiveOperation(o ast.PrimitiveOperation) (llvm.Value, error) {
+	l, r, err := g.generatePrimitiveArguments(o.Arguments())
+
+	if err != nil {
+		return llvm.Value{}, err
+	}
+
+	switch o.Primitive() {
+	case ast.AddFloat64:
+		return g.builder.CreateFAdd(l, r, ""), nil
+	case ast.SubtractFloat64:
+		return g.builder.CreateFSub(l, r, ""), nil
+	case ast.MultiplyFloat64:
+		return g.builder.CreateFMul(l, r, ""), nil
+	case ast.DivideFloat64:
+		return g.builder.CreateFDiv(l, r, ""), nil
 	}
 
 	panic("unreachable")
