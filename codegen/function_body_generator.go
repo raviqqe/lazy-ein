@@ -84,8 +84,6 @@ func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value
 		case ast.DivideFloat64:
 			return g.builder.CreateFDiv(l, r, ""), nil
 		}
-
-		panic("unreachable")
 	}
 
 	panic("unreachable")
