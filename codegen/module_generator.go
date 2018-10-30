@@ -7,17 +7,18 @@ import (
 )
 
 type moduleGenerator struct {
-	module          llvm.Module
-	globalVariables map[string]llvm.Value
+	module llvm.Module
 }
 
 func newModuleGenerator(m llvm.Module) *moduleGenerator {
-	return &moduleGenerator{m, map[string]llvm.Value{}}
+	return &moduleGenerator{m}
 }
 
 func (g *moduleGenerator) Generate(bs []ast.Bind) error {
+	vs := map[string]llvm.Value{}
+
 	for _, b := range bs {
-		f, err := g.createLambda(b.Name(), b.Lambda())
+		f, err := g.createLambda(b.Name(), b.Lambda(), vs)
 
 		if err != nil {
 			return err
@@ -25,13 +26,13 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 			return err
 		}
 
-		g.createClosure(b.Name(), f)
+		vs[b.Name()] = g.createClosure(b.Name(), f)
 	}
 
 	return llvm.VerifyModule(g.module, llvm.AbortProcessAction)
 }
 
-func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, error) {
+func (g *moduleGenerator) createLambda(n string, l ast.Lambda, vs map[string]llvm.Value) (llvm.Value, error) {
 	t := types.Unbox(l.ResultType()).LLVMType()
 
 	f := llvm.AddFunction(
@@ -48,7 +49,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 	)
 
 	b := llvm.NewBuilder()
-	v, err := newFunctionBodyGenerator(f, b, l.ArgumentNames(), g.globalVariables).Generate(l.Body())
+	v, err := newFunctionBodyGenerator(f, b, l.ArgumentNames(), vs).Generate(l.Body())
 
 	if err != nil {
 		return llvm.Value{}, err
@@ -84,7 +85,7 @@ func (g *moduleGenerator) unboxResultType(b llvm.Builder, v, p llvm.Value) llvm.
 	)
 }
 
-func (g *moduleGenerator) createClosure(n string, f llvm.Value) {
+func (g *moduleGenerator) createClosure(n string, f llvm.Value) llvm.Value {
 	e := types.NewEnvironment(g.getTypeSize(f.Type().ElementType().ReturnType())).LLVMType()
 
 	v := llvm.AddGlobal(
@@ -94,7 +95,7 @@ func (g *moduleGenerator) createClosure(n string, f llvm.Value) {
 	)
 	v.SetInitializer(llvm.ConstStruct([]llvm.Value{f, llvm.ConstNull(e)}, false))
 
-	g.globalVariables[n] = v
+	return v
 }
 
 func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm.Value {
