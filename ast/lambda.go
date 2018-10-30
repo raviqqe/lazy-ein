@@ -7,7 +7,7 @@ type Lambda struct {
 	arguments     []Argument
 	body          Expression
 	resultType    types.Type
-	freeVariables []string
+	freeVariables []string // TODO: Consider []ast.Variable.
 	updatable     bool
 }
 
