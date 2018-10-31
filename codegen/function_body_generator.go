@@ -30,31 +30,7 @@ func (g *functionBodyGenerator) Generate(e ast.Expression) (llvm.Value, error) {
 func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value, error) {
 	switch e := e.(type) {
 	case ast.Application:
-		f, err := g.resolveVariable(e.Function())
-
-		if err != nil {
-			return llvm.Value{}, err
-		} else if len(e.Arguments()) == 0 {
-			return f, nil
-		}
-
-		vs := make([]llvm.Value, 0, len(e.Arguments()))
-
-		for _, a := range e.Arguments() {
-			v, err := g.generateAtom(a)
-
-			if err != nil {
-				return llvm.Value{}, err
-			}
-
-			vs = append(vs, v)
-		}
-
-		return g.builder.CreateCall(
-			g.builder.CreateLoad(g.builder.CreateStructGEP(f, 0, ""), ""),
-			append([]llvm.Value{g.builder.CreateStructGEP(f, 1, "")}, vs...),
-			"",
-		), nil
+		return g.generateApplication(e)
 	case ast.Float64:
 		return llvm.ConstFloat(llvm.DoubleType(), e.Value()), nil
 	case ast.Let:
@@ -66,9 +42,36 @@ func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value
 	panic("unreachable")
 }
 
+func (g *functionBodyGenerator) generateApplication(a ast.Application) (llvm.Value, error) {
+	f, err := g.resolveName(a.Function().Name())
+
+	if err != nil {
+		return llvm.Value{}, err
+	} else if len(a.Arguments()) == 0 {
+		return f, nil
+	}
+
+	vs := make([]llvm.Value, 0, len(a.Arguments()))
+
+	for _, a := range a.Arguments() {
+		v, err := g.generateAtom(a)
+
+		if err != nil {
+			return llvm.Value{}, err
+		}
+
+		vs = append(vs, v)
+	}
+
+	return g.builder.CreateCall(
+		g.builder.CreateLoad(g.builder.CreateStructGEP(f, 0, ""), ""),
+		append([]llvm.Value{g.builder.CreateStructGEP(f, 1, "")}, vs...),
+		"",
+	), nil
+}
+
 func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
-	vs := g.saveVariables()
-	defer g.restoreVariables(vs)
+	vs := make(map[string]llvm.Value, len(l.Binds()))
 
 	for _, b := range l.Binds() {
 		p := g.builder.CreateMalloc(
@@ -105,12 +108,12 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 
 		e := g.builder.CreateBitCast(
 			g.builder.CreateStructGEP(p, 1, ""),
-			llvm.PointerType(g.lambdaToFreeVariablesStructType(b.Lambda()), 0),
+			llvm.PointerType(lambdaToFreeVariablesStructType(b.Lambda()), 0),
 			"",
 		)
 
 		for i, n := range b.Lambda().FreeVariableNames() {
-			v, err := g.resolveVariable(ast.Variable(n))
+			v, err := g.resolveName(n)
 
 			if err != nil {
 				return llvm.Value{}, err
@@ -119,10 +122,10 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 			g.builder.CreateStore(v, g.builder.CreateStructGEP(e, i, ""))
 		}
 
-		g.variables[b.Name()] = p
+		vs[b.Name()] = p
 	}
 
-	return g.generateExpression(l.Expression())
+	return g.addVariables(vs).generateExpression(l.Expression())
 }
 
 func (g *functionBodyGenerator) generatePrimitiveOperation(o ast.PrimitiveOperation) (llvm.Value, error) {
@@ -146,11 +149,11 @@ func (g *functionBodyGenerator) generatePrimitiveOperation(o ast.PrimitiveOperat
 	panic("unreachable")
 }
 
-func (g *functionBodyGenerator) resolveVariable(x ast.Variable) (llvm.Value, error) {
-	v, ok := g.variables[x.Name()]
+func (g *functionBodyGenerator) resolveName(s string) (llvm.Value, error) {
+	v, ok := g.variables[s]
 
 	if !ok {
-		return llvm.Value{}, fmt.Errorf(`variable "%v" not found`, x.Name())
+		return llvm.Value{}, fmt.Errorf(`variable "%v" not found`, s)
 	}
 
 	return v, nil
@@ -161,7 +164,7 @@ func (g *functionBodyGenerator) generateAtom(a ast.Atom) (llvm.Value, error) {
 	case ast.Float64:
 		return llvm.ConstFloat(llvm.DoubleType(), a.Value()), nil
 	default:
-		return g.resolveVariable(a.(ast.Variable))
+		return g.resolveName(a.(ast.Variable).Name())
 	}
 }
 
@@ -172,37 +175,37 @@ func (g *functionBodyGenerator) generatePrimitiveArguments(as []ast.Atom) (llvm.
 		)
 	}
 
-	vs := make([]llvm.Value, 0, len(as))
+	v, err := g.generateAtom(as[0])
 
-	for _, a := range as {
-		v, err := g.generateAtom(a)
-
-		if err != nil {
-			return llvm.Value{}, llvm.Value{}, err
-		}
-
-		vs = append(vs, v)
+	if err != nil {
+		return llvm.Value{}, llvm.Value{}, err
 	}
 
-	return vs[0], vs[1], nil
+	vv, err := g.generateAtom(as[1])
+
+	if err != nil {
+		return llvm.Value{}, llvm.Value{}, err
+	}
+
+	return v, vv, nil
 }
 
-func (g *functionBodyGenerator) saveVariables() map[string]llvm.Value {
-	vs := make(map[string]llvm.Value, len(g.variables))
+func (g *functionBodyGenerator) addVariables(vs map[string]llvm.Value) *functionBodyGenerator {
+	vvs := make(map[string]llvm.Value, len(g.variables)+len(vs))
 
 	for k, v := range g.variables {
-		vs[k] = v
+		vvs[k] = v
 	}
 
-	return vs
+	for k, v := range vs {
+		vvs[k] = v
+	}
+
+	return &functionBodyGenerator{g.builder, vvs, g.createLambda}
 }
 
-func (g *functionBodyGenerator) restoreVariables(vs map[string]llvm.Value) {
-	g.variables = vs
-}
-
-func (g *functionBodyGenerator) lambdaToEnvironment(l ast.Lambda) types.Environment {
-	n := g.typeSize(g.lambdaToFreeVariablesStructType(l))
+func (g functionBodyGenerator) lambdaToEnvironment(l ast.Lambda) types.Environment {
+	n := g.typeSize(lambdaToFreeVariablesStructType(l))
 
 	if m := g.typeSize(types.Unbox(l.ResultType()).LLVMType()); m > n {
 		n = m
@@ -211,14 +214,14 @@ func (g *functionBodyGenerator) lambdaToEnvironment(l ast.Lambda) types.Environm
 	return types.NewEnvironment(n)
 }
 
-func (functionBodyGenerator) lambdaToFreeVariablesStructType(l ast.Lambda) llvm.Type {
-	return llvm.StructType(types.ToLLVMTypes(l.FreeVariableTypes()), false)
-}
-
-func (g *functionBodyGenerator) typeSize(t llvm.Type) int {
+func (g functionBodyGenerator) typeSize(t llvm.Type) int {
 	return typeSize(g.function().GlobalParent(), t)
 }
 
-func (g *functionBodyGenerator) function() llvm.Value {
+func (g functionBodyGenerator) function() llvm.Value {
 	return g.builder.GetInsertBlock().Parent()
+}
+
+func lambdaToFreeVariablesStructType(l ast.Lambda) llvm.Type {
+	return llvm.StructType(types.ToLLVMTypes(l.FreeVariableTypes()), false)
 }
