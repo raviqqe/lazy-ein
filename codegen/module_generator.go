@@ -59,17 +59,16 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 
 	if err != nil {
 		return llvm.Value{}, err
-	}
-
-	p := g.environmentToEntryFunctionPointer(b, f.FirstParam(), t)
-
-	if _, ok := l.ResultType().(types.Boxed); ok {
-		v = g.unboxResultType(b, v, p)
+	} else if _, ok := l.ResultType().(types.Boxed); ok {
+		v = g.unboxResult(b, v)
 	}
 
 	if l.IsUpdatable() {
 		b.CreateStore(v, b.CreateBitCast(f.FirstParam(), llvm.PointerType(v.Type(), 0), ""))
-		b.CreateStore(g.createUpdatedEntryFunction(n, t), p)
+		b.CreateStore(
+			g.createUpdatedEntryFunction(n, t),
+			g.environmentToEntryFunctionPointer(b, f.FirstParam(), t),
+		)
 	}
 
 	b.CreateRet(v)
@@ -77,7 +76,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 	return f, nil
 }
 
-func (g *moduleGenerator) unboxResultType(b llvm.Builder, v, p llvm.Value) llvm.Value {
+func (moduleGenerator) unboxResult(b llvm.Builder, v llvm.Value) llvm.Value {
 	return b.CreateCall(
 		b.CreateLoad(b.CreateStructGEP(v, 0, ""), ""),
 		[]llvm.Value{
