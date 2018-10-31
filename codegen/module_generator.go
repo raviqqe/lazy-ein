@@ -54,7 +54,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 
 	v, err := newFunctionBodyGenerator(
 		b,
-		createLogicalEnvironment(f, l.ArgumentNames(), g.globalVariables),
+		createLogicalEnvironment(f, b, l, g.globalVariables),
 	).Generate(l.Body())
 
 	if err != nil {
@@ -143,10 +143,20 @@ func (g *moduleGenerator) environmentToEntryFunctionPointer(
 	)
 }
 
-func createLogicalEnvironment(f llvm.Value, as []string, vs map[string]llvm.Value) map[string]llvm.Value {
+func createLogicalEnvironment(f llvm.Value, b llvm.Builder, l ast.Lambda, vs map[string]llvm.Value) map[string]llvm.Value {
 	vs = copyVariables(vs)
 
-	for i, n := range append([]string{environmentArgumentName}, as...) {
+	e := b.CreateBitCast(
+		f.FirstParam(),
+		llvm.PointerType(llvm.StructType(types.ToLLVMTypes(l.FreeVariableTypes()), false), 0),
+		"",
+	)
+
+	for i, n := range l.FreeVariableNames() {
+		vs[n] = b.CreateStructGEP(e, i, "")
+	}
+
+	for i, n := range append([]string{environmentArgumentName}, l.ArgumentNames()...) {
 		v := f.Param(i)
 		v.SetName(n)
 		vs[n] = v
