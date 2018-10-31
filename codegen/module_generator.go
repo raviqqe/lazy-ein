@@ -152,7 +152,7 @@ func createLogicalEnvironment(f llvm.Value, b llvm.Builder, l ast.Lambda, vs map
 	)
 
 	for i, n := range l.FreeVariableNames() {
-		vs[n] = b.CreateStructGEP(e, i, "")
+		vs[n] = b.CreateLoad(b.CreateStructGEP(e, i, ""), "")
 	}
 
 	for i, n := range append([]string{environmentArgumentName}, l.ArgumentNames()...) {
