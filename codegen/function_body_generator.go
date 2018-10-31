@@ -5,16 +5,22 @@ import (
 	"fmt"
 
 	"github.com/raviqqe/stg/ast"
+	"github.com/raviqqe/stg/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
 type functionBodyGenerator struct {
-	builder   llvm.Builder
-	variables map[string]llvm.Value
+	builder      llvm.Builder
+	variables    map[string]llvm.Value
+	createLambda func(string, ast.Lambda) (llvm.Value, error)
 }
 
-func newFunctionBodyGenerator(b llvm.Builder, vs map[string]llvm.Value) *functionBodyGenerator {
-	return &functionBodyGenerator{b, vs}
+func newFunctionBodyGenerator(
+	b llvm.Builder,
+	vs map[string]llvm.Value,
+	c func(string, ast.Lambda) (llvm.Value, error),
+) *functionBodyGenerator {
+	return &functionBodyGenerator{b, vs, c}
 }
 
 func (g *functionBodyGenerator) Generate(e ast.Expression) (llvm.Value, error) {
@@ -51,11 +57,72 @@ func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value
 		), nil
 	case ast.Float64:
 		return llvm.ConstFloat(llvm.DoubleType(), e.Value()), nil
+	case ast.Let:
+		return g.generateLet(e)
 	case ast.PrimitiveOperation:
 		return g.generatePrimitiveOperation(e)
 	}
 
 	panic("unreachable")
+}
+
+func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
+	vs := g.saveVariables()
+	defer g.restoreVariables(vs)
+
+	for _, b := range l.Binds() {
+		p := g.builder.CreateMalloc(
+			llvm.StructType(
+				[]llvm.Type{
+					llvm.PointerType(
+						llvm.FunctionType(
+							types.Unbox(b.Lambda().ResultType()).LLVMType(),
+							append(
+								[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
+								types.ToLLVMTypes(b.Lambda().ArgumentTypes())...,
+							),
+							false,
+						),
+						0,
+					),
+					g.lambdaToEnvironment(b.Lambda()).LLVMType(),
+				},
+				false,
+			),
+			"",
+		)
+
+		f, err := g.createLambda(
+			toInternalLambdaName(g.function().Name(), b.Name()),
+			b.Lambda(),
+		)
+
+		if err != nil {
+			return llvm.Value{}, err
+		}
+
+		g.builder.CreateStore(f, g.builder.CreateStructGEP(p, 0, ""))
+
+		e := g.builder.CreateBitCast(
+			g.builder.CreateStructGEP(p, 1, ""),
+			llvm.PointerType(g.lambdaToFreeVariablesStructType(b.Lambda()), 0),
+			"",
+		)
+
+		for i, n := range b.Lambda().FreeVariableNames() {
+			v, err := g.resolveVariable(ast.Variable(n))
+
+			if err != nil {
+				return llvm.Value{}, err
+			}
+
+			g.builder.CreateStore(v, g.builder.CreateStructGEP(e, i, ""))
+		}
+
+		g.variables[b.Name()] = p
+	}
+
+	return g.generateExpression(l.Expression())
 }
 
 func (g *functionBodyGenerator) generatePrimitiveOperation(o ast.PrimitiveOperation) (llvm.Value, error) {
@@ -118,4 +185,40 @@ func (g *functionBodyGenerator) generatePrimitiveArguments(as []ast.Atom) (llvm.
 	}
 
 	return vs[0], vs[1], nil
+}
+
+func (g *functionBodyGenerator) saveVariables() map[string]llvm.Value {
+	vs := make(map[string]llvm.Value, len(g.variables))
+
+	for k, v := range g.variables {
+		vs[k] = v
+	}
+
+	return vs
+}
+
+func (g *functionBodyGenerator) restoreVariables(vs map[string]llvm.Value) {
+	g.variables = vs
+}
+
+func (g *functionBodyGenerator) lambdaToEnvironment(l ast.Lambda) types.Environment {
+	n := g.typeSize(g.lambdaToFreeVariablesStructType(l))
+
+	if m := g.typeSize(types.Unbox(l.ResultType()).LLVMType()); m > n {
+		n = m
+	}
+
+	return types.NewEnvironment(n)
+}
+
+func (functionBodyGenerator) lambdaToFreeVariablesStructType(l ast.Lambda) llvm.Type {
+	return llvm.StructType(types.ToLLVMTypes(l.FreeVariableTypes()), false)
+}
+
+func (g *functionBodyGenerator) typeSize(t llvm.Type) int {
+	return typeSize(g.function().GlobalParent(), t)
+}
+
+func (g *functionBodyGenerator) function() llvm.Value {
+	return g.builder.GetInsertBlock().Parent()
 }

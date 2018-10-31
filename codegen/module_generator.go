@@ -54,7 +54,8 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 
 	v, err := newFunctionBodyGenerator(
 		b,
-		createLogicalEnvironment(f, b, l, g.globalVariables),
+		g.createLogicalEnvironment(f, b, l),
+		g.createLambda,
 	).Generate(l.Body())
 
 	if err != nil {
@@ -91,7 +92,7 @@ func (moduleGenerator) unboxResult(b llvm.Builder, v llvm.Value) llvm.Value {
 }
 
 func (g *moduleGenerator) createClosure(n string, f llvm.Value) {
-	e := types.NewEnvironment(g.getTypeSize(f.Type().ElementType().ReturnType())).LLVMType()
+	e := types.NewEnvironment(typeSize(g.module, f.Type().ElementType().ReturnType())).LLVMType()
 
 	v := llvm.AddGlobal(
 		g.module,
@@ -118,10 +119,6 @@ func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm
 	return f
 }
 
-func (g *moduleGenerator) getTypeSize(t llvm.Type) int {
-	return int(llvm.NewTargetData(g.module.DataLayout()).TypeAllocSize(t))
-}
-
 func (g *moduleGenerator) environmentToEntryFunctionPointer(
 	b llvm.Builder, v llvm.Value, t llvm.Type,
 ) llvm.Value {
@@ -142,8 +139,8 @@ func (g *moduleGenerator) environmentToEntryFunctionPointer(
 	)
 }
 
-func createLogicalEnvironment(f llvm.Value, b llvm.Builder, l ast.Lambda, vs map[string]llvm.Value) map[string]llvm.Value {
-	vs = copyVariables(vs)
+func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, l ast.Lambda) map[string]llvm.Value {
+	vs := copyVariables(g.globalVariables)
 
 	e := b.CreateBitCast(
 		f.FirstParam(),

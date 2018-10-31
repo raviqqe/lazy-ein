@@ -10,6 +10,11 @@ func toUpdatedEntryName(s string) string {
 	return s + "-updated-entry"
 }
 
+// TODO: Handle duplicate names in a function.
+func toInternalLambdaName(s, ss string) string {
+	return s + "." + ss
+}
+
 func copyVariables(vs map[string]llvm.Value) map[string]llvm.Value {
 	ws := make(map[string]llvm.Value, len(vs))
 
@@ -18,4 +23,8 @@ func copyVariables(vs map[string]llvm.Value) map[string]llvm.Value {
 	}
 
 	return ws
+}
+
+func typeSize(m llvm.Module, t llvm.Type) int {
+	return int(llvm.NewTargetData(m.DataLayout()).TypeAllocSize(t))
 }

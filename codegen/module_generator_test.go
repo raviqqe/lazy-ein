@@ -5,6 +5,7 @@ import (
 
 	"github.com/raviqqe/stg/ast"
 	"github.com/raviqqe/stg/types"
+	"github.com/stretchr/testify/assert"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
@@ -102,13 +103,39 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 					nil,
 					ast.NewPrimitiveOperation(
 						ast.AddFloat64,
-						[]ast.Atom{ast.Float64(42), ast.Float64(42)},
+						[]ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)},
 					),
 					types.NewFloat64(),
 				),
 			),
 		},
+		{
+			ast.NewBind(
+				"foo",
+				ast.NewLambda(
+					nil,
+					false,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
+					ast.NewLet(
+						[]ast.Bind{
+							ast.NewBind(
+								"y",
+								ast.NewLambda(
+									[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
+									true,
+									nil,
+									ast.NewApplication(ast.NewVariable("x"), nil),
+									types.NewFloat64(),
+								),
+							),
+						},
+						ast.NewApplication(ast.NewVariable("y"), nil),
+					),
+					types.NewBoxed(types.NewFloat64()),
+				),
+			),
+		},
 	} {
-		newModuleGenerator(llvm.NewModule("foo")).Generate(bs)
+		assert.Nil(t, newModuleGenerator(llvm.NewModule("foo")).Generate(bs))
 	}
 }
