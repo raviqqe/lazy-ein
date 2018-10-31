@@ -221,7 +221,3 @@ func (g functionBodyGenerator) typeSize(t llvm.Type) int {
 func (g functionBodyGenerator) function() llvm.Value {
 	return g.builder.GetInsertBlock().Parent()
 }
-
-func lambdaToFreeVariablesStructType(l ast.Lambda) llvm.Type {
-	return llvm.StructType(types.ToLLVMTypes(l.FreeVariableTypes()), false)
-}

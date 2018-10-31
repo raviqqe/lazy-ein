@@ -1,6 +1,10 @@
 package codegen
 
-import "llvm.org/llvm/bindings/go/llvm"
+import (
+	"github.com/raviqqe/stg/ast"
+	"github.com/raviqqe/stg/types"
+	"llvm.org/llvm/bindings/go/llvm"
+)
 
 func toEntryName(s string) string {
 	return s + "-entry"
@@ -27,4 +31,8 @@ func copyVariables(vs map[string]llvm.Value) map[string]llvm.Value {
 
 func typeSize(m llvm.Module, t llvm.Type) int {
 	return int(llvm.NewTargetData(m.DataLayout()).TypeAllocSize(t))
+}
+
+func lambdaToFreeVariablesStructType(l ast.Lambda) llvm.Type {
+	return llvm.StructType(types.ToLLVMTypes(l.FreeVariableTypes()), false)
 }

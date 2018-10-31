@@ -144,7 +144,7 @@ func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, 
 
 	e := b.CreateBitCast(
 		f.FirstParam(),
-		llvm.PointerType(llvm.StructType(types.ToLLVMTypes(l.FreeVariableTypes()), false), 0),
+		llvm.PointerType(lambdaToFreeVariablesStructType(l), 0),
 		"",
 	)
 
