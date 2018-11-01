@@ -5,14 +5,16 @@ import (
 	"fmt"
 
 	"github.com/raviqqe/stg/ast"
+	"github.com/raviqqe/stg/codegen/names"
 	"github.com/raviqqe/stg/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
 type functionBodyGenerator struct {
-	builder      llvm.Builder
-	variables    map[string]llvm.Value
-	createLambda func(string, ast.Lambda) (llvm.Value, error)
+	builder       llvm.Builder
+	createLambda  func(string, ast.Lambda) (llvm.Value, error)
+	nameGenerator *names.NameGenerator
+	variables     map[string]llvm.Value
 }
 
 func newFunctionBodyGenerator(
@@ -20,7 +22,12 @@ func newFunctionBodyGenerator(
 	vs map[string]llvm.Value,
 	c func(string, ast.Lambda) (llvm.Value, error),
 ) *functionBodyGenerator {
-	return &functionBodyGenerator{b, vs, c}
+	return &functionBodyGenerator{
+		b,
+		c,
+		names.NewNameGenerator(b.GetInsertBlock().Parent().Name()),
+		vs,
+	}
 }
 
 func (g *functionBodyGenerator) Generate(e ast.Expression) (llvm.Value, error) {
@@ -96,7 +103,7 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 		)
 
 		f, err := g.createLambda(
-			toInternalLambdaName(g.function().Name(), b.Name()),
+			g.nameGenerator.Generate(b.Name()),
 			b.Lambda(),
 		)
 
@@ -201,7 +208,7 @@ func (g *functionBodyGenerator) addVariables(vs map[string]llvm.Value) *function
 		vvs[k] = v
 	}
 
-	return &functionBodyGenerator{g.builder, vvs, g.createLambda}
+	return &functionBodyGenerator{g.builder, g.createLambda, g.nameGenerator, vvs}
 }
 
 func (g functionBodyGenerator) lambdaToEnvironment(l ast.Lambda) types.Environment {

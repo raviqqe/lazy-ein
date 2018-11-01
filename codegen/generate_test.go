@@ -6,6 +6,7 @@ import (
 	"unsafe"
 
 	"github.com/raviqqe/stg/ast"
+	"github.com/raviqqe/stg/codegen/names"
 	"github.com/raviqqe/stg/types"
 	"github.com/stretchr/testify/assert"
 	"llvm.org/llvm/bindings/go/llvm"
@@ -45,7 +46,7 @@ func TestGlobalThunkForce(t *testing.T) {
 	assert.NotEqual(t, 42.0, *(*float64)(unsafe.Pointer(uintptr(g) + environmentOffset)))
 
 	assert.Equal(t, 42.0, e.RunFunction(
-		e.FindFunction(toEntryName(functionName)),
+		e.FindFunction(names.ToEntry(functionName)),
 		[]llvm.GenericValue{
 			llvm.NewGenericValueFromPointer(p),
 		},
@@ -54,7 +55,7 @@ func TestGlobalThunkForce(t *testing.T) {
 	assert.Equal(t, 42.0, *(*float64)(unsafe.Pointer(uintptr(g) + environmentOffset)))
 
 	assert.Equal(t, 42.0, e.RunFunction(
-		e.FindFunction(toUpdatedEntryName(functionName)),
+		e.FindFunction(names.ToUpdatedEntry(functionName)),
 		[]llvm.GenericValue{
 			llvm.NewGenericValueFromPointer(p),
 		},

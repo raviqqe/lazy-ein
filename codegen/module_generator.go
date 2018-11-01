@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"github.com/raviqqe/stg/ast"
+	"github.com/raviqqe/stg/codegen/names"
 	"github.com/raviqqe/stg/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )
@@ -38,7 +39,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 
 	f := llvm.AddFunction(
 		g.module,
-		toEntryName(n),
+		names.ToEntry(n),
 		llvm.FunctionType(
 			t,
 			append(
@@ -107,7 +108,7 @@ func (g *moduleGenerator) createClosure(n string, f llvm.Value) {
 func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm.Value {
 	f := llvm.AddFunction(
 		g.module,
-		toUpdatedEntryName(n),
+		names.ToUpdatedEntry(n),
 		llvm.FunctionType(t, []llvm.Type{types.NewEnvironment(0).LLVMPointerType()}, false),
 	)
 	f.FirstParam().SetName(environmentArgumentName)
