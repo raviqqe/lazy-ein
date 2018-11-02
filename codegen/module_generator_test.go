@@ -15,10 +15,13 @@ func TestNewModuleGenerator(t *testing.T) {
 
 func TestModuleGeneratorGenerate(t *testing.T) {
 	for _, bs := range [][]ast.Bind{
+		// No bind statements
 		nil,
+		// Global variables
 		{
 			ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
 		},
+		// Functions returning unboxed values
 		{
 			ast.NewBind(
 				"foo",
@@ -31,6 +34,7 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
+		// Functions returning boxed values
 		{
 			ast.NewBind(
 				"foo",
@@ -43,6 +47,7 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
+		// Function applications
 		{
 			ast.NewBind(
 				"foo",
@@ -60,6 +65,7 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
+		// Function applications with passed arguments
 		{
 			ast.NewBind(
 				"foo",
@@ -81,6 +87,7 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
+		// Global variables referencing others
 		{
 			ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
 			ast.NewBind(
@@ -94,6 +101,7 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
+		// Primitive operations
 		{
 			ast.NewBind(
 				"foo",
@@ -109,6 +117,7 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
+		// Let expressions
 		{
 			ast.NewBind(
 				"foo",
