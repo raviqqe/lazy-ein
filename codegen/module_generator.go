@@ -20,6 +20,7 @@ func newModuleGenerator(m llvm.Module) *moduleGenerator {
 
 func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 	for _, b := range bs {
+		v := g.createClosure(b.Name(), b.Lambda())
 		f, err := g.createLambda(b.Name(), b.Lambda())
 
 		if err != nil {
@@ -28,7 +29,12 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 			return err
 		}
 
-		g.createClosure(b.Name(), f)
+		v.SetInitializer(
+			llvm.ConstStruct(
+				[]llvm.Value{f, llvm.ConstNull(v.Type().ElementType().StructElementTypes()[1])},
+				false,
+			),
+		)
 	}
 
 	return llvm.VerifyModule(g.module, llvm.AbortProcessAction)
@@ -92,17 +98,32 @@ func (moduleGenerator) unboxResult(b llvm.Builder, v llvm.Value) llvm.Value {
 	)
 }
 
-func (g *moduleGenerator) createClosure(n string, f llvm.Value) {
-	e := types.NewEnvironment(typeSize(g.module, f.Type().ElementType().ReturnType())).LLVMType()
-
+func (g *moduleGenerator) createClosure(n string, l ast.Lambda) llvm.Value {
 	v := llvm.AddGlobal(
 		g.module,
-		llvm.StructType([]llvm.Type{f.Type(), e}, false),
+		llvm.StructType(
+			[]llvm.Type{
+				llvm.PointerType(
+					llvm.FunctionType(
+						types.Unbox(l.ResultType()).LLVMType(),
+						append(
+							[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
+							types.ToLLVMTypes(l.ArgumentTypes())...,
+						),
+						false,
+					),
+					0,
+				),
+				g.lambdaToEnvironment(l).LLVMType(),
+			},
+			false,
+		),
 		n,
 	)
-	v.SetInitializer(llvm.ConstStruct([]llvm.Value{f, llvm.ConstNull(e)}, false))
 
 	g.globalVariables[n] = v
+
+	return v
 }
 
 func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm.Value {
@@ -138,6 +159,14 @@ func (g *moduleGenerator) environmentToEntryFunctionPointer(
 		[]llvm.Value{llvm.ConstIntFromString(llvm.Int32Type(), "-1", 10)},
 		"",
 	)
+}
+
+func (g moduleGenerator) lambdaToEnvironment(l ast.Lambda) types.Environment {
+	if l.IsUpdatable() {
+		return types.NewEnvironment(typeSize(g.module, types.Unbox(l.ResultType()).LLVMType()))
+	}
+
+	return types.NewEnvironment(0)
 }
 
 func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, l ast.Lambda) map[string]llvm.Value {

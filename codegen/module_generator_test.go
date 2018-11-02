@@ -144,6 +144,32 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
+		// Recursive global variables
+		{
+			ast.NewBind(
+				"foo",
+				ast.NewLambda(
+					nil,
+					true,
+					nil,
+					ast.NewApplication("foo", nil),
+					types.NewBoxed(types.NewFloat64()),
+				),
+			),
+		},
+		// Recursive functions
+		{
+			ast.NewBind(
+				"foo",
+				ast.NewLambda(
+					nil,
+					false,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
+					ast.NewApplication("foo", []ast.Atom{ast.NewVariable("x")}),
+					types.NewFloat64(),
+				),
+			),
+		},
 	} {
 		assert.Nil(t, newModuleGenerator(llvm.NewModule("foo")).Generate(bs))
 	}
