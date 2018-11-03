@@ -214,7 +214,7 @@ func (g *functionBodyGenerator) addVariables(vs map[string]llvm.Value) *function
 func (g functionBodyGenerator) lambdaToEnvironment(l ast.Lambda) types.Environment {
 	n := g.typeSize(lambdaToFreeVariablesStructType(l))
 
-	if m := g.typeSize(types.Unbox(l.ResultType()).LLVMType()); m > n {
+	if m := g.typeSize(types.Unbox(l.ResultType()).LLVMType()); l.IsUpdatable() && m > n {
 		n = m
 	}
 
