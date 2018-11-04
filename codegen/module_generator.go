@@ -20,7 +20,11 @@ func newModuleGenerator(m llvm.Module) *moduleGenerator {
 
 func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 	for _, b := range bs {
-		v := g.createClosure(b.Name(), b.Lambda())
+		g.createClosure(b.Name(), b.Lambda())
+	}
+
+	for _, b := range bs {
+		v := g.globalVariables[b.Name()]
 		f, err := g.createLambda(b.Name(), b.Lambda())
 
 		if err != nil {
@@ -98,8 +102,8 @@ func (moduleGenerator) unboxResult(b llvm.Builder, v llvm.Value) llvm.Value {
 	)
 }
 
-func (g *moduleGenerator) createClosure(n string, l ast.Lambda) llvm.Value {
-	v := llvm.AddGlobal(
+func (g *moduleGenerator) createClosure(n string, l ast.Lambda) {
+	g.globalVariables[n] = llvm.AddGlobal(
 		g.module,
 		llvm.StructType(
 			[]llvm.Type{
@@ -120,10 +124,6 @@ func (g *moduleGenerator) createClosure(n string, l ast.Lambda) llvm.Value {
 		),
 		n,
 	)
-
-	g.globalVariables[n] = v
-
-	return v
 }
 
 func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm.Value {

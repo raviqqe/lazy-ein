@@ -227,6 +227,29 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
+		// Mutually recursive global variables
+		{
+			ast.NewBind(
+				"foo",
+				ast.NewLambda(
+					nil,
+					true,
+					nil,
+					ast.NewApplication("bar", nil),
+					types.NewBoxed(types.NewFloat64()),
+				),
+			),
+			ast.NewBind(
+				"bar",
+				ast.NewLambda(
+					nil,
+					true,
+					nil,
+					ast.NewApplication("foo", nil),
+					types.NewBoxed(types.NewFloat64()),
+				),
+			),
+		},
 		// Recursive functions
 		{
 			ast.NewBind(
