@@ -90,27 +90,54 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 	vs := make(map[string]llvm.Value, len(l.Binds()))
 
 	for _, b := range l.Binds() {
-		p := g.builder.CreateMalloc(
-			llvm.StructType(
-				[]llvm.Type{
-					llvm.PointerType(
-						llvm.FunctionType(
-							types.Unbox(b.Lambda().ResultType()).LLVMType(),
-							append(
-								[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
-								types.ToLLVMTypes(b.Lambda().ArgumentTypes())...,
+		vs[b.Name()] = g.builder.CreateBitCast(
+			g.builder.CreateMalloc(
+				llvm.StructType(
+					[]llvm.Type{
+						llvm.PointerType(
+							llvm.FunctionType(
+								types.Unbox(b.Lambda().ResultType()).LLVMType(),
+								append(
+									[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
+									types.ToLLVMTypes(b.Lambda().ArgumentTypes())...,
+								),
+								false,
 							),
-							false,
+							0,
 						),
-						0,
-					),
-					g.lambdaToEnvironment(b.Lambda()).LLVMType(),
-				},
-				false,
+						g.lambdaToEnvironment(b.Lambda()).LLVMType(),
+					},
+					false,
+				),
+				"",
+			),
+			llvm.PointerType(
+				llvm.StructType(
+					[]llvm.Type{
+						llvm.PointerType(
+							llvm.FunctionType(
+								types.Unbox(b.Lambda().ResultType()).LLVMType(),
+								append(
+									[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
+									types.ToLLVMTypes(b.Lambda().ArgumentTypes())...,
+								),
+								false,
+							),
+							0,
+						),
+						types.NewEnvironment(0).LLVMType(),
+					},
+					false,
+				),
+				0,
 			),
 			"",
 		)
+	}
 
+	g = g.addVariables(vs)
+
+	for _, b := range l.Binds() {
 		f, err := g.createLambda(
 			g.nameGenerator.Generate(b.Name()),
 			b.Lambda(),
@@ -119,6 +146,8 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 		if err != nil {
 			return llvm.Value{}, err
 		}
+
+		p := vs[b.Name()]
 
 		g.builder.CreateStore(f, g.builder.CreateStructGEP(p, 0, ""))
 
@@ -137,11 +166,9 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 
 			g.builder.CreateStore(v, g.builder.CreateStructGEP(e, i, ""))
 		}
-
-		vs[b.Name()] = p
 	}
 
-	return g.addVariables(vs).generateExpression(l.Expression())
+	return g.generateExpression(l.Expression())
 }
 
 func (g *functionBodyGenerator) generatePrimitiveOperation(o ast.PrimitiveOperation) (llvm.Value, error) {

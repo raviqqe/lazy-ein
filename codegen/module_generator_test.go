@@ -177,6 +177,43 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
+		// Let expressions referencing other bound names
+		{
+			ast.NewBind(
+				"foo",
+				ast.NewLambda(
+					nil,
+					false,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
+					ast.NewLet(
+						[]ast.Bind{
+							ast.NewBind(
+								"y",
+								ast.NewLambda(
+									[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
+									true,
+									nil,
+									ast.NewApplication(ast.NewVariable("x"), nil),
+									types.NewFloat64(),
+								),
+							),
+							ast.NewBind(
+								"z",
+								ast.NewLambda(
+									[]ast.Argument{ast.NewArgument("y", types.NewBoxed(types.NewFloat64()))},
+									true,
+									nil,
+									ast.NewApplication(ast.NewVariable("y"), nil),
+									types.NewBoxed(types.NewFloat64()),
+								),
+							),
+						},
+						ast.NewApplication(ast.NewVariable("z"), nil),
+					),
+					types.NewBoxed(types.NewFloat64()),
+				),
+			),
+		},
 		// Recursive global variables
 		{
 			ast.NewBind(
