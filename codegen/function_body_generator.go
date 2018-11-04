@@ -72,7 +72,16 @@ func (g *functionBodyGenerator) generateApplication(a ast.Application) (llvm.Val
 
 	return g.builder.CreateCall(
 		g.builder.CreateLoad(g.builder.CreateStructGEP(f, 0, ""), ""),
-		append([]llvm.Value{g.builder.CreateStructGEP(f, 1, "")}, vs...),
+		append(
+			[]llvm.Value{
+				g.builder.CreateBitCast(
+					g.builder.CreateStructGEP(f, 1, ""),
+					types.NewEnvironment(0).LLVMPointerType(),
+					"",
+				),
+			},
+			vs...,
+		),
 		"",
 	), nil
 }

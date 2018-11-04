@@ -144,6 +144,39 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
+		// Let expressions of functions with free variables
+		{
+			ast.NewBind(
+				"foo",
+				ast.NewLambda(
+					nil,
+					false,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
+					ast.NewLet(
+						[]ast.Bind{
+							ast.NewBind(
+								"bar",
+								ast.NewLambda(
+									[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
+									false,
+									[]ast.Argument{ast.NewArgument("y", types.NewFloat64())},
+									ast.NewPrimitiveOperation(
+										ast.AddFloat64,
+										[]ast.Atom{ast.NewVariable("x"), ast.NewVariable("y")},
+									),
+									types.NewFloat64(),
+								),
+							),
+						},
+						ast.NewApplication(
+							ast.NewVariable("bar"),
+							[]ast.Atom{ast.NewFloat64(42)},
+						),
+					),
+					types.NewFloat64(),
+				),
+			),
+		},
 		// Recursive global variables
 		{
 			ast.NewBind(
