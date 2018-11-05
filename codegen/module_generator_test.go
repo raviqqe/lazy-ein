@@ -269,7 +269,7 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 	}
 }
 
-func TestModuleGeneratorGenerateBoxedReturnValue(t *testing.T) {
+func TestModuleGeneratorGenerateWithGlobalFunctionsReturningBoxedValues(t *testing.T) {
 	m := llvm.NewModule("foo")
 
 	err := newModuleGenerator(m).Generate(
