@@ -51,6 +51,11 @@ func (l Lambda) IsUpdatable() bool {
 	return l.updatable
 }
 
+// IsThunk returns true if the lambda form is a thunk, or false otherwise.
+func (l Lambda) IsThunk() bool {
+	return len(l.arguments) == 0
+}
+
 func argumentsToNames(as []Argument) []string {
 	ss := make([]string, 0, len(as))
 

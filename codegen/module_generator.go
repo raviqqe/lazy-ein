@@ -45,7 +45,11 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 }
 
 func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, error) {
-	t := types.Unbox(l.ResultType()).LLVMType()
+	t := l.ResultType().LLVMType()
+
+	if l.IsThunk() {
+		t = types.Unbox(l.ResultType()).LLVMType()
+	}
 
 	f := llvm.AddFunction(
 		g.module,
@@ -71,7 +75,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 
 	if err != nil {
 		return llvm.Value{}, err
-	} else if _, ok := l.ResultType().(types.Boxed); ok {
+	} else if _, ok := l.ResultType().(types.Boxed); ok && l.IsThunk() {
 		v = g.unboxResult(b, v)
 	}
 
@@ -103,13 +107,15 @@ func (moduleGenerator) unboxResult(b llvm.Builder, v llvm.Value) llvm.Value {
 }
 
 func (g *moduleGenerator) createClosure(n string, l ast.Lambda) {
+	r := l.ResultType()
+
+	if l.IsThunk() {
+		r = types.Unbox(r)
+	}
+
 	g.globalVariables[n] = llvm.AddGlobal(
 		g.module,
-		types.NewClosure(
-			g.lambdaToEnvironment(l),
-			l.ArgumentTypes(),
-			types.Unbox(l.ResultType()),
-		).LLVMType(),
+		types.NewClosure(g.lambdaToEnvironment(l), l.ArgumentTypes(), r).LLVMType(),
 		n,
 	)
 }

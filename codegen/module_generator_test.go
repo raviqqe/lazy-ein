@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/raviqqe/stg/ast"
+	"github.com/raviqqe/stg/codegen/names"
 	"github.com/raviqqe/stg/types"
 	"github.com/stretchr/testify/assert"
 	"llvm.org/llvm/bindings/go/llvm"
@@ -266,4 +267,31 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 	} {
 		assert.Nil(t, newModuleGenerator(llvm.NewModule("foo")).Generate(bs))
 	}
+}
+
+func TestModuleGeneratorGenerateBoxedReturnValue(t *testing.T) {
+	m := llvm.NewModule("foo")
+
+	err := newModuleGenerator(m).Generate(
+		[]ast.Bind{
+			ast.NewBind(
+				"foo",
+				ast.NewLambda(
+					nil,
+					false,
+					[]ast.Argument{ast.NewArgument("x", types.NewBoxed(types.NewFloat64()))},
+					ast.NewApplication(ast.NewVariable("x"), nil),
+					types.NewBoxed(types.NewFloat64()),
+				),
+			),
+		},
+	)
+
+	assert.Nil(t, err)
+
+	assert.Equal(
+		t,
+		llvm.PointerTypeKind,
+		m.NamedFunction(names.ToEntry("foo")).Type().ElementType().ReturnType().TypeKind(),
+	)
 }
