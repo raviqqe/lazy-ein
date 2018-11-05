@@ -15,23 +15,5 @@ func NewFunction(as []Type, r Type) Function {
 
 // LLVMType returns a LLVM type.
 func (f Function) LLVMType() llvm.Type {
-	e := NewEnvironment(0)
-
-	return llvm.PointerType(
-		llvm.StructType(
-			[]llvm.Type{
-				llvm.PointerType(
-					llvm.FunctionType(
-						f.result.LLVMType(),
-						append([]llvm.Type{e.LLVMPointerType()}, ToLLVMTypes(f.arguments)...),
-						false,
-					),
-					0,
-				),
-				e.LLVMType(),
-			},
-			false,
-		),
-		0,
-	)
+	return llvm.PointerType(NewClosure(NewEnvironment(0), f.arguments, f.result).LLVMType(), 0)
 }

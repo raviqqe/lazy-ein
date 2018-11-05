@@ -90,47 +90,15 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 	vs := make(map[string]llvm.Value, len(l.Binds()))
 
 	for _, b := range l.Binds() {
+		as := b.Lambda().ArgumentTypes()
+		r := types.Unbox(b.Lambda().ResultType())
+
 		vs[b.Name()] = g.builder.CreateBitCast(
 			g.builder.CreateMalloc(
-				llvm.StructType(
-					[]llvm.Type{
-						llvm.PointerType(
-							llvm.FunctionType(
-								types.Unbox(b.Lambda().ResultType()).LLVMType(),
-								append(
-									[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
-									types.ToLLVMTypes(b.Lambda().ArgumentTypes())...,
-								),
-								false,
-							),
-							0,
-						),
-						g.lambdaToEnvironment(b.Lambda()).LLVMType(),
-					},
-					false,
-				),
+				types.NewClosure(g.lambdaToEnvironment(b.Lambda()), as, r).LLVMType(),
 				"",
 			),
-			llvm.PointerType(
-				llvm.StructType(
-					[]llvm.Type{
-						llvm.PointerType(
-							llvm.FunctionType(
-								types.Unbox(b.Lambda().ResultType()).LLVMType(),
-								append(
-									[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
-									types.ToLLVMTypes(b.Lambda().ArgumentTypes())...,
-								),
-								false,
-							),
-							0,
-						),
-						types.NewEnvironment(0).LLVMType(),
-					},
-					false,
-				),
-				0,
-			),
+			llvm.PointerType(types.NewClosure(types.NewEnvironment(0), as, r).LLVMType(), 0),
 			"",
 		)
 	}

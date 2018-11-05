@@ -19,5 +19,5 @@ func (b Boxed) InternalType() Type {
 
 // LLVMType returns a LLVM type.
 func (b Boxed) LLVMType() llvm.Type {
-	return NewFunction(nil, b.internalType).LLVMType()
+	return llvm.PointerType(NewClosure(NewEnvironment(0), nil, b.internalType).LLVMType(), 0)
 }

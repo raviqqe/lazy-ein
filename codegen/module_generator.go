@@ -105,23 +105,11 @@ func (moduleGenerator) unboxResult(b llvm.Builder, v llvm.Value) llvm.Value {
 func (g *moduleGenerator) createClosure(n string, l ast.Lambda) {
 	g.globalVariables[n] = llvm.AddGlobal(
 		g.module,
-		llvm.StructType(
-			[]llvm.Type{
-				llvm.PointerType(
-					llvm.FunctionType(
-						types.Unbox(l.ResultType()).LLVMType(),
-						append(
-							[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
-							types.ToLLVMTypes(l.ArgumentTypes())...,
-						),
-						false,
-					),
-					0,
-				),
-				g.lambdaToEnvironment(l).LLVMType(),
-			},
-			false,
-		),
+		types.NewClosure(
+			g.lambdaToEnvironment(l),
+			l.ArgumentTypes(),
+			types.Unbox(l.ResultType()),
+		).LLVMType(),
 		n,
 	)
 }
