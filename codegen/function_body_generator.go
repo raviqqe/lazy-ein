@@ -50,6 +50,7 @@ func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value
 }
 
 func (g *functionBodyGenerator) generateApplication(a ast.Application) (llvm.Value, error) {
+	// TODO: Convert recursive function applications into thunks to allow tail-call elimination.
 	f, err := g.resolveName(a.Function().Name())
 
 	if err != nil {
