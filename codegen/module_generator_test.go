@@ -295,3 +295,46 @@ func TestModuleGeneratorGenerateBoxedReturnValue(t *testing.T) {
 		m.NamedFunction(names.ToEntry("foo")).Type().ElementType().ReturnType().TypeKind(),
 	)
 }
+
+func TestModuleGeneratorGenerateWithLocalFunctionsReturningBoxedValues(t *testing.T) {
+	m := llvm.NewModule("foo")
+
+	err := newModuleGenerator(m).Generate(
+		[]ast.Bind{
+			ast.NewBind(
+				"foo",
+				ast.NewLambda(
+					nil,
+					false,
+					[]ast.Argument{ast.NewArgument("x", types.NewBoxed(types.NewFloat64()))},
+					ast.NewLet(
+						[]ast.Bind{
+							ast.NewBind(
+								"bar",
+								ast.NewLambda(
+									nil,
+									false,
+									[]ast.Argument{ast.NewArgument("y", types.NewBoxed(types.NewFloat64()))},
+									ast.NewApplication(ast.NewVariable("y"), nil),
+									types.NewBoxed(types.NewFloat64()),
+								),
+							),
+						},
+						ast.NewApplication(ast.NewVariable("bar"), []ast.Atom{ast.Variable("x")}),
+					),
+					types.NewBoxed(types.NewFloat64()),
+				),
+			),
+		},
+	)
+
+	assert.Nil(t, err)
+
+	assert.Equal(
+		t,
+		llvm.PointerTypeKind,
+		m.NamedFunction(
+			names.ToEntry(names.NewNameGenerator(names.ToEntry("foo")).Generate("bar")),
+		).Type().ElementType().ReturnType().TypeKind(),
+	)
+}

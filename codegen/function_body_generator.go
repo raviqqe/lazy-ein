@@ -91,7 +91,11 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 
 	for _, b := range l.Binds() {
 		as := b.Lambda().ArgumentTypes()
-		r := types.Unbox(b.Lambda().ResultType())
+		r := b.Lambda().ResultType()
+
+		if b.Lambda().IsThunk() {
+			r = types.Unbox(r)
+		}
 
 		vs[b.Name()] = g.builder.CreateBitCast(
 			g.builder.CreateMalloc(
