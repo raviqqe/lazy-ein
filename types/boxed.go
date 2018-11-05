@@ -9,6 +9,10 @@ type Boxed struct {
 
 // NewBoxed creates a new boxed type.
 func NewBoxed(t Type) Boxed {
+	if _, ok := t.(Boxed); ok {
+		panic("cannot box boxed types")
+	}
+
 	return Boxed{t}
 }
 
