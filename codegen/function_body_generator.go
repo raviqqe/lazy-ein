@@ -38,10 +38,10 @@ func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value
 	switch e := e.(type) {
 	case ast.Application:
 		return g.generateApplication(e)
-	case ast.Float64:
-		return llvm.ConstFloat(llvm.DoubleType(), e.Value()), nil
 	case ast.Let:
 		return g.generateLet(e)
+	case ast.Literal:
+		return g.generateLiteral(e), nil
 	case ast.PrimitiveOperation:
 		return g.generatePrimitiveOperation(e)
 	}
@@ -142,6 +142,15 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 	}
 
 	return g.generateExpression(l.Expression())
+}
+
+func (g *functionBodyGenerator) generateLiteral(l ast.Literal) llvm.Value {
+	switch l := l.(type) {
+	case ast.Float64:
+		return llvm.ConstFloat(llvm.DoubleType(), l.Value())
+	}
+
+	panic("unreachable")
 }
 
 func (g *functionBodyGenerator) generatePrimitiveOperation(o ast.PrimitiveOperation) (llvm.Value, error) {
