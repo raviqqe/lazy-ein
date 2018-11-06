@@ -301,6 +301,23 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
+		// Case expressions
+		{
+			ast.NewBind(
+				"foo",
+				ast.NewLambda(
+					nil,
+					true,
+					nil,
+					ast.NewCase(
+						ast.NewFloat64(42),
+						[]ast.Alternative{ast.NewPrimitiveAlternative(ast.NewFloat64(42), ast.NewFloat64(0))},
+						ast.NewDefaultAlternative("x", ast.NewApplication(ast.NewVariable("x"), nil)),
+					),
+					types.NewFloat64(),
+				),
+			),
+		},
 	} {
 		assert.Nil(t, newModuleGenerator(llvm.NewModule("foo")).Generate(bs))
 	}

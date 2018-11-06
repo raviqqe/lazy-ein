@@ -38,6 +38,8 @@ func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value
 	switch e := e.(type) {
 	case ast.Application:
 		return g.generateApplication(e)
+	case ast.Case:
+		return g.generateCase(e)
 	case ast.Let:
 		return g.generateLet(e)
 	case ast.Literal:
@@ -85,6 +87,73 @@ func (g *functionBodyGenerator) generateApplication(a ast.Application) (llvm.Val
 		),
 		"",
 	), nil
+}
+
+func (g *functionBodyGenerator) generateCase(c ast.Case) (llvm.Value, error) {
+	e, err := g.generateExpression(c.Expression())
+
+	if err != nil {
+		return llvm.Value{}, err
+	}
+
+	vs := make([]llvm.Value, 0, len(c.Alternatives())+1)
+	bs := make([]llvm.BasicBlock, 0, len(c.Alternatives())+1)
+
+	d := llvm.AddBasicBlock(g.function(), "default")
+	p := llvm.AddBasicBlock(g.function(), "phi")
+	s := g.builder.CreateSwitch(e, d, len(c.Alternatives()))
+
+	for _, a := range c.Alternatives() {
+		b := llvm.AddBasicBlock(g.function(), "")
+		g.builder.SetInsertPointAtEnd(b)
+
+		switch a := a.(type) {
+		case ast.PrimitiveAlternative:
+			s.AddCase(g.generateLiteral(a.Literal()), b)
+		default:
+			panic("unreachable")
+		}
+
+		v, err := g.generateExpression(a.Expression())
+
+		if err != nil {
+			return llvm.Value{}, err
+		}
+
+		vs = append(vs, v)
+		bs = append(bs, b)
+
+		g.builder.CreateBr(p)
+	}
+
+	t := vs[len(vs)-1].Type()
+
+	g.builder.SetInsertPointAtEnd(d)
+
+	v := llvm.ConstNull(t)
+
+	if a, ok := c.DefaultAlternative(); ok {
+		v, err = g.addVariables(
+			map[string]llvm.Value{a.Variable(): e},
+		).generateExpression(a.Expression())
+
+		if err != nil {
+			return llvm.Value{}, err
+		}
+	} else {
+		g.builder.CreateUnreachable()
+	}
+
+	g.builder.CreateBr(p)
+
+	vs = append(vs, v)
+	bs = append(bs, d)
+
+	g.builder.SetInsertPointAtEnd(p)
+	v = g.builder.CreatePHI(t, "")
+	v.AddIncoming(vs, bs)
+
+	return v, nil
 }
 
 func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
