@@ -23,3 +23,17 @@ func typeSize(m llvm.Module, t llvm.Type) int {
 func lambdaToFreeVariablesStructType(l ast.Lambda) llvm.Type {
 	return llvm.StructType(types.ToLLVMTypes(l.FreeVariableTypes()), false)
 }
+
+func forceThunk(b llvm.Builder, v llvm.Value) llvm.Value {
+	return b.CreateCall(
+		b.CreateLoad(b.CreateStructGEP(v, 0, ""), ""),
+		[]llvm.Value{
+			b.CreateBitCast(
+				b.CreateStructGEP(v, 1, ""),
+				types.NewEnvironment(0).LLVMPointerType(),
+				"",
+			),
+		},
+		"",
+	)
+}

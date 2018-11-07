@@ -94,9 +94,9 @@ func (g *functionBodyGenerator) generateCase(c ast.Case) (llvm.Value, error) {
 
 	if err != nil {
 		return llvm.Value{}, err
+	} else if e.Type().TypeKind() == llvm.PointerTypeKind {
+		e = forceThunk(g.builder, e)
 	}
-
-	e = g.unboxExpression(e)
 
 	vs := make([]llvm.Value, 0, len(c.Alternatives())+1)
 	bs := make([]llvm.BasicBlock, 0, len(c.Alternatives())+1)
@@ -284,24 +284,6 @@ func (g *functionBodyGenerator) generatePrimitiveArguments(as []ast.Atom) (llvm.
 	}
 
 	return v, vv, nil
-}
-
-func (g *functionBodyGenerator) unboxExpression(v llvm.Value) llvm.Value {
-	if v.Type().TypeKind() != llvm.PointerTypeKind {
-		return v
-	}
-
-	return g.builder.CreateCall(
-		g.builder.CreateLoad(g.builder.CreateStructGEP(v, 0, ""), ""),
-		[]llvm.Value{
-			g.builder.CreateBitCast(
-				g.builder.CreateStructGEP(v, 1, ""),
-				types.NewEnvironment(0).LLVMPointerType(),
-				"",
-			),
-		},
-		"",
-	)
 }
 
 func (g *functionBodyGenerator) addVariables(vs map[string]llvm.Value) *functionBodyGenerator {

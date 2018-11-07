@@ -78,7 +78,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 	} else if _, ok := l.ResultType().(types.Boxed); ok && l.IsThunk() {
 		// TODO: Steal child thunks in a thread-safe way.
 		// TODO: Use loop to unbox children recursively.
-		v = g.unboxResult(b, v)
+		v = forceThunk(b, v)
 	}
 
 	if l.IsUpdatable() {
@@ -92,20 +92,6 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 	b.CreateRet(v)
 
 	return f, nil
-}
-
-func (moduleGenerator) unboxResult(b llvm.Builder, v llvm.Value) llvm.Value {
-	return b.CreateCall(
-		b.CreateLoad(b.CreateStructGEP(v, 0, ""), ""),
-		[]llvm.Value{
-			b.CreateBitCast(
-				b.CreateStructGEP(v, 1, ""),
-				types.NewEnvironment(0).LLVMPointerType(),
-				"",
-			),
-		},
-		"",
-	)
 }
 
 func (g *moduleGenerator) createClosure(n string, l ast.Lambda) {
