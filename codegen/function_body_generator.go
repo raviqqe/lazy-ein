@@ -74,7 +74,8 @@ func (g *functionBodyGenerator) generateApplication(a ast.Application) (llvm.Val
 		vs = append(vs, v)
 	}
 
-	return g.builder.CreateCall(
+	return llir.CreateCall(
+		g.builder,
 		g.builder.CreateLoad(g.builder.CreateStructGEP(f, 0, ""), ""),
 		append(
 			[]llvm.Value{
@@ -86,7 +87,6 @@ func (g *functionBodyGenerator) generateApplication(a ast.Application) (llvm.Val
 			},
 			vs...,
 		),
-		"",
 	), nil
 }
 

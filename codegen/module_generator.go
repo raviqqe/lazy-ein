@@ -52,7 +52,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 		t = types.Unbox(l.ResultType()).LLVMType()
 	}
 
-	f := llvm.AddFunction(
+	f := llir.AddFunction(
 		g.module,
 		names.ToEntry(n),
 		llir.FunctionType(
@@ -109,7 +109,7 @@ func (g *moduleGenerator) createClosure(n string, l ast.Lambda) {
 }
 
 func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm.Value {
-	f := llvm.AddFunction(
+	f := llir.AddFunction(
 		g.module,
 		names.ToUpdatedEntry(n),
 		llir.FunctionType(t, []llvm.Type{types.NewEnvironment(0).LLVMPointerType()}),

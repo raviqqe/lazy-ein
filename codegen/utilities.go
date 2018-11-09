@@ -26,7 +26,8 @@ func lambdaToFreeVariablesStructType(l ast.Lambda) llvm.Type {
 }
 
 func forceThunk(b llvm.Builder, v llvm.Value) llvm.Value {
-	return b.CreateCall(
+	return llir.CreateCall(
+		b,
 		b.CreateLoad(b.CreateStructGEP(v, 0, ""), ""),
 		[]llvm.Value{
 			b.CreateBitCast(
@@ -35,6 +36,5 @@ func forceThunk(b llvm.Builder, v llvm.Value) llvm.Value {
 				"",
 			),
 		},
-		"",
 	)
 }
