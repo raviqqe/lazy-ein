@@ -3,6 +3,7 @@ package codegen
 import (
 	"github.com/raviqqe/stg/ast"
 	"github.com/raviqqe/stg/codegen/names"
+	"github.com/raviqqe/stg/llir"
 	"github.com/raviqqe/stg/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )
@@ -54,13 +55,12 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 	f := llvm.AddFunction(
 		g.module,
 		names.ToEntry(n),
-		llvm.FunctionType(
+		llir.FunctionType(
 			t,
 			append(
 				[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
 				types.ToLLVMTypes(l.ArgumentTypes())...,
 			),
-			false,
 		),
 	)
 
@@ -82,7 +82,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 	}
 
 	if l.IsUpdatable() {
-		b.CreateStore(v, b.CreateBitCast(f.FirstParam(), llvm.PointerType(v.Type(), 0), ""))
+		b.CreateStore(v, b.CreateBitCast(f.FirstParam(), llir.PointerType(v.Type()), ""))
 		b.CreateStore(
 			g.createUpdatedEntryFunction(n, t),
 			g.environmentToEntryFunctionPointer(b, f.FirstParam(), t),
@@ -112,13 +112,13 @@ func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm
 	f := llvm.AddFunction(
 		g.module,
 		names.ToUpdatedEntry(n),
-		llvm.FunctionType(t, []llvm.Type{types.NewEnvironment(0).LLVMPointerType()}, false),
+		llir.FunctionType(t, []llvm.Type{types.NewEnvironment(0).LLVMPointerType()}),
 	)
 	f.FirstParam().SetName(environmentArgumentName)
 
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
-	b.CreateRet(b.CreateLoad(b.CreateBitCast(f.FirstParam(), llvm.PointerType(t, 0), ""), ""))
+	b.CreateRet(b.CreateLoad(b.CreateBitCast(f.FirstParam(), llir.PointerType(t), ""), ""))
 
 	return f
 }
@@ -129,12 +129,10 @@ func (g *moduleGenerator) environmentToEntryFunctionPointer(
 	return b.CreateGEP(
 		b.CreateBitCast(
 			v,
-			llvm.PointerType(
-				llvm.PointerType(
-					llvm.FunctionType(t, []llvm.Type{types.NewEnvironment(0).LLVMPointerType()}, false),
-					0,
+			llir.PointerType(
+				llir.PointerType(
+					llir.FunctionType(t, []llvm.Type{types.NewEnvironment(0).LLVMPointerType()}),
 				),
-				0,
 			),
 			"",
 		),
@@ -156,7 +154,7 @@ func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, 
 
 	e := b.CreateBitCast(
 		f.FirstParam(),
-		llvm.PointerType(lambdaToFreeVariablesStructType(l), 0),
+		llir.PointerType(lambdaToFreeVariablesStructType(l)),
 		"",
 	)
 

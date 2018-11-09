@@ -1,6 +1,9 @@
 package types
 
-import "llvm.org/llvm/bindings/go/llvm"
+import (
+	"github.com/raviqqe/stg/llir"
+	"llvm.org/llvm/bindings/go/llvm"
+)
 
 // Environment is an environment type.
 type Environment struct {
@@ -19,5 +22,5 @@ func (e Environment) LLVMType() llvm.Type {
 
 // LLVMPointerType returns a LLVM pointer type.
 func (e Environment) LLVMPointerType() llvm.Type {
-	return llvm.PointerType(e.LLVMType(), 0)
+	return llir.PointerType(e.LLVMType())
 }

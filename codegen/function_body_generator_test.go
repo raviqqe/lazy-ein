@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/raviqqe/stg/ast"
+	"github.com/raviqqe/stg/llir"
 	"github.com/raviqqe/stg/types"
 	"github.com/stretchr/testify/assert"
 	"llvm.org/llvm/bindings/go/llvm"
@@ -13,10 +14,9 @@ func TestFunctionBodyGeneratorGenerate(t *testing.T) {
 	f := llvm.AddFunction(
 		llvm.NewModule("foo"),
 		"foo",
-		llvm.FunctionType(
+		llir.FunctionType(
 			llvm.DoubleType(),
 			[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
-			false,
 		),
 	)
 
@@ -66,10 +66,9 @@ func TestFunctionBodyGeneratorLambdaToEnvironment(t *testing.T) {
 		f := llvm.AddFunction(
 			llvm.NewModule("foo"),
 			"foo",
-			llvm.FunctionType(
+			llir.FunctionType(
 				llvm.DoubleType(),
 				[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
-				false,
 			),
 		)
 

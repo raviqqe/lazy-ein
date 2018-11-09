@@ -6,6 +6,7 @@ import (
 
 	"github.com/raviqqe/stg/ast"
 	"github.com/raviqqe/stg/codegen/names"
+	"github.com/raviqqe/stg/llir"
 	"github.com/raviqqe/stg/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )
@@ -174,7 +175,7 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 				types.NewClosure(g.lambdaToEnvironment(b.Lambda()), as, r).LLVMType(),
 				"",
 			),
-			llvm.PointerType(types.NewClosure(types.NewEnvironment(0), as, r).LLVMType(), 0),
+			llir.PointerType(types.NewClosure(types.NewEnvironment(0), as, r).LLVMType()),
 			"",
 		)
 	}
@@ -197,7 +198,7 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 
 		e := g.builder.CreateBitCast(
 			g.builder.CreateStructGEP(p, 1, ""),
-			llvm.PointerType(lambdaToFreeVariablesStructType(b.Lambda()), 0),
+			llir.PointerType(lambdaToFreeVariablesStructType(b.Lambda())),
 			"",
 		)
 

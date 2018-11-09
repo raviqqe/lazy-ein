@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"github.com/raviqqe/stg/ast"
+	"github.com/raviqqe/stg/llir"
 	"github.com/raviqqe/stg/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )
@@ -21,7 +22,7 @@ func typeSize(m llvm.Module, t llvm.Type) int {
 }
 
 func lambdaToFreeVariablesStructType(l ast.Lambda) llvm.Type {
-	return llvm.StructType(types.ToLLVMTypes(l.FreeVariableTypes()), false)
+	return llir.StructType(types.ToLLVMTypes(l.FreeVariableTypes()))
 }
 
 func forceThunk(b llvm.Builder, v llvm.Value) llvm.Value {

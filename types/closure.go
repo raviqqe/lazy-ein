@@ -1,6 +1,7 @@
 package types
 
 import (
+	"github.com/raviqqe/stg/llir"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
@@ -18,21 +19,18 @@ func NewClosure(e Environment, as []Type, r Type) Closure {
 
 // LLVMType returns a LLVM type.
 func (c Closure) LLVMType() llvm.Type {
-	return llvm.StructType(
+	return llir.StructType(
 		[]llvm.Type{
-			llvm.PointerType(
-				llvm.FunctionType(
+			llir.PointerType(
+				llir.FunctionType(
 					c.result.LLVMType(),
 					append(
 						[]llvm.Type{NewEnvironment(0).LLVMPointerType()},
 						ToLLVMTypes(c.arguments)...,
 					),
-					false,
 				),
-				0,
 			),
 			c.environment.LLVMType(),
 		},
-		false,
 	)
 }
