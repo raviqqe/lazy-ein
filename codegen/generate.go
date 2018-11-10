@@ -6,12 +6,12 @@ import (
 )
 
 // Generate generates a code for a module.
-func Generate(s string, bs []ast.Bind) (llvm.Module, error) {
-	m := llvm.NewModule(s)
+func Generate(m ast.Module) (llvm.Module, error) {
+	l := llvm.NewModule(m.Name())
 
-	if err := newModuleGenerator(m).Generate(bs); err != nil {
+	if err := newModuleGenerator(l).Generate(m.Binds()); err != nil {
 		return llvm.Module{}, err
 	}
 
-	return m, nil
+	return l, nil
 }

@@ -16,10 +16,15 @@ var environmentOffset = reflect.PtrTo(reflect.TypeOf(42)).Size()
 
 func TestGenerate(t *testing.T) {
 	m, err := Generate(
-		"foo",
-		[]ast.Bind{
-			ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
-		},
+		ast.NewModule(
+			"foo",
+			[]ast.Bind{
+				ast.NewBind(
+					"foo",
+					ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64()),
+				),
+			},
+		),
 	)
 
 	assert.NotEqual(t, llvm.Module{}, m)
@@ -30,10 +35,15 @@ func TestGlobalThunkForce(t *testing.T) {
 	const functionName = "foo"
 
 	m, err := Generate(
-		"foo",
-		[]ast.Bind{
-			ast.NewBind(functionName, ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
-		},
+		ast.NewModule(
+			"foo",
+			[]ast.Bind{
+				ast.NewBind(
+					functionName,
+					ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64()),
+				),
+			},
+		),
 	)
 	assert.Nil(t, err)
 
