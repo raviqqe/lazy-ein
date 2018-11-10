@@ -22,7 +22,11 @@ func newModuleGenerator(m llvm.Module) *moduleGenerator {
 
 func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 	for _, b := range bs {
-		g.createClosure(b.Name(), b.Lambda())
+		g.globalVariables[b.Name()] = llvm.AddGlobal(
+			g.module,
+			g.typeGenerator.GenerateClosure(b.Lambda(), g.lambdaToPayload(b.Lambda())),
+			b.Name(),
+		)
 	}
 
 	for _, b := range bs {
@@ -93,20 +97,6 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 	b.CreateRet(v)
 
 	return f, nil
-}
-
-func (g *moduleGenerator) createClosure(n string, l ast.Lambda) {
-	r := l.ResultType()
-
-	if l.IsThunk() {
-		r = types.Unbox(r)
-	}
-
-	g.globalVariables[n] = llvm.AddGlobal(
-		g.module,
-		types.NewClosure(g.lambdaToPayload(l), l.ArgumentTypes(), r).LLVMType(),
-		n,
-	)
 }
 
 func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm.Value {

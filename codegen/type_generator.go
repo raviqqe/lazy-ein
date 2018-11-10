@@ -15,6 +15,29 @@ func newTypeGenerator(m llvm.Module) typeGenerator {
 	return typeGenerator{m}
 }
 
+func (g typeGenerator) GenerateClosure(l ast.Lambda, p llvm.Type) llvm.Type {
+	r := l.ResultType()
+
+	if l.IsThunk() {
+		r = types.Unbox(r)
+	}
+
+	return llir.StructType(
+		[]llvm.Type{
+			llir.PointerType(
+				llir.FunctionType(
+					r.LLVMType(),
+					append(
+						[]llvm.Type{llir.PointerType(g.GenerateUnsizedPayload())},
+						g.generateMany(l.ArgumentTypes())...,
+					),
+				),
+			),
+			p,
+		},
+	)
+}
+
 func (g typeGenerator) GenerateUnsizedPayload() llvm.Type {
 	return g.GenerateSizedPayload(0)
 }

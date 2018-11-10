@@ -165,19 +165,14 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 	vs := make(map[string]llvm.Value, len(l.Binds()))
 
 	for _, b := range l.Binds() {
-		as := b.Lambda().ArgumentTypes()
-		r := b.Lambda().ResultType()
-
-		if b.Lambda().IsThunk() {
-			r = types.Unbox(r)
-		}
-
 		vs[b.Name()] = g.builder.CreateBitCast(
 			g.builder.CreateMalloc(
-				types.NewClosure(g.lambdaToPayload(b.Lambda()).LLVMType(), as, r).LLVMType(),
+				g.typeGenerator.GenerateClosure(b.Lambda(), g.lambdaToPayload(b.Lambda()).LLVMType()),
 				"",
 			),
-			llir.PointerType(types.NewClosure(g.typeGenerator.GenerateUnsizedPayload(), as, r).LLVMType()),
+			llir.PointerType(
+				g.typeGenerator.GenerateClosure(b.Lambda(), g.typeGenerator.GenerateUnsizedPayload()),
+			),
 			"",
 		)
 	}
