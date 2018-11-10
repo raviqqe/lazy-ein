@@ -12,7 +12,7 @@ import (
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
-var environmentOffset = reflect.PtrTo(reflect.TypeOf(42)).Size()
+var payloadOffset = reflect.PtrTo(reflect.TypeOf(42)).Size()
 
 func TestGenerate(t *testing.T) {
 	m, err := Generate(
@@ -51,9 +51,9 @@ func TestGlobalThunkForce(t *testing.T) {
 	assert.Nil(t, err)
 
 	g := e.PointerToGlobal(m.NamedGlobal(functionName))
-	p := unsafe.Pointer(uintptr(g) + environmentOffset)
+	p := unsafe.Pointer(uintptr(g) + payloadOffset)
 
-	assert.NotEqual(t, 42.0, *(*float64)(unsafe.Pointer(uintptr(g) + environmentOffset)))
+	assert.NotEqual(t, 42.0, *(*float64)(unsafe.Pointer(uintptr(g) + payloadOffset)))
 
 	assert.Equal(t, 42.0, e.RunFunction(
 		e.FindFunction(names.ToEntry(functionName)),
@@ -62,7 +62,7 @@ func TestGlobalThunkForce(t *testing.T) {
 		},
 	).Float(llvm.DoubleType()))
 
-	assert.Equal(t, 42.0, *(*float64)(unsafe.Pointer(uintptr(g) + environmentOffset)))
+	assert.Equal(t, 42.0, *(*float64)(unsafe.Pointer(uintptr(g) + payloadOffset)))
 
 	assert.Equal(t, 42.0, e.RunFunction(
 		e.FindFunction(names.ToUpdatedEntry(functionName)),

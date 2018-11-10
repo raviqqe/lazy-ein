@@ -59,7 +59,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 		llir.FunctionType(
 			t,
 			append(
-				[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
+				[]llvm.Type{types.NewPayload(0).LLVMPointerType()},
 				types.ToLLVMTypes(l.ArgumentTypes())...,
 			),
 		),
@@ -86,7 +86,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 		b.CreateStore(v, b.CreateBitCast(f.FirstParam(), llir.PointerType(v.Type()), ""))
 		b.CreateStore(
 			g.createUpdatedEntryFunction(n, t),
-			g.environmentToEntryFunctionPointer(b, f.FirstParam(), t),
+			g.payloadToEntryFunctionPointer(b, f.FirstParam(), t),
 		)
 	}
 
@@ -104,7 +104,7 @@ func (g *moduleGenerator) createClosure(n string, l ast.Lambda) {
 
 	g.globalVariables[n] = llvm.AddGlobal(
 		g.module,
-		types.NewClosure(g.lambdaToEnvironment(l), l.ArgumentTypes(), r).LLVMType(),
+		types.NewClosure(g.lambdaToPayload(l), l.ArgumentTypes(), r).LLVMType(),
 		n,
 	)
 }
@@ -113,7 +113,7 @@ func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm
 	f := llir.AddFunction(
 		g.module,
 		names.ToUpdatedEntry(n),
-		llir.FunctionType(t, []llvm.Type{types.NewEnvironment(0).LLVMPointerType()}),
+		llir.FunctionType(t, []llvm.Type{types.NewPayload(0).LLVMPointerType()}),
 	)
 	f.FirstParam().SetName(environmentArgumentName)
 
@@ -124,7 +124,7 @@ func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm
 	return f
 }
 
-func (g *moduleGenerator) environmentToEntryFunctionPointer(
+func (g *moduleGenerator) payloadToEntryFunctionPointer(
 	b llvm.Builder, v llvm.Value, t llvm.Type,
 ) llvm.Value {
 	return b.CreateGEP(
@@ -132,7 +132,7 @@ func (g *moduleGenerator) environmentToEntryFunctionPointer(
 			v,
 			llir.PointerType(
 				llir.PointerType(
-					llir.FunctionType(t, []llvm.Type{types.NewEnvironment(0).LLVMPointerType()}),
+					llir.FunctionType(t, []llvm.Type{types.NewPayload(0).LLVMPointerType()}),
 				),
 			),
 			"",
@@ -142,12 +142,12 @@ func (g *moduleGenerator) environmentToEntryFunctionPointer(
 	)
 }
 
-func (g moduleGenerator) lambdaToEnvironment(l ast.Lambda) types.Environment {
+func (g moduleGenerator) lambdaToPayload(l ast.Lambda) types.Payload {
 	if l.IsUpdatable() {
-		return types.NewEnvironment(g.typeGenerator.GetSize(types.Unbox(l.ResultType()).LLVMType()))
+		return types.NewPayload(g.typeGenerator.GetSize(types.Unbox(l.ResultType()).LLVMType()))
 	}
 
-	return types.NewEnvironment(0)
+	return types.NewPayload(0)
 }
 
 func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, l ast.Lambda) map[string]llvm.Value {

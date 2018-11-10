@@ -23,7 +23,7 @@ func forceThunk(b llvm.Builder, v llvm.Value) llvm.Value {
 		[]llvm.Value{
 			b.CreateBitCast(
 				b.CreateStructGEP(v, 1, ""),
-				types.NewEnvironment(0).LLVMPointerType(),
+				types.NewPayload(0).LLVMPointerType(),
 				"",
 			),
 		},

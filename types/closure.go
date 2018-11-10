@@ -7,13 +7,13 @@ import (
 
 // Closure is a closure type.
 type Closure struct {
-	environment Environment
+	payload Payload
 	arguments   []Type
 	result      Type
 }
 
 // NewClosure creates a new closure type.
-func NewClosure(e Environment, as []Type, r Type) Closure {
+func NewClosure(e Payload, as []Type, r Type) Closure {
 	return Closure{e, as, r}
 }
 
@@ -25,12 +25,12 @@ func (c Closure) LLVMType() llvm.Type {
 				llir.FunctionType(
 					c.result.LLVMType(),
 					append(
-						[]llvm.Type{NewEnvironment(0).LLVMPointerType()},
+						[]llvm.Type{NewPayload(0).LLVMPointerType()},
 						ToLLVMTypes(c.arguments)...,
 					),
 				),
 			),
-			c.environment.LLVMType(),
+			c.payload.LLVMType(),
 		},
 	)
 }

@@ -26,5 +26,5 @@ func (b Boxed) Content() Type {
 
 // LLVMType returns a LLVM type.
 func (b Boxed) LLVMType() llvm.Type {
-	return llir.PointerType(NewClosure(NewEnvironment(0), nil, b.content).LLVMType())
+	return llir.PointerType(NewClosure(NewPayload(0), nil, b.content).LLVMType())
 }

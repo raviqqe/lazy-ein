@@ -16,7 +16,7 @@ func TestFunctionBodyGeneratorGenerate(t *testing.T) {
 		"foo",
 		llir.FunctionType(
 			llvm.DoubleType(),
-			[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
+			[]llvm.Type{types.NewPayload(0).LLVMPointerType()},
 		),
 	)
 
@@ -33,7 +33,7 @@ func TestFunctionBodyGeneratorGenerate(t *testing.T) {
 	assert.True(t, v.IsConstant())
 }
 
-func TestFunctionBodyGeneratorLambdaToEnvironment(t *testing.T) {
+func TestFunctionBodyGeneratorLambdaToPayload(t *testing.T) {
 	for _, c := range []struct {
 		lambda ast.Lambda
 		size   int
@@ -68,7 +68,7 @@ func TestFunctionBodyGeneratorLambdaToEnvironment(t *testing.T) {
 			"foo",
 			llir.FunctionType(
 				llvm.DoubleType(),
-				[]llvm.Type{types.NewEnvironment(0).LLVMPointerType()},
+				[]llvm.Type{types.NewPayload(0).LLVMPointerType()},
 			),
 		)
 
@@ -79,7 +79,7 @@ func TestFunctionBodyGeneratorLambdaToEnvironment(t *testing.T) {
 			b,
 			nil,
 			nil,
-		).lambdaToEnvironment(c.lambda)
+		).lambdaToPayload(c.lambda)
 
 		assert.Equal(t, c.size, e.LLVMType().ArrayLength())
 	}

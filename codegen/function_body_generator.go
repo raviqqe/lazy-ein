@@ -83,7 +83,7 @@ func (g *functionBodyGenerator) generateApplication(a ast.Application) (llvm.Val
 			[]llvm.Value{
 				g.builder.CreateBitCast(
 					g.builder.CreateStructGEP(f, 1, ""),
-					types.NewEnvironment(0).LLVMPointerType(),
+					types.NewPayload(0).LLVMPointerType(),
 					"",
 				),
 			},
@@ -174,10 +174,10 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 
 		vs[b.Name()] = g.builder.CreateBitCast(
 			g.builder.CreateMalloc(
-				types.NewClosure(g.lambdaToEnvironment(b.Lambda()), as, r).LLVMType(),
+				types.NewClosure(g.lambdaToPayload(b.Lambda()), as, r).LLVMType(),
 				"",
 			),
-			llir.PointerType(types.NewClosure(types.NewEnvironment(0), as, r).LLVMType()),
+			llir.PointerType(types.NewClosure(types.NewPayload(0), as, r).LLVMType()),
 			"",
 		)
 	}
@@ -309,14 +309,14 @@ func (g *functionBodyGenerator) addVariables(vs map[string]llvm.Value) *function
 	}
 }
 
-func (g functionBodyGenerator) lambdaToEnvironment(l ast.Lambda) types.Environment {
+func (g functionBodyGenerator) lambdaToPayload(l ast.Lambda) types.Payload {
 	n := g.typeSize(g.typeGenerator.GenerateFreeVariables(l))
 
 	if m := g.typeSize(types.Unbox(l.ResultType()).LLVMType()); l.IsUpdatable() && m > n {
 		n = m
 	}
 
-	return types.NewEnvironment(n)
+	return types.NewPayload(n)
 }
 
 func (g functionBodyGenerator) typeSize(t llvm.Type) int {
