@@ -15,7 +15,7 @@ func newTypeGenerator(m llvm.Module) typeGenerator {
 	return typeGenerator{m}
 }
 
-func (g typeGenerator) GenerateFreeVariables(l ast.Lambda) llvm.Type {
+func (g typeGenerator) GenerateEnvironment(l ast.Lambda) llvm.Type {
 	return llir.StructType(g.generateMany(l.FreeVariableTypes()))
 }
 

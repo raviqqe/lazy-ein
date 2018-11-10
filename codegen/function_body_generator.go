@@ -200,7 +200,7 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 
 		e := g.builder.CreateBitCast(
 			g.builder.CreateStructGEP(p, 1, ""),
-			llir.PointerType(g.typeGenerator.GenerateFreeVariables(b.Lambda())),
+			llir.PointerType(g.typeGenerator.GenerateEnvironment(b.Lambda())),
 			"",
 		)
 
@@ -310,7 +310,7 @@ func (g *functionBodyGenerator) addVariables(vs map[string]llvm.Value) *function
 }
 
 func (g functionBodyGenerator) lambdaToPayload(l ast.Lambda) types.Payload {
-	n := g.typeSize(g.typeGenerator.GenerateFreeVariables(l))
+	n := g.typeSize(g.typeGenerator.GenerateEnvironment(l))
 
 	if m := g.typeSize(types.Unbox(l.ResultType()).LLVMType()); l.IsUpdatable() && m > n {
 		n = m

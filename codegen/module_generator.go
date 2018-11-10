@@ -155,7 +155,7 @@ func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, 
 
 	e := b.CreateBitCast(
 		f.FirstParam(),
-		llir.PointerType(g.typeGenerator.GenerateFreeVariables(l)),
+		llir.PointerType(g.typeGenerator.GenerateEnvironment(l)),
 		"",
 	)
 
