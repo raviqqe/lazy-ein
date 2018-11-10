@@ -2,7 +2,7 @@ package codegen
 
 import (
 	"github.com/raviqqe/stg/ast"
-	"github.com/raviqqe/stg/llir"
+	"github.com/raviqqe/stg/codegen/llir"
 	"github.com/raviqqe/stg/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )

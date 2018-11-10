@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/raviqqe/stg/llir"
+	"github.com/raviqqe/stg/codegen/llir"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
