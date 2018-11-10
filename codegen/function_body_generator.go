@@ -83,7 +83,7 @@ func (g *functionBodyGenerator) generateApplication(a ast.Application) (llvm.Val
 			[]llvm.Value{
 				g.builder.CreateBitCast(
 					g.builder.CreateStructGEP(f, 1, ""),
-					types.NewPayload(0).LLVMPointerType(),
+					llir.PointerType(g.typeGenerator.GenerateUnsizedPayload()),
 					"",
 				),
 			},
@@ -98,7 +98,7 @@ func (g *functionBodyGenerator) generateCase(c ast.Case) (llvm.Value, error) {
 	if err != nil {
 		return llvm.Value{}, err
 	} else if e.Type().TypeKind() == llvm.PointerTypeKind {
-		e = forceThunk(g.builder, e)
+		e = forceThunk(g.builder, e, g.typeGenerator)
 	}
 
 	vs := make([]llvm.Value, 0, len(c.Alternatives())+1)
@@ -174,10 +174,10 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 
 		vs[b.Name()] = g.builder.CreateBitCast(
 			g.builder.CreateMalloc(
-				types.NewClosure(g.lambdaToPayload(b.Lambda()), as, r).LLVMType(),
+				types.NewClosure(g.lambdaToPayload(b.Lambda()).LLVMType(), as, r).LLVMType(),
 				"",
 			),
-			llir.PointerType(types.NewClosure(types.NewPayload(0), as, r).LLVMType()),
+			llir.PointerType(types.NewClosure(g.typeGenerator.GenerateUnsizedPayload(), as, r).LLVMType()),
 			"",
 		)
 	}

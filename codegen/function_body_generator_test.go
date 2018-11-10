@@ -11,12 +11,13 @@ import (
 )
 
 func TestFunctionBodyGeneratorGenerate(t *testing.T) {
+	m := llvm.NewModule("foo")
 	f := llvm.AddFunction(
-		llvm.NewModule("foo"),
+		m,
 		"foo",
 		llir.FunctionType(
 			llvm.DoubleType(),
-			[]llvm.Type{types.NewPayload(0).LLVMPointerType()},
+			[]llvm.Type{llir.PointerType(newTypeGenerator(m).GenerateUnsizedPayload())},
 		),
 	)
 
@@ -63,12 +64,13 @@ func TestFunctionBodyGeneratorLambdaToPayload(t *testing.T) {
 			size:   0,
 		},
 	} {
+		m := llvm.NewModule("foo")
 		f := llvm.AddFunction(
-			llvm.NewModule("foo"),
+			m,
 			"foo",
 			llir.FunctionType(
 				llvm.DoubleType(),
-				[]llvm.Type{types.NewPayload(0).LLVMPointerType()},
+				[]llvm.Type{llir.PointerType(newTypeGenerator(m).GenerateUnsizedPayload())},
 			),
 		)
 

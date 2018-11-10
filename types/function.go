@@ -18,5 +18,5 @@ func NewFunction(as []Type, r Type) Function {
 
 // LLVMType returns a LLVM type.
 func (f Function) LLVMType() llvm.Type {
-	return llir.PointerType(NewClosure(NewPayload(0), f.arguments, f.result).LLVMType())
+	return llir.PointerType(NewClosure(NewPayload(0).LLVMType(), f.arguments, f.result).LLVMType())
 }

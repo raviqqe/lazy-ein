@@ -59,7 +59,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 		llir.FunctionType(
 			t,
 			append(
-				[]llvm.Type{types.NewPayload(0).LLVMPointerType()},
+				[]llvm.Type{llir.PointerType(g.typeGenerator.GenerateUnsizedPayload())},
 				types.ToLLVMTypes(l.ArgumentTypes())...,
 			),
 		),
@@ -79,7 +79,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 	} else if _, ok := l.ResultType().(types.Boxed); ok && l.IsThunk() {
 		// TODO: Steal child thunks in a thread-safe way.
 		// TODO: Use loop to unbox children recursively.
-		v = forceThunk(b, v)
+		v = forceThunk(b, v, g.typeGenerator)
 	}
 
 	if l.IsUpdatable() {
@@ -113,7 +113,7 @@ func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm
 	f := llir.AddFunction(
 		g.module,
 		names.ToUpdatedEntry(n),
-		llir.FunctionType(t, []llvm.Type{types.NewPayload(0).LLVMPointerType()}),
+		llir.FunctionType(t, []llvm.Type{llir.PointerType(g.typeGenerator.GenerateUnsizedPayload())}),
 	)
 	f.FirstParam().SetName(environmentArgumentName)
 
@@ -132,7 +132,7 @@ func (g *moduleGenerator) payloadToEntryFunctionPointer(
 			v,
 			llir.PointerType(
 				llir.PointerType(
-					llir.FunctionType(t, []llvm.Type{types.NewPayload(0).LLVMPointerType()}),
+					llir.FunctionType(t, []llvm.Type{llir.PointerType(g.typeGenerator.GenerateUnsizedPayload())}),
 				),
 			),
 			"",
@@ -142,12 +142,14 @@ func (g *moduleGenerator) payloadToEntryFunctionPointer(
 	)
 }
 
-func (g moduleGenerator) lambdaToPayload(l ast.Lambda) types.Payload {
+func (g moduleGenerator) lambdaToPayload(l ast.Lambda) llvm.Type {
 	if l.IsUpdatable() {
-		return types.NewPayload(g.typeGenerator.GetSize(types.Unbox(l.ResultType()).LLVMType()))
+		return g.typeGenerator.GenerateSizedPayload(
+			g.typeGenerator.GetSize(types.Unbox(l.ResultType()).LLVMType()),
+		)
 	}
 
-	return types.NewPayload(0)
+	return g.typeGenerator.GenerateUnsizedPayload()
 }
 
 func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, l ast.Lambda) map[string]llvm.Value {

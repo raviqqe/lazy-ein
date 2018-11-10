@@ -7,14 +7,14 @@ import (
 
 // Closure is a closure type.
 type Closure struct {
-	payload Payload
-	arguments   []Type
-	result      Type
+	payload   llvm.Type
+	arguments []Type
+	result    Type
 }
 
 // NewClosure creates a new closure type.
-func NewClosure(e Payload, as []Type, r Type) Closure {
-	return Closure{e, as, r}
+func NewClosure(p llvm.Type, as []Type, r Type) Closure {
+	return Closure{p, as, r}
 }
 
 // LLVMType returns a LLVM type.
@@ -30,7 +30,7 @@ func (c Closure) LLVMType() llvm.Type {
 					),
 				),
 			),
-			c.payload.LLVMType(),
+			c.payload,
 		},
 	)
 }

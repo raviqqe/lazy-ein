@@ -15,6 +15,14 @@ func newTypeGenerator(m llvm.Module) typeGenerator {
 	return typeGenerator{m}
 }
 
+func (g typeGenerator) GenerateUnsizedPayload() llvm.Type {
+	return g.GenerateSizedPayload(0)
+}
+
+func (g typeGenerator) GenerateSizedPayload(n int) llvm.Type {
+	return llvm.ArrayType(llvm.Int8Type(), n)
+}
+
 func (g typeGenerator) GenerateEnvironment(l ast.Lambda) llvm.Type {
 	return llir.StructType(g.generateMany(l.FreeVariableTypes()))
 }
