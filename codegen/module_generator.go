@@ -2,8 +2,8 @@ package codegen
 
 import (
 	"github.com/raviqqe/stg/ast"
-	"github.com/raviqqe/stg/codegen/names"
 	"github.com/raviqqe/stg/codegen/llir"
+	"github.com/raviqqe/stg/codegen/names"
 	"github.com/raviqqe/stg/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )
@@ -13,10 +13,11 @@ const environmentArgumentName = "environment"
 type moduleGenerator struct {
 	module          llvm.Module
 	globalVariables map[string]llvm.Value
+	typeGenerator   typeGenerator
 }
 
 func newModuleGenerator(m llvm.Module) *moduleGenerator {
-	return &moduleGenerator{m, map[string]llvm.Value{}}
+	return &moduleGenerator{m, map[string]llvm.Value{}, newTypeGenerator(m)}
 }
 
 func (g *moduleGenerator) Generate(bs []ast.Bind) error {
@@ -143,7 +144,7 @@ func (g *moduleGenerator) environmentToEntryFunctionPointer(
 
 func (g moduleGenerator) lambdaToEnvironment(l ast.Lambda) types.Environment {
 	if l.IsUpdatable() {
-		return types.NewEnvironment(typeSize(g.module, types.Unbox(l.ResultType()).LLVMType()))
+		return types.NewEnvironment(g.typeGenerator.GetSize(types.Unbox(l.ResultType()).LLVMType()))
 	}
 
 	return types.NewEnvironment(0)
@@ -154,7 +155,7 @@ func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, 
 
 	e := b.CreateBitCast(
 		f.FirstParam(),
-		llir.PointerType(lambdaToFreeVariablesStructType(l)),
+		llir.PointerType(g.typeGenerator.GenerateFreeVariables(l)),
 		"",
 	)
 

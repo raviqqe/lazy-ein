@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/raviqqe/stg/ast"
-	"github.com/raviqqe/stg/codegen/names"
 	"github.com/raviqqe/stg/codegen/llir"
+	"github.com/raviqqe/stg/codegen/names"
 	"github.com/raviqqe/stg/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )
@@ -15,6 +15,7 @@ type functionBodyGenerator struct {
 	builder       llvm.Builder
 	createLambda  func(string, ast.Lambda) (llvm.Value, error)
 	nameGenerator *names.NameGenerator
+	typeGenerator typeGenerator
 	variables     map[string]llvm.Value
 }
 
@@ -27,6 +28,7 @@ func newFunctionBodyGenerator(
 		b,
 		c,
 		names.NewNameGenerator(b.GetInsertBlock().Parent().Name()),
+		newTypeGenerator(b.GetInsertBlock().Parent().GlobalParent()),
 		vs,
 	}
 }
@@ -198,7 +200,7 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 
 		e := g.builder.CreateBitCast(
 			g.builder.CreateStructGEP(p, 1, ""),
-			llir.PointerType(lambdaToFreeVariablesStructType(b.Lambda())),
+			llir.PointerType(g.typeGenerator.GenerateFreeVariables(b.Lambda())),
 			"",
 		)
 
@@ -298,11 +300,17 @@ func (g *functionBodyGenerator) addVariables(vs map[string]llvm.Value) *function
 		vvs[k] = v
 	}
 
-	return &functionBodyGenerator{g.builder, g.createLambda, g.nameGenerator, vvs}
+	return &functionBodyGenerator{
+		g.builder,
+		g.createLambda,
+		g.nameGenerator,
+		g.typeGenerator,
+		vvs,
+	}
 }
 
 func (g functionBodyGenerator) lambdaToEnvironment(l ast.Lambda) types.Environment {
-	n := g.typeSize(lambdaToFreeVariablesStructType(l))
+	n := g.typeSize(g.typeGenerator.GenerateFreeVariables(l))
 
 	if m := g.typeSize(types.Unbox(l.ResultType()).LLVMType()); l.IsUpdatable() && m > n {
 		n = m
@@ -312,7 +320,7 @@ func (g functionBodyGenerator) lambdaToEnvironment(l ast.Lambda) types.Environme
 }
 
 func (g functionBodyGenerator) typeSize(t llvm.Type) int {
-	return typeSize(g.function().GlobalParent(), t)
+	return g.typeGenerator.GetSize(t)
 }
 
 func (g functionBodyGenerator) function() llvm.Value {
