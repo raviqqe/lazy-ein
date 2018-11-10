@@ -7,7 +7,7 @@ import (
 
 // Boxed is a boxed type.
 type Boxed struct {
-	internalType Type
+	content Type
 }
 
 // NewBoxed creates a new boxed type.
@@ -19,12 +19,12 @@ func NewBoxed(t Type) Boxed {
 	return Boxed{t}
 }
 
-// InternalType returns an internal type.
-func (b Boxed) InternalType() Type {
-	return b.internalType
+// Content returns a content type.
+func (b Boxed) Content() Type {
+	return b.content
 }
 
 // LLVMType returns a LLVM type.
 func (b Boxed) LLVMType() llvm.Type {
-	return llir.PointerType(NewClosure(NewEnvironment(0), nil, b.internalType).LLVMType())
+	return llir.PointerType(NewClosure(NewEnvironment(0), nil, b.content).LLVMType())
 }
