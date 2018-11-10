@@ -24,7 +24,7 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 	for _, b := range bs {
 		g.globalVariables[b.Name()] = llvm.AddGlobal(
 			g.module,
-			g.typeGenerator.GenerateClosure(b.Lambda(), g.lambdaToPayload(b.Lambda())),
+			g.typeGenerator.GenerateSizedClosure(b.Lambda()),
 			b.Name(),
 		)
 	}
@@ -130,16 +130,6 @@ func (g *moduleGenerator) payloadToEntryFunctionPointer(
 		[]llvm.Value{llvm.ConstIntFromString(llvm.Int32Type(), "-1", 10)},
 		"",
 	)
-}
-
-func (g moduleGenerator) lambdaToPayload(l ast.Lambda) llvm.Type {
-	if l.IsUpdatable() {
-		return g.typeGenerator.GenerateSizedPayload(
-			g.typeGenerator.GetSize(types.Unbox(l.ResultType()).LLVMType()),
-		)
-	}
-
-	return g.typeGenerator.GenerateUnsizedPayload()
 }
 
 func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, l ast.Lambda) map[string]llvm.Value {

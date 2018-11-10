@@ -7,7 +7,6 @@ import (
 	"github.com/raviqqe/stg/ast"
 	"github.com/raviqqe/stg/codegen/llir"
 	"github.com/raviqqe/stg/codegen/names"
-	"github.com/raviqqe/stg/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
@@ -167,11 +166,11 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 	for _, b := range l.Binds() {
 		vs[b.Name()] = g.builder.CreateBitCast(
 			g.builder.CreateMalloc(
-				g.typeGenerator.GenerateClosure(b.Lambda(), g.lambdaToPayload(b.Lambda()).LLVMType()),
+				g.typeGenerator.GenerateSizedClosure(b.Lambda()),
 				"",
 			),
 			llir.PointerType(
-				g.typeGenerator.GenerateClosure(b.Lambda(), g.typeGenerator.GenerateUnsizedPayload()),
+				g.typeGenerator.GenerateUnsizedClosure(b.Lambda()),
 			),
 			"",
 		)
@@ -302,20 +301,6 @@ func (g *functionBodyGenerator) addVariables(vs map[string]llvm.Value) *function
 		g.typeGenerator,
 		vvs,
 	}
-}
-
-func (g functionBodyGenerator) lambdaToPayload(l ast.Lambda) types.Payload {
-	n := g.typeSize(g.typeGenerator.GenerateEnvironment(l))
-
-	if m := g.typeSize(types.Unbox(l.ResultType()).LLVMType()); l.IsUpdatable() && m > n {
-		n = m
-	}
-
-	return types.NewPayload(n)
-}
-
-func (g functionBodyGenerator) typeSize(t llvm.Type) int {
-	return g.typeGenerator.GetSize(t)
 }
 
 func (g functionBodyGenerator) function() llvm.Value {

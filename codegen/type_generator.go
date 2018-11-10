@@ -15,7 +15,15 @@ func newTypeGenerator(m llvm.Module) typeGenerator {
 	return typeGenerator{m}
 }
 
-func (g typeGenerator) GenerateClosure(l ast.Lambda, p llvm.Type) llvm.Type {
+func (g typeGenerator) GenerateSizedClosure(l ast.Lambda) llvm.Type {
+	return g.generateClosure(l, g.GenerateSizedPayload(l))
+}
+
+func (g typeGenerator) GenerateUnsizedClosure(l ast.Lambda) llvm.Type {
+	return g.generateClosure(l, g.GenerateUnsizedPayload())
+}
+
+func (g typeGenerator) generateClosure(l ast.Lambda, p llvm.Type) llvm.Type {
 	r := l.ResultType()
 
 	if l.IsThunk() {
@@ -38,11 +46,21 @@ func (g typeGenerator) GenerateClosure(l ast.Lambda, p llvm.Type) llvm.Type {
 	)
 }
 
-func (g typeGenerator) GenerateUnsizedPayload() llvm.Type {
-	return g.GenerateSizedPayload(0)
+func (g typeGenerator) GenerateSizedPayload(l ast.Lambda) llvm.Type {
+	n := g.GetSize(g.GenerateEnvironment(l))
+
+	if m := g.GetSize(types.Unbox(l.ResultType()).LLVMType()); l.IsUpdatable() && m > n {
+		n = m
+	}
+
+	return g.generatePayload(n)
 }
 
-func (g typeGenerator) GenerateSizedPayload(n int) llvm.Type {
+func (g typeGenerator) GenerateUnsizedPayload() llvm.Type {
+	return g.generatePayload(0)
+}
+
+func (g typeGenerator) generatePayload(n int) llvm.Type {
 	return llvm.ArrayType(llvm.Int8Type(), n)
 }
 
