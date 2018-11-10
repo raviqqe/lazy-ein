@@ -47,9 +47,9 @@ func (g typeGenerator) generateClosure(l ast.Lambda, p llvm.Type) llvm.Type {
 }
 
 func (g typeGenerator) GenerateSizedPayload(l ast.Lambda) llvm.Type {
-	n := g.GetSize(g.GenerateEnvironment(l))
+	n := g.getSize(g.GenerateEnvironment(l))
 
-	if m := g.GetSize(types.Unbox(l.ResultType()).LLVMType()); l.IsUpdatable() && m > n {
+	if m := g.getSize(types.Unbox(l.ResultType()).LLVMType()); l.IsUpdatable() && m > n {
 		n = m
 	}
 
@@ -78,6 +78,6 @@ func (typeGenerator) generateMany(ts []types.Type) []llvm.Type {
 	return tts
 }
 
-func (g typeGenerator) GetSize(t llvm.Type) int {
+func (g typeGenerator) getSize(t llvm.Type) int {
 	return int(llvm.NewTargetData(g.module.DataLayout()).TypeAllocSize(t))
 }
