@@ -51,10 +51,10 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 }
 
 func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, error) {
-	t := l.ResultType().LLVMType()
+	t := g.typeGenerator.Generate(l.ResultType())
 
 	if l.IsThunk() {
-		t = types.Unbox(l.ResultType()).LLVMType()
+		t = g.typeGenerator.Generate(types.Unbox(l.ResultType()))
 	}
 
 	f := llir.AddFunction(
@@ -64,7 +64,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 			t,
 			append(
 				[]llvm.Type{llir.PointerType(g.typeGenerator.GenerateUnsizedPayload())},
-				types.ToLLVMTypes(l.ArgumentTypes())...,
+				g.typeGenerator.generateMany(l.ArgumentTypes())...,
 			),
 		),
 	)

@@ -15,41 +15,66 @@ func newTypeGenerator(m llvm.Module) typeGenerator {
 	return typeGenerator{m}
 }
 
+func (g typeGenerator) Generate(t types.Type) llvm.Type {
+	switch t := t.(type) {
+	case types.Boxed:
+		return llir.PointerType(
+			g.generateClosure(g.GenerateUnsizedPayload(), g.generateEntryFunction(nil, t.Content())),
+		)
+	case types.Float64:
+		return llvm.DoubleType()
+	case types.Function:
+		return llir.PointerType(
+			g.generateClosure(
+				g.GenerateUnsizedPayload(),
+				g.generateEntryFunction(t.Arguments(), t.Result()),
+			),
+		)
+	}
+
+	panic("unreachable")
+}
+
 func (g typeGenerator) GenerateSizedClosure(l ast.Lambda) llvm.Type {
-	return g.generateClosure(l, g.GenerateSizedPayload(l))
+	return g.generateLambdaClosure(l, g.GenerateSizedPayload(l))
 }
 
 func (g typeGenerator) GenerateUnsizedClosure(l ast.Lambda) llvm.Type {
-	return g.generateClosure(l, g.GenerateUnsizedPayload())
+	return g.generateLambdaClosure(l, g.GenerateUnsizedPayload())
 }
 
-func (g typeGenerator) generateClosure(l ast.Lambda, p llvm.Type) llvm.Type {
+func (g typeGenerator) generateLambdaClosure(l ast.Lambda, p llvm.Type) llvm.Type {
+	return g.generateClosure(p, g.GenerateLambdaEntryFunction(l))
+}
+
+func (g typeGenerator) generateClosure(p llvm.Type, f llvm.Type) llvm.Type {
+	return llir.StructType([]llvm.Type{llir.PointerType(f), p})
+}
+
+func (g typeGenerator) GenerateLambdaEntryFunction(l ast.Lambda) llvm.Type {
 	r := l.ResultType()
 
 	if l.IsThunk() {
 		r = types.Unbox(r)
 	}
 
-	return llir.StructType(
-		[]llvm.Type{
-			llir.PointerType(
-				llir.FunctionType(
-					r.LLVMType(),
-					append(
-						[]llvm.Type{llir.PointerType(g.GenerateUnsizedPayload())},
-						g.generateMany(l.ArgumentTypes())...,
-					),
-				),
-			),
-			p,
-		},
+	return g.generateEntryFunction(l.ArgumentTypes(), r)
+}
+
+func (g typeGenerator) generateEntryFunction(as []types.Type, r types.Type) llvm.Type {
+	return llir.FunctionType(
+		g.Generate(r),
+		append(
+			[]llvm.Type{llir.PointerType(g.GenerateUnsizedPayload())},
+			g.generateMany(as)...,
+		),
 	)
 }
 
 func (g typeGenerator) GenerateSizedPayload(l ast.Lambda) llvm.Type {
 	n := g.getSize(g.GenerateEnvironment(l))
 
-	if m := g.getSize(types.Unbox(l.ResultType()).LLVMType()); l.IsUpdatable() && m > n {
+	if m := g.getSize(g.Generate(types.Unbox(l.ResultType()))); l.IsUpdatable() && m > n {
 		n = m
 	}
 
@@ -68,11 +93,11 @@ func (g typeGenerator) GenerateEnvironment(l ast.Lambda) llvm.Type {
 	return llir.StructType(g.generateMany(l.FreeVariableTypes()))
 }
 
-func (typeGenerator) generateMany(ts []types.Type) []llvm.Type {
+func (g typeGenerator) generateMany(ts []types.Type) []llvm.Type {
 	tts := make([]llvm.Type, 0, len(ts))
 
 	for _, t := range ts {
-		tts = append(tts, t.LLVMType())
+		tts = append(tts, g.Generate(t))
 	}
 
 	return tts
