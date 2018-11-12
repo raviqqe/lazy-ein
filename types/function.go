@@ -1,10 +1,5 @@
 package types
 
-import (
-	"github.com/raviqqe/stg/codegen/llir"
-	"llvm.org/llvm/bindings/go/llvm"
-)
-
 // Function is a function type.
 type Function struct {
 	arguments []Type
@@ -26,7 +21,4 @@ func (f Function) Result() Type {
 	return f.result
 }
 
-// LLVMType returns a LLVM type.
-func (f Function) LLVMType() llvm.Type {
-	return llir.PointerType(NewClosure(NewPayload(0).LLVMType(), f.arguments, f.result).LLVMType())
-}
+func (Function) isType() {}

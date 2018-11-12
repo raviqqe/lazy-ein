@@ -1,10 +1,5 @@
 package types
 
-import (
-	"github.com/raviqqe/stg/codegen/llir"
-	"llvm.org/llvm/bindings/go/llvm"
-)
-
 // Boxed is a boxed type.
 type Boxed struct {
 	content Type
@@ -24,7 +19,4 @@ func (b Boxed) Content() Type {
 	return b.content
 }
 
-// LLVMType returns a LLVM type.
-func (b Boxed) LLVMType() llvm.Type {
-	return llir.PointerType(NewClosure(NewPayload(0).LLVMType(), nil, b.content).LLVMType())
-}
+func (Boxed) isType() {}
