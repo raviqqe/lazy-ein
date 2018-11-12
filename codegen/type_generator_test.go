@@ -42,7 +42,7 @@ func TestTypeGeneratorGenerateSizedPayload(t *testing.T) {
 		assert.Equal(
 			t,
 			c.size,
-			newTypeGenerator(llvm.NewModule("foo")).GenerateSizedPayload(c.lambda).ArrayLength(),
+			newTypeGenerator(llvm.NewModule("foo")).generateSizedPayload(c.lambda).ArrayLength(),
 		)
 	}
 }

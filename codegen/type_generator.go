@@ -36,7 +36,7 @@ func (g typeGenerator) Generate(t types.Type) llvm.Type {
 }
 
 func (g typeGenerator) GenerateSizedClosure(l ast.Lambda) llvm.Type {
-	return g.generateLambdaClosure(l, g.GenerateSizedPayload(l))
+	return g.generateLambdaClosure(l, g.generateSizedPayload(l))
 }
 
 func (g typeGenerator) GenerateUnsizedClosure(l ast.Lambda) llvm.Type {
@@ -71,7 +71,7 @@ func (g typeGenerator) generateEntryFunction(as []types.Type, r types.Type) llvm
 	)
 }
 
-func (g typeGenerator) GenerateSizedPayload(l ast.Lambda) llvm.Type {
+func (g typeGenerator) generateSizedPayload(l ast.Lambda) llvm.Type {
 	n := g.getSize(g.GenerateEnvironment(l))
 
 	if m := g.getSize(g.Generate(types.Unbox(l.ResultType()))); l.IsUpdatable() && m > n {

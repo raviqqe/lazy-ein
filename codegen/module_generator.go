@@ -51,22 +51,10 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 }
 
 func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, error) {
-	t := g.typeGenerator.Generate(l.ResultType())
-
-	if l.IsThunk() {
-		t = g.typeGenerator.Generate(types.Unbox(l.ResultType()))
-	}
-
 	f := llir.AddFunction(
 		g.module,
 		names.ToEntry(n),
-		llir.FunctionType(
-			t,
-			append(
-				[]llvm.Type{llir.PointerType(g.typeGenerator.GenerateUnsizedPayload())},
-				g.typeGenerator.generateMany(l.ArgumentTypes())...,
-			),
-		),
+		g.typeGenerator.GenerateLambdaEntryFunction(l),
 	)
 
 	b := llvm.NewBuilder()
@@ -89,8 +77,12 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 	if l.IsUpdatable() {
 		b.CreateStore(v, b.CreateBitCast(f.FirstParam(), llir.PointerType(v.Type()), ""))
 		b.CreateStore(
-			g.createUpdatedEntryFunction(n, t),
-			g.payloadToEntryFunctionPointer(b, f.FirstParam(), t),
+			g.createUpdatedEntryFunction(n, f.Type().ElementType()),
+			b.CreateGEP(
+				b.CreateBitCast(f.FirstParam(), llir.PointerType(f.Type()), ""),
+				[]llvm.Value{llvm.ConstIntFromString(llvm.Int32Type(), "-1", 10)},
+				"",
+			),
 		)
 	}
 
@@ -100,36 +92,21 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 }
 
 func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm.Value {
-	f := llir.AddFunction(
-		g.module,
-		names.ToUpdatedEntry(n),
-		llir.FunctionType(t, []llvm.Type{llir.PointerType(g.typeGenerator.GenerateUnsizedPayload())}),
-	)
+	f := llir.AddFunction(g.module, names.ToUpdatedEntry(n), t)
 	f.FirstParam().SetName(environmentArgumentName)
 
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
-	b.CreateRet(b.CreateLoad(b.CreateBitCast(f.FirstParam(), llir.PointerType(t), ""), ""))
-
-	return f
-}
-
-func (g *moduleGenerator) payloadToEntryFunctionPointer(
-	b llvm.Builder, v llvm.Value, t llvm.Type,
-) llvm.Value {
-	return b.CreateGEP(
-		b.CreateBitCast(
-			v,
-			llir.PointerType(
-				llir.PointerType(
-					llir.FunctionType(t, []llvm.Type{llir.PointerType(g.typeGenerator.GenerateUnsizedPayload())}),
-				),
-			),
+	b.CreateRet(
+		b.CreateLoad(
+			b.CreateBitCast(
+				f.FirstParam(), llir.PointerType(f.Type().ElementType().ReturnType()),
+				""),
 			"",
 		),
-		[]llvm.Value{llvm.ConstIntFromString(llvm.Int32Type(), "-1", 10)},
-		"",
 	)
+
+	return f
 }
 
 func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, l ast.Lambda) map[string]llvm.Value {
