@@ -16,8 +16,18 @@ type moduleGenerator struct {
 	typeGenerator   typeGenerator
 }
 
-func newModuleGenerator(m llvm.Module) *moduleGenerator {
-	return &moduleGenerator{m, map[string]llvm.Value{}, newTypeGenerator(m)}
+func newModuleGenerator(m llvm.Module, ds []ast.ConstructorDefinition) *moduleGenerator {
+	vs := make(map[string]llvm.Value, len(ds))
+
+	for _, d := range ds {
+		v := llvm.AddGlobal(m, llvm.Int32Type(), d.Name())
+		v.SetInitializer(llvm.ConstInt(llvm.Int32Type(), uint64(d.Tag()), false))
+		v.SetGlobalConstant(true)
+		v.SetUnnamedAddr(true)
+		vs[d.Name()] = v
+	}
+
+	return &moduleGenerator{m, vs, newTypeGenerator(m)}
 }
 
 func (g *moduleGenerator) Generate(bs []ast.Bind) error {

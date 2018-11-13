@@ -18,6 +18,7 @@ func TestGenerate(t *testing.T) {
 	m, err := Generate(
 		ast.NewModule(
 			"foo",
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"foo",
@@ -37,6 +38,7 @@ func TestGlobalThunkForce(t *testing.T) {
 	m, err := Generate(
 		ast.NewModule(
 			"foo",
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					functionName,

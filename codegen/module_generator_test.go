@@ -11,7 +11,14 @@ import (
 )
 
 func TestNewModuleGenerator(t *testing.T) {
-	newModuleGenerator(llvm.NewModule("foo"))
+	newModuleGenerator(llvm.NewModule("foo"), nil)
+}
+
+func TestNewModuleGeneratorWithConstructorDefinitions(t *testing.T) {
+	newModuleGenerator(
+		llvm.NewModule("foo"),
+		[]ast.ConstructorDefinition{ast.NewConstructorDefinition("foo", 0)},
+	)
 }
 
 func TestModuleGeneratorGenerate(t *testing.T) {
@@ -336,14 +343,14 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 			),
 		},
 	} {
-		assert.Nil(t, newModuleGenerator(llvm.NewModule("foo")).Generate(bs))
+		assert.Nil(t, newModuleGenerator(llvm.NewModule("foo"), nil).Generate(bs))
 	}
 }
 
 func TestModuleGeneratorGenerateWithGlobalFunctionsReturningBoxedValues(t *testing.T) {
 	m := llvm.NewModule("foo")
 
-	err := newModuleGenerator(m).Generate(
+	err := newModuleGenerator(m, nil).Generate(
 		[]ast.Bind{
 			ast.NewBind(
 				"foo",
@@ -370,7 +377,7 @@ func TestModuleGeneratorGenerateWithGlobalFunctionsReturningBoxedValues(t *testi
 func TestModuleGeneratorGenerateWithLocalFunctionsReturningBoxedValues(t *testing.T) {
 	m := llvm.NewModule("foo")
 
-	err := newModuleGenerator(m).Generate(
+	err := newModuleGenerator(m, nil).Generate(
 		[]ast.Bind{
 			ast.NewBind(
 				"foo",
