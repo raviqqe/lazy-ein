@@ -16,18 +16,47 @@ type moduleGenerator struct {
 	typeGenerator   typeGenerator
 }
 
-func newModuleGenerator(m llvm.Module, ds []ast.ConstructorDefinition) *moduleGenerator {
-	vs := make(map[string]llvm.Value, len(ds))
+func newModuleGenerator(m llvm.Module, ds []ast.ConstructorDefinition) (*moduleGenerator, error) {
+	g := newTypeGenerator(m)
+	cs := make(map[string]llvm.Value, len(ds))
 
 	for _, d := range ds {
-		v := llvm.AddGlobal(m, llvm.Int32Type(), d.Name())
-		v.SetInitializer(llvm.ConstInt(llvm.Int32Type(), uint64(d.Tag()), false))
-		v.SetGlobalConstant(true)
-		v.SetUnnamedAddr(true)
-		vs[d.Name()] = v
+		f := llvm.AddFunction(m, d.Name(), g.GenerateConstructorFunction(d.Type(), d.Index()))
+
+		b := llvm.NewBuilder()
+		b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
+
+		if len(d.Type().Constructors()) == 1 {
+			b.CreateAggregateRet(f.Params())
+		} else {
+			p := b.CreateAlloca(f.Type().ElementType().ReturnType(), "")
+
+			b.CreateStore(
+				llvm.ConstInt(llvm.Int32Type(), uint64(d.Index()), false),
+				b.CreateStructGEP(p, 0, ""),
+			)
+
+			pp := b.CreateBitCast(
+				b.CreateStructGEP(p, 1, ""),
+				llir.PointerType(g.GenerateConstructorElements(d.Type().Constructors()[d.Index()])),
+				"",
+			)
+
+			for i, v := range f.Params() {
+				b.CreateStore(v, b.CreateStructGEP(pp, i, ""))
+			}
+
+			b.CreateRet(b.CreateLoad(p, ""))
+		}
+
+		if err := llvm.VerifyFunction(f, llvm.AbortProcessAction); err != nil {
+			return nil, err
+		}
+
+		cs[d.Name()] = f
 	}
 
-	return &moduleGenerator{m, vs, newTypeGenerator(m)}
+	return &moduleGenerator{m, cs, g}, nil
 }
 
 func (g *moduleGenerator) Generate(bs []ast.Bind) error {

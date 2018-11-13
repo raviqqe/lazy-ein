@@ -8,8 +8,11 @@ import (
 // Generate generates a code for a module.
 func Generate(m ast.Module) (llvm.Module, error) {
 	mm := llvm.NewModule(m.Name())
+	g, err := newModuleGenerator(mm, m.ConstructorDefinitions())
 
-	if err := newModuleGenerator(mm, m.ConstructorDefinitions()).Generate(m.Binds()); err != nil {
+	if err != nil {
+		return llvm.Module{}, err
+	} else if err := g.Generate(m.Binds()); err != nil {
 		return llvm.Module{}, err
 	}
 
