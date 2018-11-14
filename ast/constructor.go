@@ -20,3 +20,5 @@ func (c Constructor) Name() string {
 func (c Constructor) Arguments() []Atom {
 	return c.arguments
 }
+
+func (Constructor) isExpression() {}

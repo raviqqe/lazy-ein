@@ -42,6 +42,8 @@ func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value
 		return g.generateApplication(e)
 	case ast.Case:
 		return g.generateCase(e)
+	case ast.Constructor:
+		return g.generateConstructor(e)
 	case ast.Let:
 		return g.generateLet(e)
 	case ast.Literal:
@@ -158,6 +160,28 @@ func (g *functionBodyGenerator) generateCase(c ast.Case) (llvm.Value, error) {
 	v.AddIncoming(vs, bs)
 
 	return v, nil
+}
+
+func (g *functionBodyGenerator) generateConstructor(c ast.Constructor) (llvm.Value, error) {
+	v, err := g.resolveName(c.Name())
+
+	if err != nil {
+		return llvm.Value{}, err
+	}
+
+	vs := make([]llvm.Value, 0, len(c.Arguments()))
+
+	for _, a := range c.Arguments() {
+		v, err := g.generateAtom(a)
+
+		if err != nil {
+			return llvm.Value{}, err
+		}
+
+		vs = append(vs, v)
+	}
+
+	return llir.CreateCall(g.builder, v, vs), nil
 }
 
 func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {

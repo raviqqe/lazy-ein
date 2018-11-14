@@ -442,3 +442,68 @@ func TestModuleGeneratorGenerateWithLocalFunctionsReturningBoxedValues(t *testin
 		).Type().ElementType().ReturnType().TypeKind(),
 	)
 }
+
+func TestModuleGeneratorGenerateWithAlgebraicTypes(t *testing.T) {
+	tt := types.NewAlgebraic(
+		[]types.Constructor{types.NewConstructor([]types.Type{types.NewFloat64()})},
+	)
+
+	m := ast.NewModule(
+		"foo",
+		[]ast.ConstructorDefinition{
+			ast.NewConstructorDefinition("constructor", tt, 0),
+		},
+		[]ast.Bind{
+			ast.NewBind(
+				"foo",
+				ast.NewLambda(
+					nil,
+					true,
+					nil,
+					ast.NewConstructor("constructor", []ast.Atom{ast.NewFloat64(42)}),
+					tt,
+				),
+			),
+		},
+	)
+
+	g, err := newModuleGenerator(llvm.NewModule(m.Name()), m.ConstructorDefinitions())
+	assert.Nil(t, err)
+	assert.Nil(t, g.Generate(m.Binds()))
+}
+
+func TestModuleGeneratorGenerateWithAlgebraicTypesOfMultipleConstructors(t *testing.T) {
+	tt := types.NewAlgebraic(
+		[]types.Constructor{
+			types.NewConstructor([]types.Type{types.NewFloat64()}),
+			types.NewConstructor([]types.Type{types.NewFloat64(), types.NewFloat64()}),
+		},
+	)
+
+	m := ast.NewModule(
+		"foo",
+		[]ast.ConstructorDefinition{
+			ast.NewConstructorDefinition("constructor1", tt, 0),
+			ast.NewConstructorDefinition("constructor2", tt, 1),
+		},
+		[]ast.Bind{
+			ast.NewBind(
+				"foo",
+				ast.NewLambda(
+					nil,
+					true,
+					nil,
+					ast.NewConstructor(
+						"constructor2",
+						[]ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)},
+					),
+					tt,
+				),
+			),
+		},
+	)
+
+	g, err := newModuleGenerator(llvm.NewModule(m.Name()), m.ConstructorDefinitions())
+	assert.Nil(t, err)
+	assert.Nil(t, g.Generate(m.Binds()))
+}
