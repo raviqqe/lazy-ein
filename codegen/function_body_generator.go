@@ -130,27 +130,25 @@ func (g *functionBodyGenerator) generateCase(c ast.Case) (llvm.Value, error) {
 
 	g.builder.SetInsertPointAtEnd(d)
 
-	v := llvm.ConstNull(t)
-
 	if a, ok := c.DefaultAlternative(); ok {
-		v, err = g.addVariables(
+		v, err := g.addVariables(
 			map[string]llvm.Value{a.Variable(): e},
 		).generateExpression(a.Expression())
 
 		if err != nil {
 			return llvm.Value{}, err
 		}
+
+		g.builder.CreateBr(p)
+
+		vs = append(vs, v)
+		bs = append(bs, d)
 	} else {
 		g.builder.CreateUnreachable()
 	}
 
-	g.builder.CreateBr(p)
-
-	vs = append(vs, v)
-	bs = append(bs, d)
-
 	g.builder.SetInsertPointAtEnd(p)
-	v = g.builder.CreatePHI(t, "")
+	v := g.builder.CreatePHI(t, "")
 	v.AddIncoming(vs, bs)
 
 	return v, nil

@@ -327,7 +327,7 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
-		// Case expressions
+		// Primitive case expressions
 		{
 			ast.NewBind(
 				"foo",
@@ -360,6 +360,24 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 							ast.NewPrimitiveAlternative(ast.NewFloat64(42), ast.NewFloat64(0)),
 						),
 						ast.NewDefaultAlternative("x", ast.NewApplication(ast.NewVariable("x"), nil)),
+					),
+					types.NewFloat64(),
+				),
+			),
+		},
+		// Primitive case expressions without default cases
+		{
+			ast.NewBind(
+				"foo",
+				ast.NewLambda(
+					nil,
+					true,
+					nil,
+					ast.NewCaseWithoutDefault(
+						ast.NewFloat64(42),
+						ast.NewPrimitiveAlternatives(
+							ast.NewPrimitiveAlternative(ast.NewFloat64(42), ast.NewFloat64(0)),
+						),
 					),
 					types.NewFloat64(),
 				),
