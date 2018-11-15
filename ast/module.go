@@ -7,7 +7,7 @@ type Module struct {
 	binds                  []Bind
 }
 
-// NewModule creates a new module.
+// NewModule creates a module.
 func NewModule(n string, ds []ConstructorDefinition, bs []Bind) Module {
 	return Module{n, ds, bs}
 }

@@ -7,12 +7,12 @@ type Case struct {
 	defaultAlternative DefaultAlternative
 }
 
-// NewCase creates a new case expression.
+// NewCase creates a case expression.
 func NewCase(e Expression, as []Alternative, a DefaultAlternative) Case {
 	return Case{e, as, a}
 }
 
-// NewCaseWithoutDefault creates a new case expression.
+// NewCaseWithoutDefault creates a case expression.
 func NewCaseWithoutDefault(e Expression, as []Alternative) Case {
 	return Case{e, as, DefaultAlternative{}}
 }

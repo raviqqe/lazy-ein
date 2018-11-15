@@ -6,7 +6,7 @@ type PrimitiveAlternative struct {
 	expression Expression
 }
 
-// NewPrimitiveAlternative creates a new primitive alternative.
+// NewPrimitiveAlternative creates a primitive alternative.
 func NewPrimitiveAlternative(l Literal, e Expression) PrimitiveAlternative {
 	return PrimitiveAlternative{l, e}
 }

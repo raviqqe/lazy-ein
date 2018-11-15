@@ -8,7 +8,7 @@ type Argument struct {
 	typ  types.Type
 }
 
-// NewArgument creates a new argument.
+// NewArgument creates an argument.
 func NewArgument(n string, t types.Type) Argument {
 	return Argument{n, t}
 }

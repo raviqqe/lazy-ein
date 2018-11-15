@@ -6,7 +6,7 @@ type Let struct {
 	expression Expression
 }
 
-// NewLet creates a new let expression.
+// NewLet creates a let expression.
 func NewLet(bs []Bind, e Expression) Let {
 	return Let{bs, e}
 }

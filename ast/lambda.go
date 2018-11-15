@@ -11,7 +11,7 @@ type Lambda struct {
 	updatable     bool
 }
 
-// NewLambda creates a new lambda form.
+// NewLambda creates a lambda form.
 func NewLambda(vs []Argument, u bool, as []Argument, e Expression, t types.Type) Lambda {
 	return Lambda{as, e, t, vs, u}
 }

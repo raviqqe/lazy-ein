@@ -20,7 +20,7 @@ type PrimitiveOperation struct {
 	arguments []Atom
 }
 
-// NewPrimitiveOperation creates a new primitive operation.
+// NewPrimitiveOperation creates a primitive operation.
 func NewPrimitiveOperation(p Primitive, as []Atom) PrimitiveOperation {
 	return PrimitiveOperation{p, as}
 }

@@ -6,7 +6,7 @@ type DefaultAlternative struct {
 	expression Expression
 }
 
-// NewDefaultAlternative creates a new default alternative.
+// NewDefaultAlternative creates a default alternative.
 func NewDefaultAlternative(s string, e Expression) DefaultAlternative {
 	return DefaultAlternative{s, e}
 }

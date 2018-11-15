@@ -6,7 +6,7 @@ type Bind struct {
 	lambda Lambda
 }
 
-// NewBind creates a new bind statement.
+// NewBind creates a bind statement.
 func NewBind(n string, l Lambda) Bind {
 	return Bind{n, l}
 }

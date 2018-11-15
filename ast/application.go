@@ -6,7 +6,7 @@ type Application struct {
 	arguments []Atom
 }
 
-// NewApplication creates a new application.
+// NewApplication creates an application.
 func NewApplication(v Variable, as []Atom) Application {
 	return Application{v, as}
 }
