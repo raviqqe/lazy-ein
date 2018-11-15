@@ -3,17 +3,17 @@ package ast
 // Case is a case expression.
 type Case struct {
 	expression         Expression
-	alternatives       []Alternative
+	alternatives       Alternatives
 	defaultAlternative DefaultAlternative
 }
 
 // NewCase creates a case expression.
-func NewCase(e Expression, as []Alternative, a DefaultAlternative) Case {
+func NewCase(e Expression, as Alternatives, a DefaultAlternative) Case {
 	return Case{e, as, a}
 }
 
 // NewCaseWithoutDefault creates a case expression.
-func NewCaseWithoutDefault(e Expression, as []Alternative) Case {
+func NewCaseWithoutDefault(e Expression, as Alternatives) Case {
 	return Case{e, as, DefaultAlternative{}}
 }
 
@@ -24,7 +24,7 @@ func (c Case) Expression() Expression {
 
 // Alternatives returns alternatives.
 func (c Case) Alternatives() []Alternative {
-	return c.alternatives
+	return c.alternatives.toSlice()
 }
 
 // DefaultAlternative returns a default alternative.

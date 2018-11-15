@@ -21,4 +21,4 @@ func (a PrimitiveAlternative) Expression() Expression {
 	return a.expression
 }
 
-func (a PrimitiveAlternative) isAlternative() {}
+func (PrimitiveAlternative) isAlternative() {}

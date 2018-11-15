@@ -337,7 +337,9 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 					nil,
 					ast.NewCase(
 						ast.NewFloat64(42),
-						[]ast.Alternative{ast.NewPrimitiveAlternative(ast.NewFloat64(42), ast.NewFloat64(0))},
+						ast.NewPrimitiveAlternatives(
+							ast.NewPrimitiveAlternative(ast.NewFloat64(42), ast.NewFloat64(0)),
+						),
 						ast.NewDefaultAlternative("x", ast.NewApplication(ast.NewVariable("x"), nil)),
 					),
 					types.NewFloat64(),
@@ -354,7 +356,9 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 					[]ast.Argument{ast.NewArgument("x", types.NewBoxed(types.NewFloat64()))},
 					ast.NewCase(
 						ast.NewApplication(ast.NewVariable("x"), nil),
-						[]ast.Alternative{ast.NewPrimitiveAlternative(ast.NewFloat64(42), ast.NewFloat64(0))},
+						ast.NewPrimitiveAlternatives(
+							ast.NewPrimitiveAlternative(ast.NewFloat64(42), ast.NewFloat64(0)),
+						),
 						ast.NewDefaultAlternative("x", ast.NewApplication(ast.NewVariable("x"), nil)),
 					),
 					types.NewFloat64(),
