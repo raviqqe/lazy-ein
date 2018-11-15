@@ -65,16 +65,10 @@ func (g *functionBodyGenerator) generateApplication(a ast.Application) (llvm.Val
 		return f, nil
 	}
 
-	vs := make([]llvm.Value, 0, len(a.Arguments()))
+	vs, err := g.generateAtoms(a.Arguments())
 
-	for _, a := range a.Arguments() {
-		v, err := g.generateAtom(a)
-
-		if err != nil {
-			return llvm.Value{}, err
-		}
-
-		vs = append(vs, v)
+	if err != nil {
+		return llvm.Value{}, err
 	}
 
 	return llir.CreateCall(
@@ -169,16 +163,10 @@ func (g *functionBodyGenerator) generateConstructor(c ast.Constructor) (llvm.Val
 		return llvm.Value{}, err
 	}
 
-	vs := make([]llvm.Value, 0, len(c.Arguments()))
+	vs, err := g.generateAtoms(c.Arguments())
 
-	for _, a := range c.Arguments() {
-		v, err := g.generateAtom(a)
-
-		if err != nil {
-			return llvm.Value{}, err
-		}
-
-		vs = append(vs, v)
+	if err != nil {
+		return llvm.Value{}, err
 	}
 
 	return llir.CreateCall(g.builder, v, vs), nil
@@ -238,21 +226,23 @@ func (g *functionBodyGenerator) generateLiteral(l ast.Literal) llvm.Value {
 }
 
 func (g *functionBodyGenerator) generatePrimitiveOperation(o ast.PrimitiveOperation) (llvm.Value, error) {
-	l, r, err := g.generatePrimitiveArguments(o.Arguments())
+	vs, err := g.generateAtoms(o.Arguments())
 
 	if err != nil {
 		return llvm.Value{}, err
+	} else if len(vs) != 2 {
+		return llvm.Value{}, errors.New("invalid number of arguments to a binary primitive operation")
 	}
 
 	switch o.Primitive() {
 	case ast.AddFloat64:
-		return g.builder.CreateFAdd(l, r, ""), nil
+		return g.builder.CreateFAdd(vs[0], vs[1], ""), nil
 	case ast.SubtractFloat64:
-		return g.builder.CreateFSub(l, r, ""), nil
+		return g.builder.CreateFSub(vs[0], vs[1], ""), nil
 	case ast.MultiplyFloat64:
-		return g.builder.CreateFMul(l, r, ""), nil
+		return g.builder.CreateFMul(vs[0], vs[1], ""), nil
 	case ast.DivideFloat64:
-		return g.builder.CreateFDiv(l, r, ""), nil
+		return g.builder.CreateFDiv(vs[0], vs[1], ""), nil
 	}
 
 	panic("unreachable")
@@ -277,26 +267,20 @@ func (g *functionBodyGenerator) generateAtom(a ast.Atom) (llvm.Value, error) {
 	}
 }
 
-func (g *functionBodyGenerator) generatePrimitiveArguments(as []ast.Atom) (llvm.Value, llvm.Value, error) {
-	if len(as) != 2 {
-		return llvm.Value{}, llvm.Value{}, errors.New(
-			"invalid number of arguments to a binary primitive operation",
-		)
+func (g *functionBodyGenerator) generateAtoms(as []ast.Atom) ([]llvm.Value, error) {
+	vs := make([]llvm.Value, 0, len(as))
+
+	for _, a := range as {
+		v, err := g.generateAtom(a)
+
+		if err != nil {
+			return nil, err
+		}
+
+		vs = append(vs, v)
 	}
 
-	v, err := g.generateAtom(as[0])
-
-	if err != nil {
-		return llvm.Value{}, llvm.Value{}, err
-	}
-
-	vv, err := g.generateAtom(as[1])
-
-	if err != nil {
-		return llvm.Value{}, llvm.Value{}, err
-	}
-
-	return v, vv, nil
+	return vs, nil
 }
 
 func (g *functionBodyGenerator) addVariables(vs map[string]llvm.Value) *functionBodyGenerator {
