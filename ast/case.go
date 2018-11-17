@@ -36,4 +36,10 @@ func (c Case) DefaultAlternative() (DefaultAlternative, bool) {
 	return c.defaultAlternative, true
 }
 
+// IsAlgebraic returns true if a case expression is algebraic.
+func (c Case) IsAlgebraic() bool {
+	_, ok := c.alternatives.(AlgebraicAlternatives)
+	return ok
+}
+
 func (c Case) isExpression() {}
