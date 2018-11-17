@@ -18,21 +18,19 @@ func newTypeGenerator(m llvm.Module) typeGenerator {
 func (g typeGenerator) Generate(t types.Type) llvm.Type {
 	switch t := t.(type) {
 	case types.Algebraic:
-		tt := g.GenerateConstructorElements(t.Constructors()[0])
-
-		if len(t.Constructors()) != 1 {
-			n := 0
-
-			for _, c := range t.Constructors() {
-				if m := g.getSize(g.GenerateConstructorElements(c)); m > n {
-					n = m
-				}
-			}
-
-			tt = llir.StructType([]llvm.Type{llvm.Int32Type(), llvm.ArrayType(llvm.Int8Type(), n)})
+		if len(t.Constructors()) == 1 {
+			return g.GenerateConstructorElements(t.Constructors()[0])
 		}
 
-		return tt
+		n := 0
+
+		for _, c := range t.Constructors() {
+			if m := g.getSize(g.GenerateConstructorElements(c)); m > n {
+				n = m
+			}
+		}
+
+		return llir.StructType([]llvm.Type{llvm.Int32Type(), llvm.ArrayType(llvm.Int8Type(), n)})
 	case types.Boxed:
 		return llir.PointerType(
 			g.generateClosure(g.GenerateUnsizedPayload(), g.generateEntryFunction(nil, t.Content())),
@@ -123,8 +121,16 @@ func (g typeGenerator) GenerateConstructorElements(c types.Constructor) llvm.Typ
 	return llir.StructType(g.generateMany(c.Elements()))
 }
 
-func (g typeGenerator) GenerateConstructorFunction(t types.Algebraic, i int) llvm.Type {
+func (g typeGenerator) GenerateConstructorUnionifyFunction(t types.Algebraic, i int) llvm.Type {
 	return llvm.FunctionType(g.Generate(t), g.generateMany(t.Constructors()[i].Elements()), false)
+}
+
+func (g typeGenerator) GenerateConstructorStructifyFunction(t types.Algebraic, i int) llvm.Type {
+	return llvm.FunctionType(
+		g.GenerateConstructorElements(t.Constructors()[i]),
+		[]llvm.Type{g.Generate(t)},
+		false,
+	)
 }
 
 func (g typeGenerator) getSize(t llvm.Type) int {

@@ -17,46 +17,30 @@ type moduleGenerator struct {
 }
 
 func newModuleGenerator(m llvm.Module, ds []ast.ConstructorDefinition) (*moduleGenerator, error) {
-	g := newTypeGenerator(m)
-	cs := make(map[string]llvm.Value, len(ds))
+	g := newConstructorDefinitionGenerator(m)
+	vs := make(map[string]llvm.Value, len(ds))
 
 	for _, d := range ds {
-		f := llvm.AddFunction(m, d.Name(), g.GenerateConstructorFunction(d.Type(), d.Index()))
+		v, err := g.GenerateUnionifyFunction(d)
 
-		b := llvm.NewBuilder()
-		b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
-
-		if len(d.Type().Constructors()) == 1 {
-			b.CreateAggregateRet(f.Params())
-		} else {
-			p := b.CreateAlloca(f.Type().ElementType().ReturnType(), "")
-
-			b.CreateStore(
-				llvm.ConstInt(llvm.Int32Type(), uint64(d.Index()), false),
-				b.CreateStructGEP(p, 0, ""),
-			)
-
-			pp := b.CreateBitCast(
-				b.CreateStructGEP(p, 1, ""),
-				llir.PointerType(g.GenerateConstructorElements(d.Type().Constructors()[d.Index()])),
-				"",
-			)
-
-			for i, v := range f.Params() {
-				b.CreateStore(v, b.CreateStructGEP(pp, i, ""))
-			}
-
-			b.CreateRet(b.CreateLoad(p, ""))
-		}
-
-		if err := llvm.VerifyFunction(f, llvm.AbortProcessAction); err != nil {
+		if err != nil {
 			return nil, err
 		}
 
-		cs[d.Name()] = f
+		vs[names.ToUnionify(d.Name())] = v
+
+		v, err = g.GenerateStructifyFunction(d)
+
+		if err != nil {
+			return nil, err
+		}
+
+		vs[names.ToStructify(d.Name())] = v
+
+		vs[names.ToTag(d.Name())] = g.GenerateTag(d)
 	}
 
-	return &moduleGenerator{m, cs, g}, nil
+	return &moduleGenerator{m, vs, newTypeGenerator(m)}, nil
 }
 
 func (g *moduleGenerator) Generate(bs []ast.Bind) error {

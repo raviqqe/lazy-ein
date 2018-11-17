@@ -1,0 +1,101 @@
+package codegen
+
+import (
+	"github.com/raviqqe/stg/ast"
+	"github.com/raviqqe/stg/codegen/llir"
+	"github.com/raviqqe/stg/codegen/names"
+	"llvm.org/llvm/bindings/go/llvm"
+)
+
+type constructorDefinitionGenerator struct {
+	module        llvm.Module
+	typeGenerator typeGenerator
+}
+
+func newConstructorDefinitionGenerator(m llvm.Module) constructorDefinitionGenerator {
+	return constructorDefinitionGenerator{m, newTypeGenerator(m)}
+}
+
+func (g constructorDefinitionGenerator) GenerateUnionifyFunction(d ast.ConstructorDefinition) (llvm.Value, error) {
+	f := llvm.AddFunction(
+		g.module,
+		names.ToUnionify(d.Name()),
+		g.typeGenerator.GenerateConstructorUnionifyFunction(d.Type(), d.Index()),
+	)
+
+	b := llvm.NewBuilder()
+	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
+
+	if len(d.Type().Constructors()) == 1 {
+		b.CreateAggregateRet(f.Params())
+	} else {
+		p := b.CreateAlloca(f.Type().ElementType().ReturnType(), "")
+
+		b.CreateStore(
+			llvm.ConstInt(llvm.Int32Type(), uint64(d.Index()), false),
+			b.CreateStructGEP(p, 0, ""),
+		)
+
+		pp := b.CreateBitCast(
+			b.CreateStructGEP(p, 1, ""),
+			llir.PointerType(
+				g.typeGenerator.GenerateConstructorElements(d.Type().Constructors()[d.Index()]),
+			),
+			"",
+		)
+
+		for i, v := range f.Params() {
+			b.CreateStore(v, b.CreateStructGEP(pp, i, ""))
+		}
+
+		b.CreateRet(b.CreateLoad(p, ""))
+	}
+
+	if err := llvm.VerifyFunction(f, llvm.AbortProcessAction); err != nil {
+		return llvm.Value{}, err
+	}
+
+	return f, nil
+}
+
+func (g constructorDefinitionGenerator) GenerateStructifyFunction(d ast.ConstructorDefinition) (llvm.Value, error) {
+	f := llvm.AddFunction(
+		g.module,
+		names.ToStructify(d.Name()),
+		g.typeGenerator.GenerateConstructorStructifyFunction(d.Type(), d.Index()),
+	)
+
+	b := llvm.NewBuilder()
+	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
+
+	if len(d.Type().Constructors()) == 1 {
+		b.CreateRet(f.FirstParam())
+	} else {
+		p := b.CreateAlloca(f.FirstParam().Type(), "")
+		b.CreateStore(f.FirstParam(), p)
+
+		p = b.CreateStructGEP(
+			b.CreateBitCast(
+				p,
+				llir.PointerType(
+					llir.StructType([]llvm.Type{llvm.Int32Type(), f.Type().ElementType().ReturnType()}),
+				),
+				"",
+			),
+			1,
+			"",
+		)
+
+		b.CreateRet(b.CreateLoad(p, ""))
+	}
+
+	if err := llvm.VerifyFunction(f, llvm.AbortProcessAction); err != nil {
+		return llvm.Value{}, err
+	}
+
+	return f, nil
+}
+
+func (g constructorDefinitionGenerator) GenerateTag(d ast.ConstructorDefinition) llvm.Value {
+	return llvm.ConstInt(llvm.Int32Type(), uint64(d.Index()), false)
+}

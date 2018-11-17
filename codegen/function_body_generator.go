@@ -155,7 +155,7 @@ func (g *functionBodyGenerator) generateCase(c ast.Case) (llvm.Value, error) {
 }
 
 func (g *functionBodyGenerator) generateConstructor(c ast.Constructor) (llvm.Value, error) {
-	v, err := g.resolveName(c.Name())
+	v, err := g.resolveName(names.ToUnionify(c.Name()))
 
 	if err != nil {
 		return llvm.Value{}, err
