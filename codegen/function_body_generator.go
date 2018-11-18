@@ -179,7 +179,7 @@ func (g *functionBodyGenerator) generateAlternative(e llvm.Value, a ast.Alternat
 			return llvm.Value{}, nil, err
 		}
 
-		es := g.builder.CreateCall(f, []llvm.Value{e}, "")
+		es := llir.CreateCall(g.builder, f, []llvm.Value{e})
 		vs := map[string]llvm.Value{}
 
 		for i, n := range a.ElementNames() {

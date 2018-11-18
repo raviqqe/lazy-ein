@@ -126,14 +126,13 @@ func (g typeGenerator) GenerateConstructorElements(c types.Constructor) llvm.Typ
 }
 
 func (g typeGenerator) GenerateConstructorUnionifyFunction(t types.Algebraic, i int) llvm.Type {
-	return llvm.FunctionType(g.Generate(t), g.generateMany(t.Constructors()[i].Elements()), false)
+	return llir.FunctionType(g.Generate(t), g.generateMany(t.Constructors()[i].Elements()))
 }
 
 func (g typeGenerator) GenerateConstructorStructifyFunction(t types.Algebraic, i int) llvm.Type {
-	return llvm.FunctionType(
+	return llir.FunctionType(
 		g.GenerateConstructorElements(t.Constructors()[i]),
 		[]llvm.Type{g.Generate(t)},
-		false,
 	)
 }
 
