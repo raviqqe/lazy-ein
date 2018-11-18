@@ -7,6 +7,7 @@ import (
 	"github.com/raviqqe/stg/ast"
 	"github.com/raviqqe/stg/codegen/llir"
 	"github.com/raviqqe/stg/codegen/names"
+	"github.com/raviqqe/stg/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
@@ -88,45 +89,38 @@ func (g *functionBodyGenerator) generateApplication(a ast.Application) (llvm.Val
 }
 
 func (g *functionBodyGenerator) generateCase(c ast.Case) (llvm.Value, error) {
-	e, err := g.generateExpression(c.Expression())
+	v, e, err := g.generateSwitcheeAndExpression(c)
 
 	if err != nil {
-		return llvm.Value{}, err
-	} else if e.Type().TypeKind() == llvm.PointerTypeKind {
-		e = forceThunk(g.builder, e, g.typeGenerator)
+		return llvm.Value{}, nil
 	}
 
-	vs := make([]llvm.Value, 0, len(c.Alternatives())+1)
-	bs := make([]llvm.BasicBlock, 0, len(c.Alternatives())+1)
+	p := newPhiGenerator(llvm.AddBasicBlock(g.function(), "phi"), c)
 
 	d := llvm.AddBasicBlock(g.function(), "default")
-	p := llvm.AddBasicBlock(g.function(), "phi")
-	s := g.builder.CreateSwitch(e, d, len(c.Alternatives()))
+	s := g.builder.CreateSwitch(v, d, len(c.Alternatives()))
 
 	for _, a := range c.Alternatives() {
 		b := llvm.AddBasicBlock(g.function(), "")
 		g.builder.SetInsertPointAtEnd(b)
 
-		switch a := a.(type) {
-		case ast.PrimitiveAlternative:
-			s.AddCase(g.generateLiteral(a.Literal()), b)
-		default:
-			panic("unreachable")
-		}
-
-		v, err := g.generateExpression(a.Expression())
+		v, g, err := g.generateAlternative(e, a)
 
 		if err != nil {
 			return llvm.Value{}, err
 		}
 
-		vs = append(vs, v)
-		bs = append(bs, b)
+		s.AddCase(v, b)
 
-		g.builder.CreateBr(p)
+		v, err = g.generateExpression(a.Expression())
+
+		if err != nil {
+			return llvm.Value{}, err
+		}
+
+		g.builder.CreateBr(p.Block())
+		p.AddIncoming(v, b)
 	}
-
-	t := vs[len(vs)-1].Type()
 
 	g.builder.SetInsertPointAtEnd(d)
 
@@ -139,19 +133,63 @@ func (g *functionBodyGenerator) generateCase(c ast.Case) (llvm.Value, error) {
 			return llvm.Value{}, err
 		}
 
-		g.builder.CreateBr(p)
-
-		vs = append(vs, v)
-		bs = append(bs, d)
+		g.builder.CreateBr(p.Block())
+		p.AddIncoming(v, d)
 	} else {
 		g.builder.CreateUnreachable()
 	}
 
-	g.builder.SetInsertPointAtEnd(p)
-	v := g.builder.CreatePHI(t, "")
-	v.AddIncoming(vs, bs)
+	return p.Generate(g.builder), nil
+}
 
-	return v, nil
+func (g *functionBodyGenerator) generateSwitcheeAndExpression(c ast.Case) (llvm.Value, llvm.Value, error) {
+	v, err := g.generateExpression(c.Expression())
+
+	if err != nil {
+		return llvm.Value{}, llvm.Value{}, err
+	} else if _, ok := c.ExpressionType().(types.Boxed); ok {
+		v = forceThunk(g.builder, v, g.typeGenerator)
+	}
+
+	t, ok := c.ExpressionType().(types.Algebraic)
+
+	if !ok {
+		return v, v, nil
+	} else if len(t.Constructors()) == 1 {
+		return llvm.ConstInt(llvm.Int32Type(), 0, false), v, nil
+	}
+
+	return g.builder.CreateExtractValue(v, 0, ""), v, nil
+}
+
+func (g *functionBodyGenerator) generateAlternative(e llvm.Value, a ast.Alternative) (llvm.Value, *functionBodyGenerator, error) {
+	switch a := a.(type) {
+	case ast.PrimitiveAlternative:
+		return g.generateLiteral(a.Literal()), g, nil
+	case ast.AlgebraicAlternative:
+		v, err := g.resolveName(names.ToTag(a.ConstructorName()))
+
+		if err != nil {
+			return llvm.Value{}, nil, err
+		}
+
+		f, err := g.resolveName(names.ToStructify(a.ConstructorName()))
+
+		if err != nil {
+			return llvm.Value{}, nil, err
+		}
+
+		es := g.builder.CreateCall(f, []llvm.Value{e}, "")
+		vs := map[string]llvm.Value{}
+
+		for i, n := range a.ElementNames() {
+			vs[n] = g.builder.CreateExtractValue(es, i, "")
+		}
+
+		return v, g.addVariables(vs), nil
+	}
+
+	panic("unreachable")
 }
 
 func (g *functionBodyGenerator) generateConstructor(c ast.Constructor) (llvm.Value, error) {

@@ -1,25 +1,33 @@
 package ast
 
+import "github.com/raviqqe/stg/types"
+
 // Case is a case expression.
 type Case struct {
 	expression         Expression
+	expressionType     types.Type
 	alternatives       Alternatives
 	defaultAlternative DefaultAlternative
 }
 
 // NewCase creates a case expression.
-func NewCase(e Expression, as Alternatives, a DefaultAlternative) Case {
-	return Case{e, as, a}
+func NewCase(e Expression, t types.Type, as Alternatives, a DefaultAlternative) Case {
+	return Case{e, t, as, a}
 }
 
 // NewCaseWithoutDefault creates a case expression.
-func NewCaseWithoutDefault(e Expression, as Alternatives) Case {
-	return Case{e, as, DefaultAlternative{}}
+func NewCaseWithoutDefault(e Expression, t types.Type, as Alternatives) Case {
+	return Case{e, t, as, DefaultAlternative{}}
 }
 
 // Expression returns an expression.
 func (c Case) Expression() Expression {
 	return c.expression
+}
+
+// ExpressionType returns an expression type.
+func (c Case) ExpressionType() types.Type {
+	return c.expressionType
 }
 
 // Alternatives returns alternatives.
@@ -34,12 +42,6 @@ func (c Case) DefaultAlternative() (DefaultAlternative, bool) {
 	}
 
 	return c.defaultAlternative, true
-}
-
-// IsAlgebraic returns true if a case expression is algebraic.
-func (c Case) IsAlgebraic() bool {
-	_, ok := c.alternatives.(AlgebraicAlternatives)
-	return ok
 }
 
 func (c Case) isExpression() {}
