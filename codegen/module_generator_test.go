@@ -508,8 +508,8 @@ func TestModuleGeneratorGenerateWithAlgebraicTypesOfMultipleConstructors(t *test
 	m := ast.NewModule(
 		"foo",
 		[]ast.ConstructorDefinition{
-			ast.NewConstructorDefinition("constructor1", tt, 0),
-			ast.NewConstructorDefinition("constructor2", tt, 1),
+			ast.NewConstructorDefinition("constructor0", tt, 0),
+			ast.NewConstructorDefinition("constructor1", tt, 1),
 		},
 		[]ast.Bind{
 			ast.NewBind(
@@ -519,7 +519,7 @@ func TestModuleGeneratorGenerateWithAlgebraicTypesOfMultipleConstructors(t *test
 					true,
 					nil,
 					ast.NewConstructor(
-						"constructor2",
+						"constructor1",
 						[]ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)},
 					),
 					tt,
@@ -534,10 +534,10 @@ func TestModuleGeneratorGenerateWithAlgebraicTypesOfMultipleConstructors(t *test
 }
 
 func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
-	tt1 := types.NewAlgebraic(
+	tt0 := types.NewAlgebraic(
 		[]types.Constructor{types.NewConstructor([]types.Type{types.NewFloat64()})},
 	)
-	tt2 := types.NewAlgebraic(
+	tt1 := types.NewAlgebraic(
 		[]types.Constructor{
 			types.NewConstructor([]types.Type{types.NewFloat64()}),
 			types.NewConstructor([]types.Type{types.NewFloat64(), types.NewFloat64()}),
@@ -552,13 +552,13 @@ func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
 			[]ast.ConstructorDefinition{
 				ast.NewConstructorDefinition(
 					"constructor",
-					tt1,
+					tt0,
 					0,
 				),
 			},
 			ast.NewCaseWithoutDefault(
 				ast.NewConstructor("constructor", []ast.Atom{ast.NewFloat64(42)}),
-				tt1,
+				tt0,
 				ast.NewAlgebraicAlternatives(
 					ast.NewAlgebraicAlternative(
 						"constructor",
@@ -570,15 +570,15 @@ func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
 		},
 		{
 			[]ast.ConstructorDefinition{
-				ast.NewConstructorDefinition("constructor1", tt2, 0),
-				ast.NewConstructorDefinition("constructor2", tt2, 1),
+				ast.NewConstructorDefinition("constructor0", tt1, 0),
+				ast.NewConstructorDefinition("constructor1", tt1, 1),
 			},
 			ast.NewCase(
-				ast.NewConstructor("constructor2", []ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)}),
-				tt2,
+				ast.NewConstructor("constructor1", []ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)}),
+				tt1,
 				ast.NewAlgebraicAlternatives(
 					ast.NewAlgebraicAlternative(
-						"constructor2",
+						"constructor1",
 						[]string{"x", "y"},
 						ast.NewApplication(ast.NewVariable("y"), nil),
 					),
