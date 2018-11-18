@@ -16,7 +16,7 @@ func newConstructorDefinitionGenerator(m llvm.Module) constructorDefinitionGener
 	return constructorDefinitionGenerator{m, newTypeGenerator(m)}
 }
 
-func (g constructorDefinitionGenerator) GenerateUnionifyFunction(d ast.ConstructorDefinition) (llvm.Value, error) {
+func (g constructorDefinitionGenerator) GenerateUnionifyFunction(d ast.ConstructorDefinition) error {
 	f := llvm.AddFunction(
 		g.module,
 		names.ToUnionify(d.Name()),
@@ -51,14 +51,10 @@ func (g constructorDefinitionGenerator) GenerateUnionifyFunction(d ast.Construct
 		b.CreateRet(b.CreateLoad(p, ""))
 	}
 
-	if err := llvm.VerifyFunction(f, llvm.AbortProcessAction); err != nil {
-		return llvm.Value{}, err
-	}
-
-	return f, nil
+	return llvm.VerifyFunction(f, llvm.AbortProcessAction)
 }
 
-func (g constructorDefinitionGenerator) GenerateStructifyFunction(d ast.ConstructorDefinition) (llvm.Value, error) {
+func (g constructorDefinitionGenerator) GenerateStructifyFunction(d ast.ConstructorDefinition) error {
 	f := llvm.AddFunction(
 		g.module,
 		names.ToStructify(d.Name()),
@@ -78,7 +74,12 @@ func (g constructorDefinitionGenerator) GenerateStructifyFunction(d ast.Construc
 			b.CreateBitCast(
 				p,
 				llir.PointerType(
-					llir.StructType([]llvm.Type{g.typeGenerator.GenerateConstructorTag(), f.Type().ElementType().ReturnType()}),
+					llir.StructType(
+						[]llvm.Type{
+							g.typeGenerator.GenerateConstructorTag(),
+							f.Type().ElementType().ReturnType(),
+						},
+					),
 				),
 				"",
 			),
@@ -89,13 +90,13 @@ func (g constructorDefinitionGenerator) GenerateStructifyFunction(d ast.Construc
 		b.CreateRet(b.CreateLoad(p, ""))
 	}
 
-	if err := llvm.VerifyFunction(f, llvm.AbortProcessAction); err != nil {
-		return llvm.Value{}, err
-	}
-
-	return f, nil
+	return llvm.VerifyFunction(f, llvm.AbortProcessAction)
 }
 
-func (g constructorDefinitionGenerator) GenerateTag(d ast.ConstructorDefinition) llvm.Value {
-	return llvm.ConstInt(g.typeGenerator.GenerateConstructorTag(), uint64(d.Index()), false)
+func (g constructorDefinitionGenerator) GenerateTag(d ast.ConstructorDefinition) {
+	t := g.typeGenerator.GenerateConstructorTag()
+	v := llvm.AddGlobal(g.module, t, names.ToTag(d.Name()))
+	v.SetInitializer(llvm.ConstInt(t, uint64(d.Index()), false))
+	v.SetGlobalConstant(true)
+	v.SetUnnamedAddr(true)
 }

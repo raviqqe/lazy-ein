@@ -18,29 +18,20 @@ type moduleGenerator struct {
 
 func newModuleGenerator(m llvm.Module, ds []ast.ConstructorDefinition) (*moduleGenerator, error) {
 	g := newConstructorDefinitionGenerator(m)
-	vs := make(map[string]llvm.Value, len(ds))
 
 	for _, d := range ds {
-		v, err := g.GenerateUnionifyFunction(d)
-
-		if err != nil {
+		if err := g.GenerateUnionifyFunction(d); err != nil {
 			return nil, err
 		}
 
-		vs[names.ToUnionify(d.Name())] = v
-
-		v, err = g.GenerateStructifyFunction(d)
-
-		if err != nil {
+		if err := g.GenerateStructifyFunction(d); err != nil {
 			return nil, err
 		}
 
-		vs[names.ToStructify(d.Name())] = v
-
-		vs[names.ToTag(d.Name())] = g.GenerateTag(d)
+		g.GenerateTag(d)
 	}
 
-	return &moduleGenerator{m, vs, newTypeGenerator(m)}, nil
+	return &moduleGenerator{m, map[string]llvm.Value{}, newTypeGenerator(m)}, nil
 }
 
 func (g *moduleGenerator) Generate(bs []ast.Bind) error {

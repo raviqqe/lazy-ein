@@ -167,45 +167,33 @@ func (g *functionBodyGenerator) generateAlternative(e llvm.Value, a ast.Alternat
 	case ast.PrimitiveAlternative:
 		return g.generateLiteral(a.Literal()), g, nil
 	case ast.AlgebraicAlternative:
-		v, err := g.resolveName(names.ToTag(a.ConstructorName()))
-
-		if err != nil {
-			return llvm.Value{}, nil, err
-		}
-
-		f, err := g.resolveName(names.ToStructify(a.ConstructorName()))
-
-		if err != nil {
-			return llvm.Value{}, nil, err
-		}
-
-		es := llir.CreateCall(g.builder, f, []llvm.Value{e})
-		vs := map[string]llvm.Value{}
+		es := llir.CreateCall(
+			g.builder,
+			g.module().NamedFunction(names.ToStructify(a.ConstructorName())),
+			[]llvm.Value{e},
+		)
+		vs := make(map[string]llvm.Value, len(a.ElementNames()))
 
 		for i, n := range a.ElementNames() {
 			vs[n] = g.builder.CreateExtractValue(es, i, "")
 		}
 
-		return v, g.addVariables(vs), nil
+		return g.module().NamedGlobal(names.ToTag(a.ConstructorName())).Initializer(),
+			g.addVariables(vs),
+			nil
 	}
 
 	panic("unreachable")
 }
 
 func (g *functionBodyGenerator) generateConstructor(c ast.Constructor) (llvm.Value, error) {
-	v, err := g.resolveName(names.ToUnionify(c.Name()))
-
-	if err != nil {
-		return llvm.Value{}, err
-	}
-
 	vs, err := g.generateAtoms(c.Arguments())
 
 	if err != nil {
 		return llvm.Value{}, err
 	}
 
-	return llir.CreateCall(g.builder, v, vs), nil
+	return llir.CreateCall(g.builder, g.module().NamedFunction(names.ToUnionify(c.Name())), vs), nil
 }
 
 func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
@@ -341,4 +329,8 @@ func (g *functionBodyGenerator) addVariables(vs map[string]llvm.Value) *function
 
 func (g functionBodyGenerator) function() llvm.Value {
 	return g.builder.GetInsertBlock().Parent()
+}
+
+func (g functionBodyGenerator) module() llvm.Module {
+	return g.function().GlobalParent()
 }
