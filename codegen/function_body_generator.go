@@ -156,7 +156,7 @@ func (g *functionBodyGenerator) generateSwitcheeAndExpression(c ast.Case) (llvm.
 	if !ok {
 		return v, v, nil
 	} else if len(t.Constructors()) == 1 {
-		return llvm.ConstInt(llvm.Int32Type(), 0, false), v, nil
+		return llvm.ConstInt(g.typeGenerator.GenerateConstructorTag(), 0, false), v, nil
 	}
 
 	return g.builder.CreateExtractValue(v, 0, ""), v, nil

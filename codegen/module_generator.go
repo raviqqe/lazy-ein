@@ -103,7 +103,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 			g.createUpdatedEntryFunction(n, f.Type().ElementType()),
 			b.CreateGEP(
 				b.CreateBitCast(f.FirstParam(), llir.PointerType(f.Type()), ""),
-				[]llvm.Value{llvm.ConstIntFromString(llvm.Int32Type(), "-1", 10)},
+				[]llvm.Value{llvm.ConstIntFromString(g.typeGenerator.GenerateConstructorTag(), "-1", 10)},
 				"",
 			),
 		)

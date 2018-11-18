@@ -30,7 +30,7 @@ func (g typeGenerator) Generate(t types.Type) llvm.Type {
 			}
 		}
 
-		return llir.StructType([]llvm.Type{llvm.Int32Type(), llvm.ArrayType(llvm.Int8Type(), n)})
+		return llir.StructType([]llvm.Type{g.GenerateConstructorTag(), llvm.ArrayType(llvm.Int8Type(), n)})
 	case types.Boxed:
 		return llir.PointerType(
 			g.generateClosure(g.GenerateUnsizedPayload(), g.generateEntryFunction(nil, t.Content())),
@@ -115,6 +115,10 @@ func (g typeGenerator) generateMany(ts []types.Type) []llvm.Type {
 	}
 
 	return tts
+}
+
+func (typeGenerator) GenerateConstructorTag() llvm.Type {
+	return llvm.Int32Type()
 }
 
 func (g typeGenerator) GenerateConstructorElements(c types.Constructor) llvm.Type {

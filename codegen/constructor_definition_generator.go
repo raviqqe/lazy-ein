@@ -32,7 +32,7 @@ func (g constructorDefinitionGenerator) GenerateUnionifyFunction(d ast.Construct
 		p := b.CreateAlloca(f.Type().ElementType().ReturnType(), "")
 
 		b.CreateStore(
-			llvm.ConstInt(llvm.Int32Type(), uint64(d.Index()), false),
+			llvm.ConstInt(g.typeGenerator.GenerateConstructorTag(), uint64(d.Index()), false),
 			b.CreateStructGEP(p, 0, ""),
 		)
 
@@ -78,7 +78,7 @@ func (g constructorDefinitionGenerator) GenerateStructifyFunction(d ast.Construc
 			b.CreateBitCast(
 				p,
 				llir.PointerType(
-					llir.StructType([]llvm.Type{llvm.Int32Type(), f.Type().ElementType().ReturnType()}),
+					llir.StructType([]llvm.Type{g.typeGenerator.GenerateConstructorTag(), f.Type().ElementType().ReturnType()}),
 				),
 				"",
 			),
@@ -97,5 +97,5 @@ func (g constructorDefinitionGenerator) GenerateStructifyFunction(d ast.Construc
 }
 
 func (g constructorDefinitionGenerator) GenerateTag(d ast.ConstructorDefinition) llvm.Value {
-	return llvm.ConstInt(llvm.Int32Type(), uint64(d.Index()), false)
+	return llvm.ConstInt(g.typeGenerator.GenerateConstructorTag(), uint64(d.Index()), false)
 }
