@@ -340,6 +340,7 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 						types.NewFloat64(),
 						ast.NewPrimitiveAlternatives(
 							ast.NewPrimitiveAlternative(ast.NewFloat64(42), ast.NewFloat64(0)),
+							ast.NewPrimitiveAlternative(ast.NewFloat64(2049), ast.NewFloat64(0)),
 						),
 						ast.NewDefaultAlternative("x", ast.NewApplication(ast.NewVariable("x"), nil)),
 					),

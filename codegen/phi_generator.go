@@ -28,11 +28,8 @@ func (g *phiGenerator) Generate(b llvm.Builder) llvm.Value {
 	return v
 }
 
-func (g *phiGenerator) AddIncoming(v llvm.Value, b llvm.BasicBlock) {
+func (g *phiGenerator) CreateBr(b llvm.Builder, v llvm.Value) {
+	b.CreateBr(g.block)
 	g.incomingValues = append(g.incomingValues, v)
-	g.incomingBlocks = append(g.incomingBlocks, b)
-}
-
-func (g phiGenerator) Block() llvm.BasicBlock {
-	return g.block
+	g.incomingBlocks = append(g.incomingBlocks, b.GetInsertBlock())
 }
