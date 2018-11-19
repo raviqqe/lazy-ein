@@ -8,7 +8,11 @@ import (
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
-const environmentArgumentName = "environment"
+const (
+	environmentArgumentName  = "environment"
+	maxCodeOptimizationLevel = 3
+	maxSizeOptimizationLevel = 2
+)
 
 type moduleGenerator struct {
 	module          llvm.Module
@@ -60,6 +64,12 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 			),
 		)
 	}
+
+	if err := llvm.VerifyModule(g.module, llvm.AbortProcessAction); err != nil {
+		return err
+	}
+
+	g.optimize()
 
 	return llvm.VerifyModule(g.module, llvm.AbortProcessAction)
 }
@@ -143,4 +153,16 @@ func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, 
 	}
 
 	return vs
+}
+
+func (g moduleGenerator) optimize() {
+	b := llvm.NewPassManagerBuilder()
+	b.SetOptLevel(maxCodeOptimizationLevel)
+	b.SetSizeLevel(maxSizeOptimizationLevel)
+
+	p := llvm.NewPassManager()
+	b.PopulateFunc(p)
+	b.Populate(p)
+
+	p.Run(g.module)
 }
