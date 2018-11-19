@@ -17,7 +17,7 @@ func newConstructorDefinitionGenerator(m llvm.Module) constructorDefinitionGener
 }
 
 func (g constructorDefinitionGenerator) GenerateUnionifyFunction(d ast.ConstructorDefinition) error {
-	f := llvm.AddFunction(
+	f := llir.AddFunction(
 		g.module,
 		names.ToUnionify(d.Name()),
 		g.typeGenerator.GenerateConstructorUnionifyFunction(d.Type(), d.Index()),
@@ -55,7 +55,7 @@ func (g constructorDefinitionGenerator) GenerateUnionifyFunction(d ast.Construct
 }
 
 func (g constructorDefinitionGenerator) GenerateStructifyFunction(d ast.ConstructorDefinition) error {
-	f := llvm.AddFunction(
+	f := llir.AddFunction(
 		g.module,
 		names.ToStructify(d.Name()),
 		g.typeGenerator.GenerateConstructorStructifyFunction(d.Type(), d.Index()),
