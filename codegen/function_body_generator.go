@@ -89,17 +89,17 @@ func (g *functionBodyGenerator) generateApplication(a ast.Application) (llvm.Val
 }
 
 func (g *functionBodyGenerator) generateCase(c ast.Case) (llvm.Value, error) {
-	switch types.Unbox(c.ExpressionType()).(type) {
-	case types.Algebraic:
+	switch c := c.(type) {
+	case ast.AlgebraicCase:
 		return g.generateAlgebraicCase(c)
-	case types.Float64:
+	case ast.PrimitiveCase:
 		return g.generateFloatCase(c)
 	}
 
 	panic("unreachable")
 }
 
-func (g *functionBodyGenerator) generateAlgebraicCase(c ast.Case) (llvm.Value, error) {
+func (g *functionBodyGenerator) generateAlgebraicCase(c ast.AlgebraicCase) (llvm.Value, error) {
 	e, err := g.generateCaseExpression(c)
 
 	if err != nil {
@@ -108,17 +108,15 @@ func (g *functionBodyGenerator) generateAlgebraicCase(c ast.Case) (llvm.Value, e
 
 	i := llvm.ConstInt(g.typeGenerator.GenerateConstructorTag(), 0, false)
 
-	if len(c.ExpressionType().(types.Algebraic).Constructors()) != 1 {
+	if len(c.Type().(types.Algebraic).Constructors()) != 1 {
 		i = g.builder.CreateExtractValue(e, 0, "")
 	}
 
-	p := newPhiGenerator(llvm.AddBasicBlock(g.function(), "phi"), c)
+	p := newPhiGenerator(llvm.AddBasicBlock(g.function(), "phi"))
 	d := llvm.AddBasicBlock(g.function(), "default")
 	s := g.builder.CreateSwitch(i, d, len(c.Alternatives()))
 
 	for i, a := range c.Alternatives() {
-		a := a.(ast.AlgebraicAlternative)
-
 		b := llvm.AddBasicBlock(g.function(), fmt.Sprintf("case.%v", i))
 		s.AddCase(g.module().NamedGlobal(names.ToTag(a.ConstructorName())).Initializer(), b)
 		g.builder.SetInsertPointAtEnd(b)
@@ -151,7 +149,7 @@ func (g *functionBodyGenerator) generateAlgebraicCase(c ast.Case) (llvm.Value, e
 	return p.Generate(g.builder), nil
 }
 
-func (g *functionBodyGenerator) generateFloatCase(c ast.Case) (llvm.Value, error) {
+func (g *functionBodyGenerator) generateFloatCase(c ast.PrimitiveCase) (llvm.Value, error) {
 	v, err := g.generateCaseExpression(c)
 
 	if err != nil {
@@ -159,11 +157,9 @@ func (g *functionBodyGenerator) generateFloatCase(c ast.Case) (llvm.Value, error
 	}
 
 	b := g.builder.GetInsertBlock()
-	p := newPhiGenerator(llvm.AddBasicBlock(g.function(), "phi"), c)
+	p := newPhiGenerator(llvm.AddBasicBlock(g.function(), "phi"))
 
 	for i, a := range c.Alternatives() {
-		a := a.(ast.PrimitiveAlternative)
-
 		g.builder.SetInsertPointAtEnd(b)
 		b = llvm.AddBasicBlock(g.function(), fmt.Sprintf("else.%v", i))
 		bb := llvm.AddBasicBlock(g.function(), fmt.Sprintf("then.%v", i))
@@ -196,7 +192,7 @@ func (g *functionBodyGenerator) generateCaseExpression(c ast.Case) (llvm.Value, 
 
 	if err != nil {
 		return llvm.Value{}, err
-	} else if _, ok := c.ExpressionType().(types.Boxed); ok {
+	} else if _, ok := c.Type().(types.Boxed); ok {
 		return forceThunk(g.builder, v, g.typeGenerator), nil
 	}
 

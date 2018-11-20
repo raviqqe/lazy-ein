@@ -335,13 +335,13 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 					nil,
 					true,
 					nil,
-					ast.NewCase(
+					ast.NewPrimitiveCase(
 						ast.NewFloat64(42),
 						types.NewFloat64(),
-						ast.NewPrimitiveAlternatives(
+						[]ast.PrimitiveAlternative{
 							ast.NewPrimitiveAlternative(ast.NewFloat64(42), ast.NewFloat64(0)),
 							ast.NewPrimitiveAlternative(ast.NewFloat64(2049), ast.NewFloat64(0)),
-						),
+						},
 						ast.NewDefaultAlternative("x", ast.NewApplication(ast.NewVariable("x"), nil)),
 					),
 					types.NewFloat64(),
@@ -356,12 +356,12 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 					nil,
 					false,
 					[]ast.Argument{ast.NewArgument("x", types.NewBoxed(types.NewFloat64()))},
-					ast.NewCase(
+					ast.NewPrimitiveCase(
 						ast.NewApplication(ast.NewVariable("x"), nil),
 						types.NewBoxed(types.NewFloat64()),
-						ast.NewPrimitiveAlternatives(
+						[]ast.PrimitiveAlternative{
 							ast.NewPrimitiveAlternative(ast.NewFloat64(42), ast.NewFloat64(0)),
-						),
+						},
 						ast.NewDefaultAlternative("x", ast.NewApplication(ast.NewVariable("x"), nil)),
 					),
 					types.NewFloat64(),
@@ -376,12 +376,12 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 					nil,
 					true,
 					nil,
-					ast.NewCaseWithoutDefault(
+					ast.NewPrimitiveCaseWithoutDefault(
 						ast.NewFloat64(42),
 						types.NewFloat64(),
-						ast.NewPrimitiveAlternatives(
+						[]ast.PrimitiveAlternative{
 							ast.NewPrimitiveAlternative(ast.NewFloat64(42), ast.NewFloat64(0)),
-						),
+						},
 					),
 					types.NewFloat64(),
 				),
@@ -557,16 +557,16 @@ func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
 					0,
 				),
 			},
-			ast.NewCaseWithoutDefault(
+			ast.NewAlgebraicCaseWithoutDefault(
 				ast.NewConstructor("constructor", []ast.Atom{ast.NewFloat64(42)}),
 				tt0,
-				ast.NewAlgebraicAlternatives(
+				[]ast.AlgebraicAlternative{
 					ast.NewAlgebraicAlternative(
 						"constructor",
 						[]string{"y"},
 						ast.NewApplication(ast.NewVariable("y"), nil),
 					),
-				),
+				},
 			),
 		},
 		{
@@ -574,16 +574,16 @@ func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
 				ast.NewConstructorDefinition("constructor0", tt1, 0),
 				ast.NewConstructorDefinition("constructor1", tt1, 1),
 			},
-			ast.NewCase(
+			ast.NewAlgebraicCase(
 				ast.NewConstructor("constructor1", []ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)}),
 				tt1,
-				ast.NewAlgebraicAlternatives(
+				[]ast.AlgebraicAlternative{
 					ast.NewAlgebraicAlternative(
 						"constructor1",
 						[]string{"x", "y"},
 						ast.NewApplication(ast.NewVariable("y"), nil),
 					),
-				),
+				},
 				ast.NewDefaultAlternative("x", ast.NewFloat64(42)),
 			),
 		},

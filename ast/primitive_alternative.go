@@ -20,5 +20,3 @@ func (a PrimitiveAlternative) Literal() Literal {
 func (a PrimitiveAlternative) Expression() Expression {
 	return a.expression
 }
-
-func (PrimitiveAlternative) isAlternative() {}

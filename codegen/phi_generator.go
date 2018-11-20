@@ -1,7 +1,6 @@
 package codegen
 
 import (
-	"github.com/raviqqe/stg/ast"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
@@ -11,12 +10,8 @@ type phiGenerator struct {
 	incomingBlocks []llvm.BasicBlock
 }
 
-func newPhiGenerator(b llvm.BasicBlock, c ast.Case) *phiGenerator {
-	return &phiGenerator{
-		b,
-		make([]llvm.Value, 0, len(c.Alternatives())+1),
-		make([]llvm.BasicBlock, 0, len(c.Alternatives())+1),
-	}
+func newPhiGenerator(b llvm.BasicBlock) *phiGenerator {
+	return &phiGenerator{b, nil, nil}
 }
 
 func (g *phiGenerator) Generate(b llvm.Builder) llvm.Value {

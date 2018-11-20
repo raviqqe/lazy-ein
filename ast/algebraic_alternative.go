@@ -26,5 +26,3 @@ func (a AlgebraicAlternative) ElementNames() []string {
 func (a AlgebraicAlternative) Expression() Expression {
 	return a.expression
 }
-
-func (AlgebraicAlternative) isAlternative() {}
