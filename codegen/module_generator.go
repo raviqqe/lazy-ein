@@ -65,6 +65,7 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 		)
 	}
 
+	// nolint: gotype
 	if err := llvm.VerifyModule(g.module, llvm.AbortProcessAction); err != nil {
 		return err
 	}
