@@ -46,3 +46,18 @@ func TestTypeGeneratorGenerateSizedPayload(t *testing.T) {
 		)
 	}
 }
+
+func TestTypeGeneratorBytesToWords(t *testing.T) {
+	for k, v := range map[int]int{
+		0:  0,
+		1:  1,
+		2:  1,
+		7:  1,
+		8:  1,
+		9:  2,
+		16: 2,
+		17: 3,
+	} {
+		assert.Equal(t, v, newTypeGenerator(llvm.NewModule("foo")).bytesToWords(k))
+	}
+}

@@ -8,11 +8,11 @@ import (
 )
 
 type typeGenerator struct {
-	module llvm.Module
+	targetData llvm.TargetData
 }
 
 func newTypeGenerator(m llvm.Module) typeGenerator {
-	return typeGenerator{m}
+	return typeGenerator{llvm.NewTargetData(m.DataLayout())}
 }
 
 func (g typeGenerator) Generate(t types.Type) llvm.Type {
@@ -30,7 +30,12 @@ func (g typeGenerator) Generate(t types.Type) llvm.Type {
 			}
 		}
 
-		return llir.StructType([]llvm.Type{g.GenerateConstructorTag(), llvm.ArrayType(llvm.Int8Type(), n)})
+		return llir.StructType(
+			[]llvm.Type{
+				g.GenerateConstructorTag(),
+				llvm.ArrayType(llvm.Int64Type(), g.bytesToWords(n)),
+			},
+		)
 	case types.Boxed:
 		return llir.PointerType(
 			g.generateClosure(g.GenerateUnsizedPayload(), g.generateEntryFunction(nil, t.Content())),
@@ -137,5 +142,13 @@ func (g typeGenerator) GenerateConstructorStructifyFunction(t types.Algebraic, i
 }
 
 func (g typeGenerator) getSize(t llvm.Type) int {
-	return int(llvm.NewTargetData(g.module.DataLayout()).TypeAllocSize(t))
+	return int(g.targetData.TypeAllocSize(t))
+}
+
+func (g typeGenerator) bytesToWords(n int) int {
+	if n == 0 {
+		return 0
+	}
+
+	return (n-1)/g.targetData.PointerSize() + 1
 }
