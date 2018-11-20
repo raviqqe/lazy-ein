@@ -122,8 +122,12 @@ func (g typeGenerator) generateMany(ts []types.Type) []llvm.Type {
 	return tts
 }
 
-func (typeGenerator) GenerateConstructorTag() llvm.Type {
-	return llvm.Int32Type()
+func (g typeGenerator) GenerateConstructorTag() llvm.Type {
+	if g.targetData.PointerSize() < 8 {
+		return llvm.Int32Type()
+	}
+
+	return llvm.Int64Type()
 }
 
 func (g typeGenerator) GenerateConstructorElements(c types.Constructor) llvm.Type {
