@@ -2,8 +2,8 @@ version: 2
 jobs:
   build:
     docker:
-      - image: raviqqe/stg-ci
-    working_directory: /go/src/github.com/raviqqe/stg
+      - image: raviqqe/llvm-go
+    working_directory: /go/src/github.com/raviqqe/jsonxx
     steps:
       - checkout
       - run: go get -d -t ./...
@@ -12,4 +12,4 @@ jobs:
       - run: $GOPATH/bin/gometalinter --deadline 5m ./...
       - run: go build ./...
       - run: go test -covermode atomic -coverprofile coverage.txt -race ./...
-      - run: bash <(curl -s https://codecov.io/bash)
+      - run: curl -s https://codecov.io/bash | bash
