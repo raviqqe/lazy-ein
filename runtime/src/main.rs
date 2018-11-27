@@ -1,5 +1,5 @@
 #[link(name = "jsonxx", kind = "static")]
-extern "C" {
+extern "fastcall" {
     fn jsonxx_main();
 }
 
