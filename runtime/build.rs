@@ -1,7 +1,5 @@
 extern crate cc;
 
 fn main() {
-    cc::Build::new()
-        .object("src/jsonxx.o")
-        .compile("libjsonxx.a");
+    cc::Build::new().file("src/main.c").compile("jsonxx_main");
 }
