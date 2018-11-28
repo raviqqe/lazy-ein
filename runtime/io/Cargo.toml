@@ -9,6 +9,3 @@ name = "runtime"
 crate-type = ["staticlib"]
 
 [dependencies]
-
-[build-dependencies]
-cc = "1.0"
