@@ -5,7 +5,9 @@ jobs:
       - image: raviqqe/llvm-go
     working_directory: /go/src/github.com/raviqqe/jsonxx
     steps:
+      - run: pacman -Syu --noconfirm ruby-rake rust
       - checkout
+      - run: rake
       - run: go get -d -t ./...
       - run: go get -u github.com/alecthomas/gometalinter
       - run: $GOPATH/bin/gometalinter --install
