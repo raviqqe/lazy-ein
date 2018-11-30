@@ -5,11 +5,27 @@ jobs:
       - image: raviqqe/llvm-go
     working_directory: /go/src/github.com/raviqqe/jsonxx
     steps:
+      - run: pacman -Syu --noconfirm rust
       - checkout
-      - run: go get -d -t ./...
-      - run: go get -u github.com/alecthomas/gometalinter
-      - run: $GOPATH/bin/gometalinter --install
-      - run: $GOPATH/bin/gometalinter --deadline 5m ./...
-      - run: go build ./...
-      - run: go test -covermode atomic -coverprofile coverage.txt -race ./...
-      - run: curl -s https://codecov.io/bash | bash
+      - run:
+          name: Install dependencies
+          command: |
+            go get -d -t ./...
+            go get -u github.com/alecthomas/gometalinter
+            $GOPATH/bin/gometalinter --install
+      - run:
+          name: Lint
+          command: $GOPATH/bin/gometalinter --deadline 5m ./...
+      - run:
+          name: Build runtime
+          command: |
+            cd runtime
+            make
+      - run:
+          name: Build command
+          command: go build ./...
+      - run:
+          name: Test
+          command: |
+            go test -covermode atomic -coverprofile coverage.txt -race ./...
+            curl -s https://codecov.io/bash | bash
