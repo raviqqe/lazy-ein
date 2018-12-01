@@ -38,6 +38,7 @@ func TestParseWithInvalidIdentifiers(t *testing.T) {
 		" = 42",
 		"0 = 42",
 		"1x = 42",
+		"let = 42",
 	} {
 		_, err := parse.Parse("", s)
 
