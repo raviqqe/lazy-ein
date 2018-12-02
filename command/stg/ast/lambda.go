@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/raviqqe/stg/types"
+import "github.com/raviqqe/jsonxx/command/stg/types"
 
 // Lambda is a lambda form.
 type Lambda struct {

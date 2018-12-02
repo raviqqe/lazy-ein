@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/raviqqe/stg/ast"
-	"github.com/raviqqe/stg/codegen/llir"
-	"github.com/raviqqe/stg/codegen/names"
-	"github.com/raviqqe/stg/types"
+	"github.com/raviqqe/jsonxx/command/stg/ast"
+	"github.com/raviqqe/jsonxx/command/stg/codegen/llir"
+	"github.com/raviqqe/jsonxx/command/stg/codegen/names"
+	"github.com/raviqqe/jsonxx/command/stg/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 

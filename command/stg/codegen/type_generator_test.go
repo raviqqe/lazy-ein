@@ -3,8 +3,8 @@ package codegen
 import (
 	"testing"
 
-	"github.com/raviqqe/stg/ast"
-	"github.com/raviqqe/stg/types"
+	"github.com/raviqqe/jsonxx/command/stg/ast"
+	"github.com/raviqqe/jsonxx/command/stg/types"
 	"github.com/stretchr/testify/assert"
 	"llvm.org/llvm/bindings/go/llvm"
 )
