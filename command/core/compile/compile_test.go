@@ -1,4 +1,4 @@
-package compile
+package compile_test
 
 import (
 	"reflect"
@@ -6,6 +6,7 @@ import (
 	"unsafe"
 
 	"github.com/raviqqe/jsonxx/command/core/ast"
+	"github.com/raviqqe/jsonxx/command/core/compile"
 	"github.com/raviqqe/jsonxx/command/core/compile/names"
 	"github.com/raviqqe/jsonxx/command/core/types"
 	"github.com/stretchr/testify/assert"
@@ -14,8 +15,8 @@ import (
 
 var payloadOffset = reflect.PtrTo(reflect.TypeOf(42)).Size()
 
-func TestGenerate(t *testing.T) {
-	m, err := Generate(
+func TestCompile(t *testing.T) {
+	m, err := compile.Compile(
 		ast.NewModule(
 			"foo",
 			nil,
@@ -35,7 +36,7 @@ func TestGenerate(t *testing.T) {
 func TestGlobalThunkForce(t *testing.T) {
 	const functionName = "foo"
 
-	m, err := Generate(
+	m, err := compile.Compile(
 		ast.NewModule(
 			"foo",
 			nil,

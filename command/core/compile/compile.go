@@ -5,8 +5,8 @@ import (
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
-// Generate generates a code for a module.
-func Generate(m ast.Module) (llvm.Module, error) {
+// Compile compiles a module into LLVM IR.
+func Compile(m ast.Module) (llvm.Module, error) {
 	mm := llvm.NewModule(m.Name())
 	g, err := newModuleGenerator(mm, m.ConstructorDefinitions())
 
