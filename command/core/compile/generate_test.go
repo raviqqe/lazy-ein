@@ -1,4 +1,4 @@
-package codegen
+package compile
 
 import (
 	"reflect"
@@ -6,7 +6,7 @@ import (
 	"unsafe"
 
 	"github.com/raviqqe/jsonxx/command/core/ast"
-	"github.com/raviqqe/jsonxx/command/core/codegen/names"
+	"github.com/raviqqe/jsonxx/command/core/compile/names"
 	"github.com/raviqqe/jsonxx/command/core/types"
 	"github.com/stretchr/testify/assert"
 	"llvm.org/llvm/bindings/go/llvm"

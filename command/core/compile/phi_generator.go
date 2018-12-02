@@ -1,4 +1,4 @@
-package codegen
+package compile
 
 import (
 	"llvm.org/llvm/bindings/go/llvm"

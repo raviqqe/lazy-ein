@@ -1,4 +1,4 @@
-package codegen
+package compile
 
 import (
 	"github.com/raviqqe/jsonxx/command/core/ast"

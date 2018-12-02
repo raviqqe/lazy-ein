@@ -1,9 +1,9 @@
-package codegen
+package compile
 
 import (
 	"github.com/raviqqe/jsonxx/command/core/ast"
-	"github.com/raviqqe/jsonxx/command/core/codegen/llir"
-	"github.com/raviqqe/jsonxx/command/core/codegen/names"
+	"github.com/raviqqe/jsonxx/command/core/compile/llir"
+	"github.com/raviqqe/jsonxx/command/core/compile/names"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
