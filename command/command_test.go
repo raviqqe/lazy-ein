@@ -16,3 +16,15 @@ func TestCommandWithEmptySource(t *testing.T) {
 
 	assert.Nil(t, command.Command([]string{"foo", f.Name()}))
 }
+
+func TestCommandWithInvalidFilename(t *testing.T) {
+	assert.Error(t, command.Command([]string{"foo", "invalid-filename"}))
+}
+
+func TestCommandWithInvalidArgument(t *testing.T) {
+	f, err := ioutil.TempFile("", "")
+	assert.Nil(t, err)
+	defer os.Remove(f.Name())
+
+	assert.Error(t, command.Command([]string{"foo", "--invalid-option", f.Name()}))
+}
