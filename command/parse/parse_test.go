@@ -3,8 +3,8 @@ package parse_test
 import (
 	"testing"
 
-	"github.com/raviqqe/jsonxx/ast"
-	"github.com/raviqqe/jsonxx/parse"
+	"github.com/raviqqe/jsonxx/command/ast"
+	"github.com/raviqqe/jsonxx/command/parse"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/raviqqe/jsonxx/ast"
+	"github.com/raviqqe/jsonxx/command/ast"
 	"github.com/raviqqe/parcom"
 )
 
