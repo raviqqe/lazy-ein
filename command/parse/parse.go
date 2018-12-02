@@ -39,34 +39,34 @@ var keywords = map[keyword]struct{}{
 const blankCharacters = " \t\n\r"
 
 // Parse parses a module into an AST.
-func Parse(f, s string) ([]ast.Bind, error) {
-	m, err := newState(f, s).module()()
+func Parse(f, s string) (ast.Module, error) {
+	x, err := newState(f, s).module()()
 
 	if err != nil {
-		return nil, err
+		return ast.Module{}, err
 	}
 
-	return m.([]ast.Bind), nil
+	return x.(ast.Module), nil
 }
 
 func (s *state) module() parcom.Parser {
-	return s.Exhaust(
-		s.App(
-			func(x interface{}) (interface{}, error) {
-				xs := x.([]interface{})
-				bs := make([]ast.Bind, 0, len(xs))
+	return s.App(
+		func(x interface{}) (interface{}, error) {
+			xs := x.([]interface{})
+			bs := make([]ast.Bind, 0, len(xs))
 
-				for _, x := range xs {
-					bs = append(bs, x.(ast.Bind))
-				}
+			for _, x := range xs {
+				bs = append(bs, x.(ast.Bind))
+			}
 
-				return bs, nil
-			},
-			s.Many(s.bind()),
-		),
-		func(parcom.State) error {
-			return errors.New("syntax error")
+			return ast.NewModule(bs), nil
 		},
+		s.Exhaust(
+			s.Many(s.bind()),
+			func(parcom.State) error {
+				return errors.New("syntax error")
+			},
+		),
 	)
 }
 

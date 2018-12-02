@@ -11,14 +11,14 @@ import (
 func TestParseWithEmptySource(t *testing.T) {
 	x, err := parse.Parse("", "")
 
-	assert.Equal(t, []ast.Bind{}, x)
+	assert.Equal(t, ast.NewModule([]ast.Bind{}), x)
 	assert.Nil(t, err)
 }
 
 func TestParseWithVariableBind(t *testing.T) {
 	x, err := parse.Parse("", "x = 42")
 
-	assert.Equal(t, []ast.Bind{ast.NewBind("x", ast.NewNumber(42))}, x)
+	assert.Equal(t, ast.NewModule([]ast.Bind{ast.NewBind("x", ast.NewNumber(42))}), x)
 	assert.Nil(t, err)
 }
 
