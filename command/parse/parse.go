@@ -40,7 +40,7 @@ const blankCharacters = " \t\n\r"
 
 // Parse parses a module into an AST.
 func Parse(f, s string) (ast.Module, error) {
-	x, err := newState(f, s).module()()
+	x, err := newState(f, s).module(f)()
 
 	if err != nil {
 		return ast.Module{}, err
@@ -49,7 +49,7 @@ func Parse(f, s string) (ast.Module, error) {
 	return x.(ast.Module), nil
 }
 
-func (s *state) module() parcom.Parser {
+func (s *state) module(f string) parcom.Parser {
 	return s.App(
 		func(x interface{}) (interface{}, error) {
 			xs := x.([]interface{})
@@ -59,7 +59,7 @@ func (s *state) module() parcom.Parser {
 				bs = append(bs, x.(ast.Bind))
 			}
 
-			return ast.NewModule(bs), nil
+			return ast.NewModule(f, bs), nil
 		},
 		s.Exhaust(
 			s.Many(s.bind()),

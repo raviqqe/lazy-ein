@@ -2,12 +2,18 @@ package ast
 
 // Module is a module.
 type Module struct {
+	name  string
 	binds []Bind
 }
 
 // NewModule creates a module.
-func NewModule(bs []Bind) Module {
-	return Module{bs}
+func NewModule(n string, bs []Bind) Module {
+	return Module{n, bs}
+}
+
+// Name returns a name.
+func (m Module) Name() string {
+	return m.name
 }
 
 // Binds returns binds.
