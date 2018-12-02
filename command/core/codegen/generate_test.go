@@ -5,9 +5,9 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/raviqqe/jsonxx/command/stg/ast"
-	"github.com/raviqqe/jsonxx/command/stg/codegen/names"
-	"github.com/raviqqe/jsonxx/command/stg/types"
+	"github.com/raviqqe/jsonxx/command/core/ast"
+	"github.com/raviqqe/jsonxx/command/core/codegen/names"
+	"github.com/raviqqe/jsonxx/command/core/types"
 	"github.com/stretchr/testify/assert"
 	"llvm.org/llvm/bindings/go/llvm"
 )

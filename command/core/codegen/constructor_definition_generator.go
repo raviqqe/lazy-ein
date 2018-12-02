@@ -1,9 +1,9 @@
 package codegen
 
 import (
-	"github.com/raviqqe/jsonxx/command/stg/ast"
-	"github.com/raviqqe/jsonxx/command/stg/codegen/llir"
-	"github.com/raviqqe/jsonxx/command/stg/codegen/names"
+	"github.com/raviqqe/jsonxx/command/core/ast"
+	"github.com/raviqqe/jsonxx/command/core/codegen/llir"
+	"github.com/raviqqe/jsonxx/command/core/codegen/names"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 

@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/raviqqe/jsonxx/command/stg/types"
+import "github.com/raviqqe/jsonxx/command/core/types"
 
 // PrimitiveCase is a primitive case expression.
 type PrimitiveCase struct {

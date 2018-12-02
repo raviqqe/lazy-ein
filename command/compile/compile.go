@@ -2,8 +2,8 @@ package compile
 
 import (
 	"github.com/raviqqe/jsonxx/command/ast"
-	core "github.com/raviqqe/jsonxx/command/stg/ast"
-	"github.com/raviqqe/jsonxx/command/stg/types"
+	core "github.com/raviqqe/jsonxx/command/core/ast"
+	"github.com/raviqqe/jsonxx/command/core/types"
 )
 
 // Compile compiles a module into a module in STG.

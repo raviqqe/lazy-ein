@@ -5,8 +5,8 @@ import (
 
 	"github.com/raviqqe/jsonxx/command/ast"
 	"github.com/raviqqe/jsonxx/command/compile"
-	core "github.com/raviqqe/jsonxx/command/stg/ast"
-	"github.com/raviqqe/jsonxx/command/stg/types"
+	core "github.com/raviqqe/jsonxx/command/core/ast"
+	"github.com/raviqqe/jsonxx/command/core/types"
 	"github.com/stretchr/testify/assert"
 )
 

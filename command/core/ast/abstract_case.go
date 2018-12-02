@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"github.com/raviqqe/jsonxx/command/stg/types"
+	"github.com/raviqqe/jsonxx/command/core/types"
 )
 
 type abstractCase struct {

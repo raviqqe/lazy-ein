@@ -1,7 +1,7 @@
 package codegen
 
 import (
-	"github.com/raviqqe/jsonxx/command/stg/codegen/llir"
+	"github.com/raviqqe/jsonxx/command/core/codegen/llir"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
