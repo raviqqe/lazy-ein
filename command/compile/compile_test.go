@@ -7,9 +7,12 @@ import (
 	"github.com/raviqqe/jsonxx/command/compile"
 	cast "github.com/raviqqe/jsonxx/command/core/ast"
 	ctypes "github.com/raviqqe/jsonxx/command/core/types"
+	"github.com/raviqqe/jsonxx/command/debug"
 	"github.com/raviqqe/jsonxx/command/types"
 	"github.com/stretchr/testify/assert"
 )
+
+var debugInformation = debug.NewInformation("", 0, 0, "")
 
 func TestCompileWithEmptySource(t *testing.T) {
 	m := compile.Compile(ast.NewModule("", []ast.Bind{}))
