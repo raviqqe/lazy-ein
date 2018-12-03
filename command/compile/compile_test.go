@@ -21,7 +21,7 @@ func TestCompileWithVariableBinds(t *testing.T) {
 	m := compile.Compile(
 		ast.NewModule(
 			"",
-			[]ast.Bind{ast.NewBind("x", types.NewNumber(debugInformation), ast.NewNumber(42))},
+			[]ast.Bind{ast.NewBind("x", nil, types.NewNumber(debugInformation), ast.NewNumber(42))},
 		),
 	)
 

@@ -14,8 +14,11 @@ import (
 type sign string
 
 const (
-	bindSign           sign = "="
-	typeDefinitionSign      = ":"
+	bindSign             sign = "="
+	typeDefinitionSign        = ":"
+	functionSign              = "->"
+	openParenthesisSign       = "("
+	closeParenthesisSign      = ")"
 )
 
 type keyword string
@@ -69,12 +72,33 @@ func (s *state) bind() parcom.Parser {
 	return s.App(
 		func(x interface{}) (interface{}, error) {
 			xs := x.([]interface{})
-			return ast.NewBind(xs[4].(string), xs[2].(types.Type), xs[6].(ast.Expression)), nil
+			return ast.NewBind(
+				xs[4].(string),
+				xs[5].([]string),
+				xs[2].(types.Type),
+				xs[7].(ast.Expression),
+			), nil
 		},
 		s.And(
 			s.identifier(), s.sign(typeDefinitionSign), s.typ(), s.lineBreak(),
-			s.identifier(), s.sign(bindSign), s.expression(), s.lineBreak(),
+			s.identifier(), s.arguments(), s.sign(bindSign), s.expression(), s.lineBreak(),
 		),
+	)
+}
+
+func (s *state) arguments() parcom.Parser {
+	return s.App(
+		func(x interface{}) (interface{}, error) {
+			xs := x.([]interface{})
+			ss := make([]string, 0, len(xs))
+
+			for _, x := range xs {
+				ss = append(ss, x.(string))
+			}
+
+			return ss, nil
+		},
+		s.Many(s.identifier()),
 	)
 }
 
@@ -107,7 +131,25 @@ func (s *state) numberLiteral() parcom.Parser {
 }
 
 func (s *state) typ() parcom.Parser {
-	return s.trim(s.Or(s.numberType()))
+	return s.Lazy(func() parcom.Parser { return s.strictType() })
+}
+
+func (s *state) strictType() parcom.Parser {
+	return s.trim(
+		s.Or(
+			s.functionType(),
+			s.numberType(),
+		),
+	)
+}
+
+func (s *state) argumentType() parcom.Parser {
+	return s.trim(
+		s.Or(
+			s.numberType(),
+			s.parenthesesed(s.functionType()),
+		),
+	)
 }
 
 func (s *state) numberType() parcom.Parser {
@@ -115,6 +157,20 @@ func (s *state) numberType() parcom.Parser {
 		s.Str("Number"),
 		func(_ interface{}, i *debug.Information) (interface{}, error) {
 			return types.NewNumber(i), nil
+		},
+	)
+}
+
+func (s *state) functionType() parcom.Parser {
+	return s.Lazy(func() parcom.Parser { return s.strictFunctionType() })
+}
+
+func (s *state) strictFunctionType() parcom.Parser {
+	return s.withDebugInformation(
+		s.And(s.argumentType(), s.sign(functionSign), s.typ()),
+		func(x interface{}, i *debug.Information) (interface{}, error) {
+			xs := x.([]interface{})
+			return types.NewFunction(xs[0].(types.Type), xs[2].(types.Type), i), nil
 		},
 	)
 }
@@ -133,6 +189,10 @@ func (s *state) withDebugInformation(
 
 		return f(x, i)
 	}
+}
+
+func (s *state) parenthesesed(p parcom.Parser) parcom.Parser {
+	return s.Wrap(s.sign(openParenthesisSign), p, s.sign(closeParenthesisSign))
 }
 
 func (s *state) identifier() parcom.Parser {

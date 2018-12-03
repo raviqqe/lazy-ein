@@ -12,8 +12,7 @@ type TypeError struct {
 	debugInformation *debug.Information
 }
 
-// TODO: Remove a nolint attribute.
-func newTypeError(m string, i *debug.Information) error { // nolint: unparam
+func newTypeError(m string, i *debug.Information) error {
 	return TypeError{m, i}
 }
 
