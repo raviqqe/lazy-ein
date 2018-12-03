@@ -240,6 +240,7 @@ func (s *state) trim(p parcom.Parser) parcom.Parser {
 }
 
 func (s *state) lineBreak() parcom.Parser {
+	// TODO: Replace s.newLine() with s.newLineOrSourceEnd().
 	return s.And(s.spaces(), s.newLine(), s.blanks())
 }
 
