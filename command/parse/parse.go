@@ -1,19 +1,21 @@
 package parse
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/raviqqe/jsonxx/command/ast"
+	"github.com/raviqqe/jsonxx/command/debug"
+	"github.com/raviqqe/jsonxx/command/types"
 	"github.com/raviqqe/parcom"
 )
 
 type sign string
 
 const (
-	bindSign sign = "="
+	bindSign           sign = "="
+	typeDefinitionSign      = ":"
 )
 
 type keyword string
@@ -35,8 +37,6 @@ var keywords = map[keyword]struct{}{
 	letKeyword:    {},
 	ofKeyword:     {},
 }
-
-const blankCharacters = " \t\n\r"
 
 // Parse parses a module into an AST.
 func Parse(f, s string) (ast.Module, error) {
@@ -61,12 +61,7 @@ func (s *state) module(f string) parcom.Parser {
 
 			return ast.NewModule(f, bs), nil
 		},
-		s.Exhaust(
-			s.Many(s.bind()),
-			func(parcom.State) error {
-				return errors.New("syntax error")
-			},
-		),
+		s.Exhaust(s.Prefix(s.blanks(), s.Many(s.bind()))),
 	)
 }
 
@@ -74,14 +69,17 @@ func (s *state) bind() parcom.Parser {
 	return s.App(
 		func(x interface{}) (interface{}, error) {
 			xs := x.([]interface{})
-			return ast.NewBind(xs[0].(string), xs[2].(ast.Expression)), nil
+			return ast.NewBind(xs[4].(string), xs[2].(types.Type), xs[6].(ast.Expression)), nil
 		},
-		s.And(s.identifier(), s.sign(bindSign), s.expression()),
+		s.And(
+			s.identifier(), s.sign(typeDefinitionSign), s.typ(), s.lineBreak(),
+			s.identifier(), s.sign(bindSign), s.expression(), s.lineBreak(),
+		),
 	)
 }
 
 func (s *state) expression() parcom.Parser {
-	return s.strip(s.numberLiteral())
+	return s.trim(s.numberLiteral())
 }
 
 func (s *state) numberLiteral() parcom.Parser {
@@ -108,8 +106,37 @@ func (s *state) numberLiteral() parcom.Parser {
 	)
 }
 
+func (s *state) typ() parcom.Parser {
+	return s.trim(s.Or(s.numberType()))
+}
+
+func (s *state) numberType() parcom.Parser {
+	return s.withDebugInformation(
+		s.Str("Number"),
+		func(_ interface{}, i *debug.Information) (interface{}, error) {
+			return types.NewNumber(i), nil
+		},
+	)
+}
+
+func (s *state) withDebugInformation(
+	p parcom.Parser,
+	f func(interface{}, *debug.Information) (interface{}, error),
+) parcom.Parser {
+	return func() (interface{}, error) {
+		i := s.debugInformation()
+		x, err := p()
+
+		if err != nil {
+			return nil, err
+		}
+
+		return f(x, i)
+	}
+}
+
 func (s *state) identifier() parcom.Parser {
-	p := s.strip(s.Stringify(s.And(s.alphabet(), s.Many(s.Or(s.alphabet(), s.number())))))
+	p := s.trim(s.Stringify(s.And(s.alphabet(), s.Many(s.Or(s.alphabet(), s.number())))))
 
 	return func() (interface{}, error) {
 		x, err := p()
@@ -144,19 +171,30 @@ func (s *state) number() parcom.Parser {
 	return s.Chars(ns)
 }
 
-func (s *state) keyword(k keyword) parcom.Parser {
-	return s.strip(s.Str(string(k)))
+func (s *state) sign(sg sign) parcom.Parser {
+	return s.trim(s.Str(string(sg)))
 }
 
-// TODO: Remove nolint attribute when signs other than = are implemented.
-func (s *state) sign(sg sign) parcom.Parser { // nolint: unparam
-	return s.strip(s.Str(string(sg)))
+func (s *state) trim(p parcom.Parser) parcom.Parser {
+	return s.Wrap(s.spaces(), p, s.spaces())
 }
 
-func (s *state) strip(p parcom.Parser) parcom.Parser {
-	return s.Wrap(s.blank(), p, s.blank())
+func (s *state) lineBreak() parcom.Parser {
+	return s.And(s.spaces(), s.newLine(), s.blanks())
 }
 
-func (s *state) blank() parcom.Parser {
-	return s.Void(s.Many(s.Chars(blankCharacters)))
+func (s *state) blanks() parcom.Parser {
+	return s.Void(s.Many(s.Or(s.space(), s.newLine())))
+}
+
+func (s *state) spaces() parcom.Parser {
+	return s.Void(s.Many(s.space()))
+}
+
+func (s *state) space() parcom.Parser {
+	return s.Void(s.Chars(" \t\r"))
+}
+
+func (s *state) newLine() parcom.Parser {
+	return s.Void(s.Char('\n'))
 }

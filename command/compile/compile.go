@@ -2,30 +2,40 @@ package compile
 
 import (
 	"github.com/raviqqe/jsonxx/command/ast"
-	core "github.com/raviqqe/jsonxx/command/core/ast"
-	"github.com/raviqqe/jsonxx/command/core/types"
+	cast "github.com/raviqqe/jsonxx/command/core/ast"
+	ctypes "github.com/raviqqe/jsonxx/command/core/types"
+	"github.com/raviqqe/jsonxx/command/types"
 )
 
 // Compile compiles a module into a module in STG.
-func Compile(m ast.Module) core.Module {
-	bs := make([]core.Bind, 0, len(m.Binds()))
+func Compile(m ast.Module) cast.Module {
+	bs := make([]cast.Bind, 0, len(m.Binds()))
 
 	for _, b := range m.Binds() {
 		bs = append(bs, compileBind(b))
 	}
 
-	return core.NewModule(m.Name(), nil, bs)
+	return cast.NewModule(m.Name(), nil, bs)
 }
 
-func compileBind(b ast.Bind) core.Bind {
-	return core.NewBind(
+func compileBind(b ast.Bind) cast.Bind {
+	return cast.NewBind(
 		b.Name(),
-		core.NewLambda(
+		cast.NewLambda(
 			nil,
 			true,
 			nil,
-			core.NewFloat64(b.Expression().(ast.Number).Value()),
-			types.NewFloat64(),
+			cast.NewFloat64(b.Expression().(ast.Number).Value()),
+			compileType(b.Type()),
 		),
 	)
+}
+
+func compileType(t types.Type) ctypes.Type {
+	switch t.(type) {
+	case types.Number:
+		return ctypes.NewFloat64()
+	}
+
+	panic("unreahable")
 }

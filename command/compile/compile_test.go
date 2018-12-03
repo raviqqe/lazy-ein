@@ -5,29 +5,35 @@ import (
 
 	"github.com/raviqqe/jsonxx/command/ast"
 	"github.com/raviqqe/jsonxx/command/compile"
-	core "github.com/raviqqe/jsonxx/command/core/ast"
-	"github.com/raviqqe/jsonxx/command/core/types"
+	cast "github.com/raviqqe/jsonxx/command/core/ast"
+	ctypes "github.com/raviqqe/jsonxx/command/core/types"
+	"github.com/raviqqe/jsonxx/command/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCompileWithEmptySource(t *testing.T) {
 	m := compile.Compile(ast.NewModule("", []ast.Bind{}))
 
-	assert.Equal(t, core.NewModule("", nil, []core.Bind{}), m)
+	assert.Equal(t, cast.NewModule("", nil, []cast.Bind{}), m)
 }
 
 func TestCompileWithVariableBinds(t *testing.T) {
-	m := compile.Compile(ast.NewModule("", []ast.Bind{ast.NewBind("x", ast.NewNumber(42))}))
+	m := compile.Compile(
+		ast.NewModule(
+			"",
+			[]ast.Bind{ast.NewBind("x", types.NewNumber(debugInformation), ast.NewNumber(42))},
+		),
+	)
 
 	assert.Equal(
 		t,
-		core.NewModule(
+		cast.NewModule(
 			"",
 			nil,
-			[]core.Bind{
-				core.NewBind(
+			[]cast.Bind{
+				cast.NewBind(
 					"x",
-					core.NewLambda(nil, true, nil, core.NewFloat64(42), types.NewFloat64()),
+					cast.NewLambda(nil, true, nil, cast.NewFloat64(42), ctypes.NewFloat64()),
 				),
 			},
 		),
