@@ -13,4 +13,4 @@ func (v Variable) Name() string {
 	return string(v)
 }
 
-func (v Variable) isAtom() {}
+func (Variable) isAtom() {}
