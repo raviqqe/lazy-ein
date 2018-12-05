@@ -8,12 +8,12 @@ import (
 )
 
 type state struct {
-	*parcom.State
+	*parcom.PositionalState
 	filename, source string
 }
 
 func newState(f, s string) *state {
-	return &state{parcom.NewState(s), f, s}
+	return &state{parcom.NewPositionalState(s), f, s}
 }
 
 func (s state) debugInformation() *debug.Information {
