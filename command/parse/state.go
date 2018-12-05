@@ -19,8 +19,8 @@ func newState(f, s string) *state {
 func (s state) debugInformation() *debug.Information {
 	return debug.NewInformation(
 		s.filename,
-		s.LineNumber(),
-		s.CharacterPosition(),
-		strings.Split(s.source, "\n")[s.LineNumber()-1],
+		s.Line(),
+		s.Column(),
+		strings.Split(s.source, "\n")[s.Line()-1],
 	)
 }
