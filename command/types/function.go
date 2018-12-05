@@ -15,12 +15,16 @@ func NewFunction(a, r Type, i *debug.Information) Function {
 }
 
 // Unify unifies itself with another type.
-func (Function) Unify(t Type) error {
-	if _, ok := t.(Function); ok {
-		return nil
+func (f Function) Unify(t Type) error {
+	ff, ok := t.(Function)
+
+	if !ok {
+		return newTypeError("not a function", t.DebugInformation())
+	} else if err := ff.argument.Unify(f.argument); err != nil {
+		return err
 	}
 
-	return newTypeError("not a function", t.DebugInformation())
+	return f.result.Unify(ff.result)
 }
 
 // DebugInformation returns debug information.
