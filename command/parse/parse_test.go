@@ -110,7 +110,7 @@ func TestStateNumberLiteralError(t *testing.T) {
 	} {
 		s := newState("", s)
 		_, err := s.Exhaust(s.numberLiteral())()
-		assert.NotNil(t, err)
+		assert.Error(t, err)
 	}
 }
 
