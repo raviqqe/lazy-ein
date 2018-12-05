@@ -64,7 +64,7 @@ func (s *state) module(f string) parcom.Parser {
 
 			return ast.NewModule(f, bs), nil
 		},
-		s.Exhaust(s.Prefix(s.blanks(), s.Many(s.bind()))),
+		s.Exhaust(s.Prefix(s.blanks(), s.Block(s.None(), s.bind()))),
 	)
 }
 

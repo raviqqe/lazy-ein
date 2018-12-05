@@ -16,6 +16,28 @@ func TestParseWithEmptySource(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestStateModule(t *testing.T) {
+	for _, s := range []string{
+		"x : Number\nx = 42\n",
+		"x : Number\nx = 42\ny : Number\ny = 42\n",
+		"f : Number -> Number\nf x = 42\n",
+		"f : Number -> Number -> Number\nf x y = 42\n",
+	} {
+		_, err := newState("", s).module("")()
+		assert.Nil(t, err)
+	}
+}
+
+func TestStateModuleError(t *testing.T) {
+	for _, s := range []string{
+		"x : Number\n",
+		"x : Number\nx = 42\n  y : Number\n  y = 42\n",
+	} {
+		_, err := newState("", s).module("")()
+		assert.Error(t, err)
+	}
+}
+
 func TestStateBind(t *testing.T) {
 	for _, s := range []string{
 		"x : Number\nx = 42\n",
