@@ -80,8 +80,13 @@ func TestStateIdentifier(t *testing.T) {
 func TestStateIdentifierError(t *testing.T) {
 	for _, s := range []string{"0", "1x", "let"} {
 		_, err := newState("", s).identifier()()
-		assert.NotNil(t, err)
+		assert.Error(t, err)
 	}
+}
+
+func TestStateIdentifierErrorWithKeywords(t *testing.T) {
+	_, err := newState("", "let").identifier()()
+	assert.Equal(t, `"let" is a keyword`, err.Error())
 }
 
 func TestStateNumberLiteral(t *testing.T) {

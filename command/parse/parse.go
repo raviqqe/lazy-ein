@@ -196,19 +196,16 @@ func (s *state) parenthesesed(p parcom.Parser) parcom.Parser {
 }
 
 func (s *state) identifier() parcom.Parser {
-	p := s.trim(s.Stringify(s.And(s.alphabet(), s.Many(s.Or(s.alphabet(), s.number())))))
+	return s.withDebugInformation(
+		s.trim(s.Stringify(s.And(s.alphabet(), s.Many(s.Or(s.alphabet(), s.number()))))),
+		func(x interface{}, i *debug.Information) (interface{}, error) {
+			if _, ok := keywords[keyword(x.(string))]; ok {
+				return nil, newError(fmt.Sprintf("%#v is a keyword", x), i)
+			}
 
-	return func() (interface{}, error) {
-		x, err := p()
-
-		if err != nil {
-			return nil, err
-		} else if _, ok := keywords[keyword(x.(string))]; ok {
-			return nil, fmt.Errorf("%#v is a keyword", x)
-		}
-
-		return x, nil
-	}
+			return x, nil
+		},
+	)
 }
 
 func (s *state) alphabet() parcom.Parser {
