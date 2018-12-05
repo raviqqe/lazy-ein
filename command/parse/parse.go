@@ -64,25 +64,35 @@ func (s *state) module(f string) parcom.Parser {
 
 			return ast.NewModule(f, bs), nil
 		},
-		s.Exhaust(s.Prefix(s.blanks(), s.Block(s.None(), s.bind()))),
+		s.Exhaust(s.Block(s.None(), s.bind())),
 	)
 }
 
 func (s *state) bind() parcom.Parser {
-	return s.App(
-		func(x interface{}) (interface{}, error) {
+	return s.withDebugInformation(
+		s.And(
+			s.WithPosition(s.And(s.identifier(), s.sign(typeDefinitionSign), s.typ())),
+			s.WithPosition(s.And(s.identifier(), s.arguments(), s.sign(bindSign), s.expression())),
+		),
+		func(x interface{}, i *debug.Information) (interface{}, error) {
 			xs := x.([]interface{})
+			ys := xs[0].([]interface{})
+			zs := xs[1].([]interface{})
+
+			if ys[0].(string) != zs[0].(string) {
+				return nil, newError(
+					"inconsistent identifiers between a type declaration and a definition",
+					i,
+				)
+			}
+
 			return ast.NewBind(
-				xs[4].(string),
-				xs[5].([]string),
-				xs[2].(types.Type),
-				xs[7].(ast.Expression),
+				zs[0].(string),
+				zs[1].([]string),
+				ys[2].(types.Type),
+				zs[3].(ast.Expression),
 			), nil
 		},
-		s.And(
-			s.identifier(), s.sign(typeDefinitionSign), s.typ(), s.lineBreak(),
-			s.identifier(), s.arguments(), s.sign(bindSign), s.expression(), s.lineBreak(),
-		),
 	)
 }
 
@@ -103,7 +113,7 @@ func (s *state) arguments() parcom.Parser {
 }
 
 func (s *state) expression() parcom.Parser {
-	return s.trim(s.numberLiteral())
+	return s.numberLiteral()
 }
 
 func (s *state) numberLiteral() parcom.Parser {
@@ -117,14 +127,16 @@ func (s *state) numberLiteral() parcom.Parser {
 
 			return ast.NewNumber(n), nil
 		},
-		s.Stringify(
-			s.And(
-				s.Maybe(s.Str("-")),
-				s.Or(
-					s.And(s.Chars("123456789"), s.Many(s.number())),
-					s.Str("0"),
+		s.token(
+			s.Stringify(
+				s.And(
+					s.Maybe(s.Str("-")),
+					s.Or(
+						s.And(s.Chars("123456789"), s.Many(s.number())),
+						s.Str("0"),
+					),
+					s.Maybe(s.And(s.Str("."), s.Many1(s.number()))),
 				),
-				s.Maybe(s.And(s.Str("."), s.Many1(s.number()))),
 			),
 		),
 	)
@@ -135,26 +147,22 @@ func (s *state) typ() parcom.Parser {
 }
 
 func (s *state) strictType() parcom.Parser {
-	return s.trim(
-		s.Or(
-			s.functionType(),
-			s.numberType(),
-		),
+	return s.Or(
+		s.functionType(),
+		s.scalarType(),
 	)
 }
 
 func (s *state) argumentType() parcom.Parser {
-	return s.trim(
-		s.Or(
-			s.numberType(),
-			s.parenthesesed(s.functionType()),
-		),
+	return s.Or(
+		s.scalarType(),
+		s.parenthesesed(s.functionType()),
 	)
 }
 
-func (s *state) numberType() parcom.Parser {
+func (s *state) scalarType() parcom.Parser {
 	return s.withDebugInformation(
-		s.Str("Number"),
+		s.token(s.Str("Number")),
 		func(_ interface{}, i *debug.Information) (interface{}, error) {
 			return types.NewNumber(i), nil
 		},
@@ -197,7 +205,7 @@ func (s *state) parenthesesed(p parcom.Parser) parcom.Parser {
 
 func (s *state) identifier() parcom.Parser {
 	return s.withDebugInformation(
-		s.trim(s.Stringify(s.And(s.alphabet(), s.Many(s.Or(s.alphabet(), s.number()))))),
+		s.token(s.Stringify(s.And(s.alphabet(), s.Many(s.Or(s.alphabet(), s.number()))))),
 		func(x interface{}, i *debug.Information) (interface{}, error) {
 			if _, ok := keywords[keyword(x.(string))]; ok {
 				return nil, newError(fmt.Sprintf("%#v is a keyword", x), i)
@@ -229,30 +237,13 @@ func (s *state) number() parcom.Parser {
 }
 
 func (s *state) sign(sg sign) parcom.Parser {
-	return s.trim(s.Str(string(sg)))
+	return s.token(s.Str(string(sg)))
 }
 
-func (s *state) trim(p parcom.Parser) parcom.Parser {
-	return s.Wrap(s.spaces(), p, s.spaces())
-}
-
-func (s *state) lineBreak() parcom.Parser {
-	// TODO: Replace s.newLine() with s.newLineOrSourceEnd().
-	return s.And(s.spaces(), s.newLine(), s.blanks())
+func (s *state) token(p parcom.Parser) parcom.Parser {
+	return s.Wrap(s.blanks(), s.SameLineOrIndent(p), s.blanks())
 }
 
 func (s *state) blanks() parcom.Parser {
-	return s.Void(s.Many(s.Or(s.space(), s.newLine())))
-}
-
-func (s *state) spaces() parcom.Parser {
-	return s.Void(s.Many(s.space()))
-}
-
-func (s *state) space() parcom.Parser {
-	return s.Void(s.Chars(" \t\r"))
-}
-
-func (s *state) newLine() parcom.Parser {
-	return s.Void(s.Char('\n'))
+	return s.Void(s.Many(s.Chars(" \t\n\r")))
 }

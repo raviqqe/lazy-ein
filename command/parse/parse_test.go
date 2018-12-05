@@ -43,6 +43,8 @@ func TestStateBind(t *testing.T) {
 		"x : Number\nx = 42\n",
 		"f : Number -> Number\nf x = 42\n",
 		"f : Number -> Number -> Number\nf x y = 42\n",
+		"x :\n Number\nx = 42\n",
+		"x : Number\nx =\n 42\n",
 	} {
 		_, err := newState("", s).bind()()
 		assert.Nil(t, err)
