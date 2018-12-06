@@ -14,6 +14,16 @@ func NewFunction(a, r Type, i *debug.Information) Function {
 	return Function{a, r, i}
 }
 
+// Argument returns an argument type.
+func (f Function) Argument() Type {
+	return f.argument
+}
+
+// Result returns a result type.
+func (f Function) Result() Type {
+	return f.result
+}
+
 // Unify unifies itself with another type.
 func (f Function) Unify(t Type) error {
 	ff, ok := t.(Function)
