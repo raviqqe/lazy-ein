@@ -16,6 +16,11 @@ func TestParseWithEmptySource(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestParseError(t *testing.T) {
+	_, err := Parse("", "foo")
+	assert.Error(t, err)
+}
+
 func TestStateModule(t *testing.T) {
 	for _, s := range []string{
 		"x : Number\nx = 42",
@@ -75,6 +80,11 @@ func TestStateBindWithVariableBind(t *testing.T) {
 
 func TestStateBindErrorWithInvalidIndents(t *testing.T) {
 	_, err := newState("", "x : Number\n x = 42").bind()()
+	assert.Error(t, err)
+}
+
+func TestStateBindErrorWithInconsistentIdentifiers(t *testing.T) {
+	_, err := newState("", "x : Number\ny = 42").bind()()
 	assert.Error(t, err)
 }
 
