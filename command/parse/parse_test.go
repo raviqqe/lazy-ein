@@ -132,6 +132,29 @@ func TestStateNumberLiteralError(t *testing.T) {
 	}
 }
 
+func TestStateLet(t *testing.T) {
+	for _, s := range []string{
+		"let x = 42 in 42",
+		"let\n x = 42 in 42",
+		"let x = 42\n    y = 42 in 42",
+		"let x = 42\nin 42",
+	} {
+		_, err := newState("", s).let()()
+		assert.Nil(t, err)
+	}
+}
+
+func TestStateLetError(t *testing.T) {
+	for _, s := range []string{
+		"let\nx = 42 in 42",
+		"let\n x =\n 42 in 42",
+		"let x = 42\n y = 42 in 42",
+	} {
+		_, err := newState("", s).let()()
+		assert.Error(t, err)
+	}
+}
+
 func TestStateType(t *testing.T) {
 	for _, s := range []string{
 		"Number",

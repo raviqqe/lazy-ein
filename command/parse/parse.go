@@ -142,6 +142,32 @@ func (s *state) numberLiteral() parcom.Parser {
 	)
 }
 
+func (s *state) let() parcom.Parser {
+	return s.And(
+		s.WithBlock1(
+			s.keyword(letKeyword),
+			s.untypedBind(),
+		),
+		s.keyword(inKeyword),
+	)
+}
+
+func (s *state) untypedBind() parcom.Parser {
+	return s.withDebugInformation(
+		s.WithPosition(s.And(s.identifier(), s.arguments(), s.sign(bindSign), s.expression())),
+		func(x interface{}, i *debug.Information) (interface{}, error) {
+			xs := x.([]interface{})
+
+			return ast.NewBind(
+				xs[0].(string),
+				xs[1].([]string),
+				types.NewVariable(i),
+				xs[3].(ast.Expression),
+			), nil
+		},
+	)
+}
+
 func (s *state) typ() parcom.Parser {
 	return s.Lazy(func() parcom.Parser { return s.strictType() })
 }
@@ -234,6 +260,10 @@ func (s *state) number() parcom.Parser {
 	}
 
 	return s.Chars(ns)
+}
+
+func (s *state) keyword(k keyword) parcom.Parser {
+	return s.token(s.Str(string(k)))
 }
 
 func (s *state) sign(sg sign) parcom.Parser {
