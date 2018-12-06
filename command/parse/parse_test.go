@@ -32,6 +32,7 @@ func TestStateModuleError(t *testing.T) {
 	for _, s := range []string{
 		"x : Number\n",
 		"x : Number\nx = 42\n  y : Number\n  y = 42\n",
+		" x : Number\n x = 42\n",
 	} {
 		_, err := newState("", s).module("")()
 		assert.Error(t, err)
