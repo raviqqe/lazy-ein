@@ -72,6 +72,11 @@ func TestStateBindWithVariableBind(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestStateBindErrorWithInvalidIndents(t *testing.T) {
+	_, err := newState("", "x : Number\n x = 42").bind()()
+	assert.Error(t, err)
+}
+
 func TestStateIdentifier(t *testing.T) {
 	for _, s := range []string{"x", "az", "a09"} {
 		_, err := newState("", s).identifier()()

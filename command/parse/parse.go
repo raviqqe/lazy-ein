@@ -70,9 +70,15 @@ func (s *state) module(f string) parcom.Parser {
 
 func (s *state) bind() parcom.Parser {
 	return s.withDebugInformation(
-		s.And(
-			s.WithPosition(s.And(s.identifier(), s.sign(typeDefinitionSign), s.typ())),
-			s.WithPosition(s.And(s.identifier(), s.arguments(), s.sign(bindSign), s.expression())),
+		s.WithPosition(
+			s.And(
+				s.SameColumn(
+					s.WithPosition(s.And(s.identifier(), s.sign(typeDefinitionSign), s.typ())),
+				),
+				s.SameColumn(
+					s.WithPosition(s.And(s.identifier(), s.arguments(), s.sign(bindSign), s.expression())),
+				),
+			),
 		),
 		func(x interface{}, i *debug.Information) (interface{}, error) {
 			xs := x.([]interface{})
