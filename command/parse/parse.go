@@ -247,9 +247,5 @@ func (s *state) sign(sg sign) parcom.Parser {
 }
 
 func (s *state) token(p parcom.Parser) parcom.Parser {
-	return s.Wrap(s.blanks(), s.SameLineOrIndent(p), s.blanks())
-}
-
-func (s *state) blanks() parcom.Parser {
-	return s.Void(s.Many(s.Chars(" \t\n\r")))
+	return s.Suffix(s.SameLineOrIndent(p), s.Many(s.Chars(" \t\n\r")))
 }
