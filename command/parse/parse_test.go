@@ -18,10 +18,10 @@ func TestParseWithEmptySource(t *testing.T) {
 
 func TestStateModule(t *testing.T) {
 	for _, s := range []string{
-		"x : Number\nx = 42\n",
-		"x : Number\nx = 42\ny : Number\ny = 42\n",
-		"f : Number -> Number\nf x = 42\n",
-		"f : Number -> Number -> Number\nf x y = 42\n",
+		"x : Number\nx = 42",
+		"x : Number\nx = 42\ny : Number\ny = 42",
+		"f : Number -> Number\nf x = 42",
+		"f : Number -> Number -> Number\nf x y = 42",
 	} {
 		_, err := newState("", s).module("")()
 		assert.Nil(t, err)
@@ -30,9 +30,9 @@ func TestStateModule(t *testing.T) {
 
 func TestStateModuleError(t *testing.T) {
 	for _, s := range []string{
-		"x : Number\n",
-		"x : Number\nx = 42\n  y : Number\n  y = 42\n",
-		" x : Number\n x = 42\n",
+		"x : Number",
+		"x : Number\nx = 42\n  y : Number\n  y = 42",
+		" x : Number\n x = 42",
 	} {
 		_, err := newState("", s).module("")()
 		assert.Error(t, err)
@@ -41,11 +41,11 @@ func TestStateModuleError(t *testing.T) {
 
 func TestStateBind(t *testing.T) {
 	for _, s := range []string{
-		"x : Number\nx = 42\n",
-		"f : Number -> Number\nf x = 42\n",
-		"f : Number -> Number -> Number\nf x y = 42\n",
-		"x :\n Number\nx = 42\n",
-		"x : Number\nx =\n 42\n",
+		"x : Number\nx = 42",
+		"f : Number -> Number\nf x = 42",
+		"f : Number -> Number -> Number\nf x y = 42",
+		"x :\n Number\nx = 42",
+		"x : Number\nx =\n 42",
 	} {
 		_, err := newState("", s).bind()()
 		assert.Nil(t, err)
@@ -53,7 +53,7 @@ func TestStateBind(t *testing.T) {
 }
 
 func TestStateBindWithVariableBind(t *testing.T) {
-	x, err := Parse("", "x : Number\nx = 42\n")
+	x, err := Parse("", "x : Number\nx = 42")
 
 	assert.Equal(
 		t,
