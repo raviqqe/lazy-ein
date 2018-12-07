@@ -20,3 +20,14 @@ func (m Module) Name() string {
 func (m Module) Binds() []Bind {
 	return m.binds
 }
+
+// ConvertExpression visits expressions.
+func (m Module) ConvertExpression(f func(Expression) Expression) node {
+	bs := make([]Bind, 0, len(m.binds))
+
+	for _, b := range m.binds {
+		bs = append(bs, b.ConvertExpression(f).(Bind))
+	}
+
+	return NewModule(m.name, bs)
+}

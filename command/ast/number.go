@@ -15,5 +15,10 @@ func (n Number) Value() float64 {
 	return n.value
 }
 
+// ConvertExpression visits expressions.
+func (n Number) ConvertExpression(func(Expression) Expression) node {
+	return n
+}
+
 func (Number) isExpression() {}
 func (Number) isLiteral()    {}

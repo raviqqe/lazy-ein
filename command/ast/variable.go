@@ -13,5 +13,10 @@ func (v Variable) Name() string {
 	return string(v)
 }
 
+// ConvertExpression visits expressions.
+func (v Variable) ConvertExpression(func(Expression) Expression) node {
+	return v
+}
+
 func (Variable) isAtom()       {}
 func (Variable) isExpression() {}

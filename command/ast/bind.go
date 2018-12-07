@@ -34,3 +34,8 @@ func (b Bind) Type() types.Type {
 func (b Bind) Expression() Expression {
 	return b.expression
 }
+
+// ConvertExpression visits expressions.
+func (b Bind) ConvertExpression(f func(Expression) Expression) node {
+	return NewBind(b.name, b.arguments, b.typ, f(b.expression.ConvertExpression(f).(Expression)))
+}
