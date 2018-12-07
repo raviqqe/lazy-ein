@@ -2,6 +2,7 @@ package compile
 
 import (
 	"github.com/raviqqe/jsonxx/command/ast"
+	"github.com/raviqqe/jsonxx/command/compile/desugar"
 	cast "github.com/raviqqe/jsonxx/command/core/ast"
 	ctypes "github.com/raviqqe/jsonxx/command/core/types"
 	"github.com/raviqqe/jsonxx/command/types"
@@ -9,6 +10,8 @@ import (
 
 // Compile compiles a module into a module in STG.
 func Compile(m ast.Module) cast.Module {
+	m = desugar.Desugar(m)
+
 	bs := make([]cast.Bind, 0, len(m.Binds()))
 
 	for _, b := range m.Binds() {
