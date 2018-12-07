@@ -15,7 +15,8 @@ func TestDesugarLiterals(t *testing.T) {
 			ast.NewModule("", []ast.Bind{}),
 			ast.NewModule("", []ast.Bind{}),
 		},
-		// Don't convert variable binds
+		// Convert variable binds
+		// TODO: Don't convert variable binds in a special way and optimize codes in core language.
 		{
 			ast.NewModule(
 				"",
@@ -23,7 +24,9 @@ func TestDesugarLiterals(t *testing.T) {
 			),
 			ast.NewModule(
 				"",
-				[]ast.Bind{ast.NewBind("x", nil, types.NewNumber(nil), ast.NewNumber(42))},
+				[]ast.Bind{
+					ast.NewBind("x", nil, types.NewUnboxed(types.NewNumber(nil), nil), ast.NewNumber(42)),
+				},
 			),
 		},
 		// Convert function binds

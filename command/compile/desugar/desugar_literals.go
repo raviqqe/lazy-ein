@@ -12,7 +12,16 @@ func desugarLiterals(m ast.Module) ast.Module {
 
 	for _, b := range m.Binds() {
 		if _, ok := b.Expression().(ast.Literal); ok && len(b.Arguments()) == 0 {
-			bs = append(bs, b)
+			bs = append(
+				bs,
+				ast.NewBind(
+					b.Name(),
+					nil,
+					types.NewUnboxed(b.Type(), b.Type().DebugInformation()),
+					b.Expression(),
+				),
+			)
+
 			continue
 		}
 
