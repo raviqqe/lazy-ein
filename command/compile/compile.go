@@ -35,10 +35,19 @@ func compileBind(b ast.Bind) cast.Bind {
 }
 
 func compileType(t types.Type) ctypes.Type {
+	switch t := t.(type) {
+	case types.Unboxed:
+		return compileRawType(t.Content())
+	}
+
+	return ctypes.NewBoxed(compileRawType(t))
+}
+
+func compileRawType(t types.Type) ctypes.Type {
 	switch t.(type) {
 	case types.Number:
 		return ctypes.NewFloat64()
 	}
 
-	panic("unreahable")
+	panic("unreachable")
 }
