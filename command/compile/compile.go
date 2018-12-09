@@ -22,20 +22,64 @@ func Compile(m ast.Module) cast.Module {
 }
 
 func compileBind(b ast.Bind) cast.Bind {
+	if len(b.Arguments()) == 0 {
+		return cast.NewBind(
+			b.Name(),
+			cast.NewLambda(
+				nil,
+				true,
+				nil,
+				compileExpression(b.Expression()),
+				compileType(b.Type()),
+			),
+		)
+	}
+
+	t := compileType(b.Type()).(ctypes.Function)
+	as := make([]cast.Argument, 0, len(b.Arguments()))
+
+	for i, n := range b.Arguments() {
+		as = append(as, cast.NewArgument(n, t.Arguments()[i]))
+	}
+
 	return cast.NewBind(
 		b.Name(),
 		cast.NewLambda(
 			nil,
-			true,
-			nil,
-			cast.NewFloat64(b.Expression().(ast.Number).Value()),
-			compileType(b.Type()),
+			false,
+			as,
+			compileExpression(b.Expression()),
+			t.Result(),
 		),
 	)
 }
 
+func compileExpression(e ast.Expression) cast.Expression {
+	switch e := e.(type) {
+	case ast.Number:
+		return cast.NewFloat64(e.Value())
+	case ast.Variable:
+		return cast.NewApplication(cast.NewVariable(e.Name()), nil)
+	}
+
+	panic("unreahable")
+}
+
 func compileType(t types.Type) ctypes.Type {
 	switch t := t.(type) {
+	case types.Function:
+		as := []ctypes.Type{}
+
+		for {
+			as = append(as, compileType(t.Argument()))
+			f, ok := t.Result().(types.Function)
+
+			if !ok {
+				return ctypes.NewFunction(as, compileType(t.Result()))
+			}
+
+			t = f
+		}
 	case types.Unboxed:
 		return compileRawType(t.Content())
 	}
