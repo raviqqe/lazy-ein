@@ -38,15 +38,15 @@ func (g typeGenerator) Generate(t types.Type) llvm.Type {
 		)
 	case types.Boxed:
 		return llir.PointerType(
-			g.generateClosure(g.GenerateUnsizedPayload(), g.generateEntryFunction(nil, t.Content())),
+			g.generateClosure(g.generateEntryFunction(nil, t.Content()), g.GenerateUnsizedPayload()),
 		)
 	case types.Float64:
 		return llvm.DoubleType()
 	case types.Function:
 		return llir.PointerType(
 			g.generateClosure(
-				g.GenerateUnsizedPayload(),
 				g.generateEntryFunction(t.Arguments(), t.Result()),
+				g.GenerateUnsizedPayload(),
 			),
 		)
 	}
@@ -55,18 +55,14 @@ func (g typeGenerator) Generate(t types.Type) llvm.Type {
 }
 
 func (g typeGenerator) GenerateSizedClosure(l ast.Lambda) llvm.Type {
-	return g.generateLambdaClosure(l, g.generateSizedPayload(l))
+	return g.generateClosure(g.GenerateLambdaEntryFunction(l), g.generateSizedPayload(l))
 }
 
-func (g typeGenerator) GenerateUnsizedClosure(l ast.Lambda) llvm.Type {
-	return g.generateLambdaClosure(l, g.GenerateUnsizedPayload())
+func (g typeGenerator) GenerateUnsizedClosure(t llvm.Type) llvm.Type {
+	return g.generateClosure(t.StructElementTypes()[0].ElementType(), g.GenerateUnsizedPayload())
 }
 
-func (g typeGenerator) generateLambdaClosure(l ast.Lambda, p llvm.Type) llvm.Type {
-	return g.generateClosure(p, g.GenerateLambdaEntryFunction(l))
-}
-
-func (g typeGenerator) generateClosure(p llvm.Type, f llvm.Type) llvm.Type {
+func (g typeGenerator) generateClosure(f llvm.Type, p llvm.Type) llvm.Type {
 	return llir.StructType([]llvm.Type{llir.PointerType(f), p})
 }
 

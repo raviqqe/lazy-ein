@@ -135,7 +135,19 @@ func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm
 }
 
 func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, l ast.Lambda) map[string]llvm.Value {
-	vs := copyVariables(g.globalVariables)
+	vs := make(map[string]llvm.Value, len(g.globalVariables))
+
+	for k, v := range g.globalVariables {
+		if v.Type().ElementType().StructElementTypes()[1].ArrayLength() != 0 {
+			v = b.CreateBitCast(
+				v,
+				llir.PointerType(g.typeGenerator.GenerateUnsizedClosure(v.Type().ElementType())),
+				"",
+			)
+		}
+
+		vs[k] = v
+	}
 
 	e := b.CreateBitCast(
 		f.FirstParam(),

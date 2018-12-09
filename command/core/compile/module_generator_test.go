@@ -128,6 +128,20 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				),
 			),
 		},
+		// Functions referencing global variables
+		{
+			ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
+			ast.NewBind(
+				"bar",
+				ast.NewLambda(
+					nil,
+					false,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
+					ast.NewApplication(ast.NewVariable("foo"), nil),
+					types.NewBoxed(types.NewFloat64()),
+				),
+			),
+		},
 		// Primitive operations
 		{
 			ast.NewBind(

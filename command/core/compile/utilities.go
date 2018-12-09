@@ -5,16 +5,6 @@ import (
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
-func copyVariables(vs map[string]llvm.Value) map[string]llvm.Value {
-	ws := make(map[string]llvm.Value, len(vs))
-
-	for k, v := range vs {
-		ws[k] = v
-	}
-
-	return ws
-}
-
 func forceThunk(b llvm.Builder, v llvm.Value, g typeGenerator) llvm.Value {
 	return llir.CreateCall(
 		b,
