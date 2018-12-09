@@ -4,7 +4,7 @@
 [![Codecov](https://img.shields.io/codecov/c/github/raviqqe/jsonxx.svg?style=flat-square)](https://codecov.io/gh/raviqqe/jsonxx)
 [![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/raviqqe/jsonxx.svg?style=flat-square)](https://codeclimate.com/github/raviqqe/jsonxx)
 [![Go Report Card](https://goreportcard.com/badge/github.com/raviqqe/jsonxx?style=flat-square)](https://goreportcard.com/report/github.com/raviqqe/jsonxx)
-[![License](https://img.shields.io/github/license/raviqqe/jsonxx.svg?style=flat-square)](UNLICENSE)
+[![License](https://img.shields.io/github/license/raviqqe/jsonxx.svg?style=flat-square)](LICENSE)
 
 JSON meets Haskell.
 
@@ -15,4 +15,4 @@ with Haskell's purity and laziness.
 
 ## License
 
-[The Unlicense](UNLICENSE)
+[MIT](LICENSE)
