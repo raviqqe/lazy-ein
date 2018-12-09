@@ -3,29 +3,29 @@ package compile
 import (
 	"github.com/raviqqe/jsonxx/command/ast"
 	"github.com/raviqqe/jsonxx/command/compile/desugar"
-	cast "github.com/raviqqe/jsonxx/command/core/ast"
-	ctypes "github.com/raviqqe/jsonxx/command/core/types"
+	coreast "github.com/raviqqe/jsonxx/command/core/ast"
+	coretypes "github.com/raviqqe/jsonxx/command/core/types"
 	"github.com/raviqqe/jsonxx/command/types"
 )
 
 // Compile compiles a module into a module in STG.
-func Compile(m ast.Module) cast.Module {
+func Compile(m ast.Module) coreast.Module {
 	m = desugar.Desugar(m)
 
-	bs := make([]cast.Bind, 0, len(m.Binds()))
+	bs := make([]coreast.Bind, 0, len(m.Binds()))
 
 	for _, b := range m.Binds() {
 		bs = append(bs, compileBind(b))
 	}
 
-	return cast.NewModule(m.Name(), nil, bs)
+	return coreast.NewModule(m.Name(), nil, bs)
 }
 
-func compileBind(b ast.Bind) cast.Bind {
+func compileBind(b ast.Bind) coreast.Bind {
 	if len(b.Arguments()) == 0 {
-		return cast.NewBind(
+		return coreast.NewBind(
 			b.Name(),
-			cast.NewLambda(
+			coreast.NewLambda(
 				nil,
 				true,
 				nil,
@@ -35,16 +35,16 @@ func compileBind(b ast.Bind) cast.Bind {
 		)
 	}
 
-	t := compileType(b.Type()).(ctypes.Function)
-	as := make([]cast.Argument, 0, len(b.Arguments()))
+	t := compileType(b.Type()).(coretypes.Function)
+	as := make([]coreast.Argument, 0, len(b.Arguments()))
 
 	for i, n := range b.Arguments() {
-		as = append(as, cast.NewArgument(n, t.Arguments()[i]))
+		as = append(as, coreast.NewArgument(n, t.Arguments()[i]))
 	}
 
-	return cast.NewBind(
+	return coreast.NewBind(
 		b.Name(),
-		cast.NewLambda(
+		coreast.NewLambda(
 			nil,
 			false,
 			as,
@@ -54,28 +54,28 @@ func compileBind(b ast.Bind) cast.Bind {
 	)
 }
 
-func compileExpression(e ast.Expression) cast.Expression {
+func compileExpression(e ast.Expression) coreast.Expression {
 	switch e := e.(type) {
 	case ast.Number:
-		return cast.NewFloat64(e.Value())
+		return coreast.NewFloat64(e.Value())
 	case ast.Variable:
-		return cast.NewApplication(cast.NewVariable(e.Name()), nil)
+		return coreast.NewApplication(coreast.NewVariable(e.Name()), nil)
 	}
 
 	panic("unreahable")
 }
 
-func compileType(t types.Type) ctypes.Type {
+func compileType(t types.Type) coretypes.Type {
 	switch t := t.(type) {
 	case types.Function:
-		as := []ctypes.Type{}
+		as := []coretypes.Type{}
 
 		for {
 			as = append(as, compileType(t.Argument()))
 			f, ok := t.Result().(types.Function)
 
 			if !ok {
-				return ctypes.NewFunction(as, compileType(t.Result()))
+				return coretypes.NewFunction(as, compileType(t.Result()))
 			}
 
 			t = f
@@ -84,13 +84,13 @@ func compileType(t types.Type) ctypes.Type {
 		return compileRawType(t.Content())
 	}
 
-	return ctypes.NewBoxed(compileRawType(t))
+	return coretypes.NewBoxed(compileRawType(t))
 }
 
-func compileRawType(t types.Type) ctypes.Type {
+func compileRawType(t types.Type) coretypes.Type {
 	switch t.(type) {
 	case types.Number:
-		return ctypes.NewFloat64()
+		return coretypes.NewFloat64()
 	}
 
 	panic("unreachable")

@@ -5,8 +5,8 @@ import (
 
 	"github.com/raviqqe/jsonxx/command/ast"
 	"github.com/raviqqe/jsonxx/command/compile"
-	cast "github.com/raviqqe/jsonxx/command/core/ast"
-	ctypes "github.com/raviqqe/jsonxx/command/core/types"
+	coreast "github.com/raviqqe/jsonxx/command/core/ast"
+	coretypes "github.com/raviqqe/jsonxx/command/core/types"
 	"github.com/raviqqe/jsonxx/command/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +14,7 @@ import (
 func TestCompileWithEmptySource(t *testing.T) {
 	m := compile.Compile(ast.NewModule("", []ast.Bind{}))
 
-	assert.Equal(t, cast.NewModule("", nil, []cast.Bind{}), m)
+	assert.Equal(t, coreast.NewModule("", nil, []coreast.Bind{}), m)
 }
 
 func TestCompileWithVariableBinds(t *testing.T) {
@@ -27,13 +27,13 @@ func TestCompileWithVariableBinds(t *testing.T) {
 
 	assert.Equal(
 		t,
-		cast.NewModule(
+		coreast.NewModule(
 			"",
 			nil,
-			[]cast.Bind{
-				cast.NewBind(
+			[]coreast.Bind{
+				coreast.NewBind(
 					"x",
-					cast.NewLambda(nil, true, nil, cast.NewFloat64(42), ctypes.NewFloat64()),
+					coreast.NewLambda(nil, true, nil, coreast.NewFloat64(42), coretypes.NewFloat64()),
 				),
 			},
 		),
@@ -66,25 +66,25 @@ func TestCompileWithFunctionBinds(t *testing.T) {
 
 	assert.Equal(
 		t,
-		cast.NewModule(
+		coreast.NewModule(
 			"foo",
 			nil,
-			[]cast.Bind{
-				cast.NewBind(
+			[]coreast.Bind{
+				coreast.NewBind(
 					"foo.literal-0",
-					cast.NewLambda(nil, true, nil, cast.NewFloat64(42), ctypes.NewFloat64()),
+					coreast.NewLambda(nil, true, nil, coreast.NewFloat64(42), coretypes.NewFloat64()),
 				),
-				cast.NewBind(
+				coreast.NewBind(
 					"f",
-					cast.NewLambda(
+					coreast.NewLambda(
 						nil,
 						false,
-						[]cast.Argument{
-							cast.NewArgument("x", ctypes.NewBoxed(ctypes.NewFloat64())),
-							cast.NewArgument("y", ctypes.NewBoxed(ctypes.NewFloat64())),
+						[]coreast.Argument{
+							coreast.NewArgument("x", coretypes.NewBoxed(coretypes.NewFloat64())),
+							coreast.NewArgument("y", coretypes.NewBoxed(coretypes.NewFloat64())),
 						},
-						cast.NewApplication(cast.NewVariable("foo.literal-0"), nil),
-						ctypes.NewBoxed(ctypes.NewFloat64()),
+						coreast.NewApplication(coreast.NewVariable("foo.literal-0"), nil),
+						coretypes.NewBoxed(coretypes.NewFloat64()),
 					),
 				),
 			},
