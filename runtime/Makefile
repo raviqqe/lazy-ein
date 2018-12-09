@@ -1,13 +1,10 @@
-libexecutable = executable/libexecutable.a
-libio = io/target/release/libio.a
-
 .PHONY: all
-all: $(libexecutable) $(libio)
+all: libexecutable libio
 
-$(libexecutable):
+libexecutable:
 	cd executable && cmake . && make
 
-$(libio):
+libio:
 	cd io && cargo build --release
 
 .PHONY: clean
