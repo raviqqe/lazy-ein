@@ -8,3 +8,4 @@ Feature: Help
     When I run `jsonxx build`
     Then the exit status should not be 0
     And the stderr should contain "Usage"
+    And the stderr should contain "<filename>"

@@ -10,7 +10,7 @@ import (
 )
 
 var buildCommand = cobra.Command{
-	Use:   "build",
+	Use:   "build <filename>",
 	Short: "Build a source file into a binary",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(_ *cobra.Command, as []string) error {
