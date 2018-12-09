@@ -37,7 +37,7 @@ func desugarLiterals(m ast.Module) ast.Module {
 			// TODO: Handle other literals.
 			switch l := l.(type) {
 			case ast.Number:
-				bs = append(bs, ast.NewBind(s, nil, types.NewNumber(nil), l))
+				bs = append(bs, ast.NewBind(s, nil, types.NewUnboxed(types.NewNumber(nil), nil), l))
 				return ast.NewVariable(s)
 			}
 
