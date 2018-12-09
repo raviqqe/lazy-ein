@@ -2,10 +2,9 @@ version: 2
 jobs:
   build:
     docker:
-      - image: raviqqe/llvm-go
+      - image: raviqqe/jsonxx-ci
     working_directory: /go/src/github.com/raviqqe/jsonxx
     steps:
-      - run: pacman -Syu --noconfirm ruby-bundler rust
       - checkout
       - run:
           name: Install dependencies
