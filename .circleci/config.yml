@@ -5,7 +5,7 @@ jobs:
       - image: raviqqe/llvm-go
     working_directory: /go/src/github.com/raviqqe/jsonxx
     steps:
-      - run: pacman -Syu --noconfirm rust
+      - run: pacman -Syu --noconfirm ruby-bundler rust
       - checkout
       - run:
           name: Install dependencies
@@ -23,9 +23,14 @@ jobs:
             make
       - run:
           name: Build command
-          command: go build ./...
+          command: go build
       - run:
-          name: Test
+          name: Unit test
           command: |
             go test -covermode atomic -coverprofile coverage.txt -race ./...
             curl -s https://codecov.io/bash | bash
+      - run:
+          name: Integration test
+          command: |
+            bundler install
+            bundler exec cucumber PATH=$PWD:$PATH
