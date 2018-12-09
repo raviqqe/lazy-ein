@@ -1,32 +1,23 @@
 package command
 
 import (
-	"io/ioutil"
+	"errors"
 
-	"github.com/raviqqe/jsonxx/command/compile"
-	"github.com/raviqqe/jsonxx/command/generate"
-	"github.com/raviqqe/jsonxx/command/parse"
+	"github.com/spf13/cobra"
 )
 
-// Command runs a compiler command with command-line arguments.
-func Command(ss []string) error {
-	as, err := getArguments(ss)
-
-	if err != nil {
-		return err
+// Command is a command.
+var Command = func() cobra.Command {
+	c := cobra.Command{
+		Use: "jsonxx",
+		RunE: func(*cobra.Command, []string) error {
+			return errors.New("a subcommand must be provided")
+		},
+		Short:   "JSON++ programming language",
+		Version: "0.0.0",
 	}
 
-	bs, err := ioutil.ReadFile(as.Filename)
+	c.AddCommand(&buildCommand)
 
-	if err != nil {
-		return err
-	}
-
-	m, err := parse.Parse(as.Filename, string(bs))
-
-	if err != nil {
-		return err
-	}
-
-	return generate.Executable(as.Filename, compile.Compile(m))
-}
+	return c
+}()

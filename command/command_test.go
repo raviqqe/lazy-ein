@@ -9,22 +9,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCommandWithEmptySource(t *testing.T) {
+func TestRootCommandError(t *testing.T) {
+	command.Command.SetArgs(nil)
+	assert.Error(t, command.Command.Execute())
+}
+
+func TestBuildCommandWithEmptySource(t *testing.T) {
 	f, err := ioutil.TempFile("", "")
 	assert.Nil(t, err)
 	defer os.Remove(f.Name())
 
-	assert.Nil(t, command.Command([]string{"foo", f.Name()}))
+	command.Command.SetArgs([]string{"build", f.Name()})
+	assert.Nil(t, command.Command.Execute())
 }
 
-func TestCommandWithInvalidFilename(t *testing.T) {
-	assert.Error(t, command.Command([]string{"foo", "invalid-filename"}))
+func TestBuildCommandErrorWithInvalidFilename(t *testing.T) {
+	command.Command.SetArgs([]string{"build", "invalid-filename"})
+	assert.Error(t, command.Command.Execute())
 }
 
-func TestCommandWithInvalidArgument(t *testing.T) {
+func TestBuildCommandErrorWithInvalidArgument(t *testing.T) {
 	f, err := ioutil.TempFile("", "")
 	assert.Nil(t, err)
 	defer os.Remove(f.Name())
 
-	assert.Error(t, command.Command([]string{"foo", "--invalid-option", f.Name()}))
+	command.Command.SetArgs([]string{"build", "--invalid-option", f.Name()})
+	assert.Error(t, command.Command.Execute())
 }
