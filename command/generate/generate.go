@@ -1,7 +1,10 @@
 package generate
 
 import (
+	"errors"
 	"io/ioutil"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -18,6 +21,10 @@ func Executable(f string, m ast.Module) error {
 		return err
 	}
 
+	if err := renameMainFunction(mm); err != nil {
+		return err
+	}
+
 	s := llvm.DefaultTargetTriple()
 	t, err := llvm.GetTargetFromTriple(s)
 
@@ -30,7 +37,7 @@ func Executable(f string, m ast.Module) error {
 		"",
 		"",
 		llvm.CodeGenLevelAggressive,
-		llvm.RelocDefault,
+		llvm.RelocPIC,
 		llvm.CodeModelDefault,
 	).EmitToMemoryBuffer(mm, llvm.ObjectFile)
 
@@ -38,10 +45,46 @@ func Executable(f string, m ast.Module) error {
 		return err
 	}
 
-	// TODO: Generate executable files.
-	return ioutil.WriteFile(
-		strings.TrimSuffix(f, filepath.Ext(f))+".o",
-		b.Bytes(),
-		0644,
-	)
+	f = strings.TrimSuffix(f, filepath.Ext(f)) + ".o"
+
+	if err = ioutil.WriteFile(f, b.Bytes(), 0644); err != nil {
+		return err
+	}
+
+	r, err := getRuntimeRoot()
+
+	if err != nil {
+		return err
+	}
+
+	return exec.Command(
+		"cc",
+		filepath.Join(r, filepath.FromSlash("runtime/executable/libexecutable.a")),
+		f,
+		filepath.Join(r, filepath.FromSlash("runtime/io/target/release/libio.a")),
+		"-lpthread",
+		"-ldl",
+	).Run()
+}
+
+func getRuntimeRoot() (string, error) {
+	s := os.Getenv("JSONXX_ROOT")
+
+	if s == "" {
+		return "", errors.New("JSONXX_ROOT environment variable not set")
+	}
+
+	return s, nil
+}
+
+func renameMainFunction(m llvm.Module) error {
+	v := m.NamedGlobal("main")
+
+	if v.IsNil() {
+		return errors.New("main function not found")
+	}
+
+	v.SetName("jsonxx_main")
+
+	return nil
 }

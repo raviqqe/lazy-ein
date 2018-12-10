@@ -32,4 +32,4 @@ jobs:
           name: Integration test
           command: |
             bundler install
-            bundler exec cucumber PATH=$PWD:$PATH
+            bundler exec cucumber JSONXX_ROOT=$PWD PATH=$PWD:$PATH

@@ -14,9 +14,12 @@ func TestRootCommandError(t *testing.T) {
 	assert.Error(t, command.Command.Execute())
 }
 
-func TestBuildCommandWithEmptySource(t *testing.T) {
+func TestBuildCommand(t *testing.T) {
+	os.Setenv("JSONXX_ROOT", "..")
+
 	f, err := ioutil.TempFile("", "")
 	assert.Nil(t, err)
+	f.WriteString("main : Number -> Number\nmain x = 42")
 	defer os.Remove(f.Name())
 
 	command.Command.SetArgs([]string{"build", f.Name()})
