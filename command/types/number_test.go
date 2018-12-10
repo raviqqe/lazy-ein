@@ -3,27 +3,24 @@ package types_test
 import (
 	"testing"
 
+	"github.com/raviqqe/jsonxx/command/debug"
 	"github.com/raviqqe/jsonxx/command/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNumberUnify(t *testing.T) {
-	assert.Nil(t, types.NewNumber(debugInformation).Unify(types.NewNumber(debugInformation)))
+	assert.Nil(t, types.NewNumber(nil).Unify(types.NewNumber(nil)))
 }
 
 func TestNumberUnifyError(t *testing.T) {
 	assert.Error(
 		t,
-		types.NewNumber(debugInformation).Unify(
-			types.NewFunction(
-				types.NewNumber(debugInformation),
-				types.NewNumber(debugInformation),
-				debugInformation,
-			),
+		types.NewNumber(nil).Unify(
+			types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
 		),
 	)
 }
 
 func TestNumberDebugInformation(t *testing.T) {
-	assert.Equal(t, debugInformation, types.NewNumber(debugInformation).DebugInformation())
+	assert.Equal(t, (*debug.Information)(nil), types.NewNumber(nil).DebugInformation())
 }
