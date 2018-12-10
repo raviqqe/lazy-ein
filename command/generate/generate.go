@@ -57,14 +57,18 @@ func Executable(f string, m ast.Module) error {
 		return err
 	}
 
-	return exec.Command(
+	bs, err := exec.Command(
 		"cc",
 		filepath.Join(r, filepath.FromSlash("runtime/executable/libexecutable.a")),
 		f,
 		filepath.Join(r, filepath.FromSlash("runtime/io/target/release/libio.a")),
 		"-lpthread",
 		"-ldl",
-	).Run()
+	).CombinedOutput()
+
+	os.Stderr.Write(bs)
+
+	return err
 }
 
 func getRuntimeRoot() (string, error) {
