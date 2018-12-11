@@ -3,9 +3,9 @@ package compile
 import (
 	"testing"
 
-	"github.com/raviqqe/jsonxx/command/core/ast"
-	"github.com/raviqqe/jsonxx/command/core/compile/names"
-	"github.com/raviqqe/jsonxx/command/core/types"
+	"github.com/ein-lang/ein/command/core/ast"
+	"github.com/ein-lang/ein/command/core/compile/names"
+	"github.com/ein-lang/ein/command/core/types"
 	"github.com/stretchr/testify/assert"
 	"llvm.org/llvm/bindings/go/llvm"
 )

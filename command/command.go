@@ -9,11 +9,11 @@ import (
 // Command is a command.
 var Command = func() cobra.Command {
 	c := cobra.Command{
-		Use: "jsonxx",
+		Use: "ein",
 		RunE: func(*cobra.Command, []string) error {
 			return errors.New("a subcommand must be provided")
 		},
-		Short:   "JSON++ programming language",
+		Short:   "Ein programming language",
 		Version: "0.0.0",
 	}
 

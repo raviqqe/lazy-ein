@@ -1,9 +1,9 @@
 void io_main(void *);
 struct {
-} jsonxx_main;
+} ein_main;
 
 int main() {
-  io_main(&jsonxx_main);
+  io_main(&ein_main);
 
   return -1;
 }

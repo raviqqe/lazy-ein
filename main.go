@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/raviqqe/jsonxx/command"
+	"github.com/ein-lang/ein/command"
 )
 
 func main() {

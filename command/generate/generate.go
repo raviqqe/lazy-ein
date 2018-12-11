@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/raviqqe/jsonxx/command/core/ast"
-	"github.com/raviqqe/jsonxx/command/core/compile"
+	"github.com/ein-lang/ein/command/core/ast"
+	"github.com/ein-lang/ein/command/core/compile"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
@@ -72,10 +72,10 @@ func Executable(f string, m ast.Module) error {
 }
 
 func getRuntimeRoot() (string, error) {
-	s := os.Getenv("JSONXX_ROOT")
+	s := os.Getenv("EIN_ROOT")
 
 	if s == "" {
-		return "", errors.New("JSONXX_ROOT environment variable not set")
+		return "", errors.New("EIN_ROOT environment variable not set")
 	}
 
 	return s, nil
@@ -88,7 +88,7 @@ func renameMainFunction(m llvm.Module) error {
 		return errors.New("main function not found")
 	}
 
-	v.SetName("jsonxx_main")
+	v.SetName("ein_main")
 
 	return nil
 }

@@ -3,7 +3,7 @@ package parse
 import (
 	"strings"
 
-	"github.com/raviqqe/jsonxx/command/debug"
+	"github.com/ein-lang/ein/command/debug"
 	"github.com/raviqqe/parcom"
 )
 

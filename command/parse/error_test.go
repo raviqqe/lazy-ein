@@ -3,7 +3,7 @@ package parse
 import (
 	"testing"
 
-	"github.com/raviqqe/jsonxx/command/debug"
+	"github.com/ein-lang/ein/command/debug"
 	"github.com/stretchr/testify/assert"
 )
 

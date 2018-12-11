@@ -1,6 +1,6 @@
 package parse
 
-import "github.com/raviqqe/jsonxx/command/debug"
+import "github.com/ein-lang/ein/command/debug"
 
 // Error is a parse error.
 type Error struct {

@@ -1,7 +1,7 @@
 package compile
 
 import (
-	"github.com/raviqqe/jsonxx/command/core/compile/llir"
+	"github.com/ein-lang/ein/command/core/compile/llir"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 

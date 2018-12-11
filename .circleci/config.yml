@@ -2,8 +2,8 @@ version: 2
 jobs:
   build:
     docker:
-      - image: raviqqe/jsonxx-ci
-    working_directory: /go/src/github.com/raviqqe/jsonxx
+      - image: raviqqe/ein-ci
+    working_directory: /go/src/github.com/ein-lang/ein
     steps:
       - checkout
       - run:
@@ -32,4 +32,4 @@ jobs:
           name: Integration test
           command: |
             bundler install
-            bundler exec cucumber JSONXX_ROOT=$PWD PATH=$PWD:$PATH
+            bundler exec cucumber EIN_ROOT=$PWD PATH=$PWD:$PATH

@@ -3,7 +3,7 @@ package types
 import (
 	"fmt"
 
-	"github.com/raviqqe/jsonxx/command/debug"
+	"github.com/ein-lang/ein/command/debug"
 )
 
 // TypeError is a type error.

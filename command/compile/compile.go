@@ -1,11 +1,11 @@
 package compile
 
 import (
-	"github.com/raviqqe/jsonxx/command/ast"
-	"github.com/raviqqe/jsonxx/command/compile/desugar"
-	coreast "github.com/raviqqe/jsonxx/command/core/ast"
-	coretypes "github.com/raviqqe/jsonxx/command/core/types"
-	"github.com/raviqqe/jsonxx/command/types"
+	"github.com/ein-lang/ein/command/ast"
+	"github.com/ein-lang/ein/command/compile/desugar"
+	coreast "github.com/ein-lang/ein/command/core/ast"
+	coretypes "github.com/ein-lang/ein/command/core/types"
+	"github.com/ein-lang/ein/command/types"
 )
 
 // Compile compiles a module into a module in STG.

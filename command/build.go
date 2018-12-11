@@ -3,9 +3,9 @@ package command
 import (
 	"io/ioutil"
 
-	"github.com/raviqqe/jsonxx/command/compile"
-	"github.com/raviqqe/jsonxx/command/generate"
-	"github.com/raviqqe/jsonxx/command/parse"
+	"github.com/ein-lang/ein/command/compile"
+	"github.com/ein-lang/ein/command/generate"
+	"github.com/ein-lang/ein/command/parse"
 	"github.com/spf13/cobra"
 )
 

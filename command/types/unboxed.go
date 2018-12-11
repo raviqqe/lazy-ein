@@ -1,6 +1,6 @@
 package types
 
-import "github.com/raviqqe/jsonxx/command/debug"
+import "github.com/ein-lang/ein/command/debug"
 
 // Unboxed is an unboxed type.
 type Unboxed struct {

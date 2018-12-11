@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/raviqqe/jsonxx/command"
+	"github.com/ein-lang/ein/command"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,7 +15,7 @@ func TestRootCommandError(t *testing.T) {
 }
 
 func TestBuildCommand(t *testing.T) {
-	os.Setenv("JSONXX_ROOT", "..")
+	os.Setenv("EIN_ROOT", "..")
 
 	f, err := ioutil.TempFile("", "")
 	assert.Nil(t, err)

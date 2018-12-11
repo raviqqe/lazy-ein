@@ -1,6 +1,6 @@
 package types
 
-import "github.com/raviqqe/jsonxx/command/debug"
+import "github.com/ein-lang/ein/command/debug"
 
 // Number is a number type.
 type Number struct {

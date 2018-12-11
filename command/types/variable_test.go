@@ -3,8 +3,8 @@ package types_test
 import (
 	"testing"
 
-	"github.com/raviqqe/jsonxx/command/debug"
-	"github.com/raviqqe/jsonxx/command/types"
+	"github.com/ein-lang/ein/command/debug"
+	"github.com/ein-lang/ein/command/types"
 	"github.com/stretchr/testify/assert"
 )
 
