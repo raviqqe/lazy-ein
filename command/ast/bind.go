@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/raviqqe/jsonxx/command/types"
+import "github.com/ein-lang/ein/command/types"
 
 // Bind is a bind.
 type Bind struct {

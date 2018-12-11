@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/raviqqe/jsonxx/command/core/types"
+import "github.com/ein-lang/ein/command/core/types"
 
 // ConstructorDefinition is a constructor definition.
 type ConstructorDefinition struct {

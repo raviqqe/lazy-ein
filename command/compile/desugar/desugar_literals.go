@@ -1,9 +1,9 @@
 package desugar
 
 import (
-	"github.com/raviqqe/jsonxx/command/ast"
-	"github.com/raviqqe/jsonxx/command/compile/desugar/names"
-	"github.com/raviqqe/jsonxx/command/types"
+	"github.com/ein-lang/ein/command/ast"
+	"github.com/ein-lang/ein/command/compile/desugar/names"
+	"github.com/ein-lang/ein/command/types"
 )
 
 func desugarLiterals(m ast.Module) ast.Module {

@@ -4,21 +4,21 @@ import (
 	"os"
 	"testing"
 
-	"github.com/raviqqe/jsonxx/command/core/ast"
-	"github.com/raviqqe/jsonxx/command/core/types"
-	"github.com/raviqqe/jsonxx/command/generate"
+	"github.com/ein-lang/ein/command/core/ast"
+	"github.com/ein-lang/ein/command/core/types"
+	"github.com/ein-lang/ein/command/generate"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestExecutable(t *testing.T) {
-	os.Setenv("JSONXX_ROOT", "../..")
+	os.Setenv("EIN_ROOT", "../..")
 
 	assert.Nil(
 		t,
 		generate.Executable(
-			"main.jsonxx",
+			"main.ein",
 			ast.NewModule(
-				"main.jsonxx",
+				"main.ein",
 				nil,
 				[]ast.Bind{
 					ast.NewBind(
@@ -38,23 +38,23 @@ func TestExecutable(t *testing.T) {
 }
 
 func TestExecutableErrorWithoutMainFunction(t *testing.T) {
-	os.Setenv("JSONXX_ROOT", "../..")
+	os.Setenv("EIN_ROOT", "../..")
 
 	assert.Error(
 		t,
-		generate.Executable("main.jsonxx", ast.NewModule("main.jsonxx", nil, nil)),
+		generate.Executable("main.ein", ast.NewModule("main.ein", nil, nil)),
 	)
 }
 
 func TestExecutableErrorWithoutRootEnvironmentVariable(t *testing.T) {
-	os.Unsetenv("JSONXX_ROOT")
+	os.Unsetenv("EIN_ROOT")
 
 	assert.Error(
 		t,
 		generate.Executable(
-			"main.jsonxx",
+			"main.ein",
 			ast.NewModule(
-				"main.jsonxx",
+				"main.ein",
 				nil,
 				[]ast.Bind{
 					ast.NewBind(

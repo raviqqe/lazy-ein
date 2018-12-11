@@ -1,7 +1,7 @@
 package compile
 
 import (
-	"github.com/raviqqe/jsonxx/command/core/ast"
+	"github.com/ein-lang/ein/command/core/ast"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 

@@ -3,11 +3,11 @@ package compile_test
 import (
 	"testing"
 
-	"github.com/raviqqe/jsonxx/command/ast"
-	"github.com/raviqqe/jsonxx/command/compile"
-	coreast "github.com/raviqqe/jsonxx/command/core/ast"
-	coretypes "github.com/raviqqe/jsonxx/command/core/types"
-	"github.com/raviqqe/jsonxx/command/types"
+	"github.com/ein-lang/ein/command/ast"
+	"github.com/ein-lang/ein/command/compile"
+	coreast "github.com/ein-lang/ein/command/core/ast"
+	coretypes "github.com/ein-lang/ein/command/core/types"
+	"github.com/ein-lang/ein/command/types"
 	"github.com/stretchr/testify/assert"
 )
 

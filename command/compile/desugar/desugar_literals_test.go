@@ -3,8 +3,8 @@ package desugar
 import (
 	"testing"
 
-	"github.com/raviqqe/jsonxx/command/ast"
-	"github.com/raviqqe/jsonxx/command/types"
+	"github.com/ein-lang/ein/command/ast"
+	"github.com/ein-lang/ein/command/types"
 	"github.com/stretchr/testify/assert"
 )
 

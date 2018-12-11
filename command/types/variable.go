@@ -1,6 +1,6 @@
 package types
 
-import "github.com/raviqqe/jsonxx/command/debug"
+import "github.com/ein-lang/ein/command/debug"
 
 // Variable is a type variable.
 type Variable struct {

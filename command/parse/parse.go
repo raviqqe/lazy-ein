@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/raviqqe/jsonxx/command/ast"
-	"github.com/raviqqe/jsonxx/command/debug"
-	"github.com/raviqqe/jsonxx/command/types"
+	"github.com/ein-lang/ein/command/ast"
+	"github.com/ein-lang/ein/command/debug"
+	"github.com/ein-lang/ein/command/types"
 	"github.com/raviqqe/parcom"
 )
 

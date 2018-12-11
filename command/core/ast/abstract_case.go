@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"github.com/raviqqe/jsonxx/command/core/types"
+	"github.com/ein-lang/ein/command/core/types"
 )
 
 type abstractCase struct {

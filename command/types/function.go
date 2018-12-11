@@ -1,6 +1,6 @@
 package types
 
-import "github.com/raviqqe/jsonxx/command/debug"
+import "github.com/ein-lang/ein/command/debug"
 
 // Function is a function type.
 type Function struct {
