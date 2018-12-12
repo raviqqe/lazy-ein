@@ -113,7 +113,10 @@ func (s *state) arguments() parcom.Parser {
 }
 
 func (s *state) expression() parcom.Parser {
-	return s.numberLiteral()
+	return s.Or(
+		s.numberLiteral(),
+		s.variable(),
+	)
 }
 
 func (s *state) numberLiteral() parcom.Parser {
@@ -139,6 +142,15 @@ func (s *state) numberLiteral() parcom.Parser {
 				),
 			),
 		),
+	)
+}
+
+func (s *state) variable() parcom.Parser {
+	return s.App(
+		func(x interface{}) (interface{}, error) {
+			return ast.NewVariable(x.(string)), nil
+		},
+		s.identifier(),
 	)
 }
 

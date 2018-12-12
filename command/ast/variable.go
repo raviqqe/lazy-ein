@@ -1,16 +1,18 @@
 package ast
 
 // Variable is a variable.
-type Variable string
+type Variable struct {
+	name string
+}
 
 // NewVariable creates a variable.
 func NewVariable(s string) Variable {
-	return Variable(s)
+	return Variable{s}
 }
 
 // Name returns a name.
 func (v Variable) Name() string {
-	return string(v)
+	return v.name
 }
 
 // ConvertExpression visits expressions.
@@ -18,5 +20,4 @@ func (v Variable) ConvertExpression(func(Expression) Expression) node {
 	return v
 }
 
-func (Variable) isAtom()       {}
 func (Variable) isExpression() {}

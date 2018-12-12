@@ -132,6 +132,11 @@ func TestStateNumberLiteralError(t *testing.T) {
 	}
 }
 
+func TestStateVariable(t *testing.T) {
+	_, err := newState("", "x").variable()()
+	assert.Nil(t, err)
+}
+
 func TestStateLet(t *testing.T) {
 	for _, s := range []string{
 		"let x = 42 in 42",
