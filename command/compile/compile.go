@@ -4,14 +4,19 @@ import (
 	"github.com/ein-lang/ein/command/ast"
 	"github.com/ein-lang/ein/command/compile/desugar"
 	coreast "github.com/ein-lang/ein/command/core/ast"
+	corecompile "github.com/ein-lang/ein/command/core/compile"
 	coretypes "github.com/ein-lang/ein/command/core/types"
 	"github.com/ein-lang/ein/command/types"
+	"llvm.org/llvm/bindings/go/llvm"
 )
 
 // Compile compiles a module into a module in STG.
-func Compile(m ast.Module) coreast.Module {
-	m = desugar.Desugar(m)
+func Compile(m ast.Module) (llvm.Module, error) {
+	return corecompile.Compile(compileToCore(m))
+}
 
+func compileToCore(m ast.Module) coreast.Module {
+	m = desugar.Desugar(m)
 	bs := make([]coreast.Bind, 0, len(m.Binds()))
 
 	for _, b := range m.Binds() {

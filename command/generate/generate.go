@@ -8,20 +8,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ein-lang/ein/command/core/ast"
-	"github.com/ein-lang/ein/command/core/compile"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
 // Executable generates an executable file.
-func Executable(m ast.Module, file, root string) error {
-	mm, err := compile.Compile(m)
-
-	if err != nil {
-		return err
-	}
-
-	if err := renameMainFunction(mm); err != nil {
+func Executable(m llvm.Module, file, root string) error {
+	if err := renameMainFunction(m); err != nil {
 		return err
 	}
 
@@ -39,7 +31,7 @@ func Executable(m ast.Module, file, root string) error {
 		llvm.CodeGenLevelAggressive,
 		llvm.RelocPIC,
 		llvm.CodeModelDefault,
-	).EmitToMemoryBuffer(mm, llvm.ObjectFile)
+	).EmitToMemoryBuffer(m, llvm.ObjectFile)
 
 	if err != nil {
 		return err

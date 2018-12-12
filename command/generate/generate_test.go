@@ -3,32 +3,33 @@ package generate_test
 import (
 	"testing"
 
-	"github.com/ein-lang/ein/command/core/ast"
-	"github.com/ein-lang/ein/command/core/types"
+	"github.com/ein-lang/ein/command/ast"
+	"github.com/ein-lang/ein/command/compile"
 	"github.com/ein-lang/ein/command/generate"
+	"github.com/ein-lang/ein/command/types"
 	"github.com/stretchr/testify/assert"
+	"llvm.org/llvm/bindings/go/llvm"
 )
 
 func TestExecutable(t *testing.T) {
+	m, err := compile.Compile(ast.NewModule(
+		"main.ein",
+		[]ast.Bind{
+			ast.NewBind(
+				"main",
+				[]string{"x"},
+				types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
+				ast.NewNumber(42),
+			),
+		},
+	))
+
+	assert.Nil(t, err)
+
 	assert.Nil(
 		t,
 		generate.Executable(
-			ast.NewModule(
-				"main.ein",
-				nil,
-				[]ast.Bind{
-					ast.NewBind(
-						"main",
-						ast.NewLambda(
-							nil,
-							false,
-							[]ast.Argument{ast.NewArgument("x", types.NewBoxed(types.NewFloat64()))},
-							ast.NewApplication(ast.NewVariable("x"), nil),
-							types.NewBoxed(types.NewFloat64()),
-						),
-					),
-				},
-			),
+			m,
 			"main.ein",
 			"../..",
 		),
@@ -38,6 +39,6 @@ func TestExecutable(t *testing.T) {
 func TestExecutableErrorWithoutMainFunction(t *testing.T) {
 	assert.Error(
 		t,
-		generate.Executable(ast.NewModule("main.ein", nil, nil), "main.ein", "../.."),
+		generate.Executable(llvm.NewModule("main.ein"), "main.ein", "../.."),
 	)
 }

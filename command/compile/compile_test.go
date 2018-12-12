@@ -1,10 +1,9 @@
-package compile_test
+package compile
 
 import (
 	"testing"
 
 	"github.com/ein-lang/ein/command/ast"
-	"github.com/ein-lang/ein/command/compile"
 	coreast "github.com/ein-lang/ein/command/core/ast"
 	coretypes "github.com/ein-lang/ein/command/core/types"
 	"github.com/ein-lang/ein/command/types"
@@ -12,13 +11,13 @@ import (
 )
 
 func TestCompileWithEmptySource(t *testing.T) {
-	m := compile.Compile(ast.NewModule("", []ast.Bind{}))
+	m := compileToCore(ast.NewModule("", []ast.Bind{}))
 
 	assert.Equal(t, coreast.NewModule("", nil, []coreast.Bind{}), m)
 }
 
 func TestCompileWithVariableBinds(t *testing.T) {
-	m := compile.Compile(
+	m := compileToCore(
 		ast.NewModule(
 			"",
 			[]ast.Bind{ast.NewBind("x", nil, types.NewNumber(nil), ast.NewNumber(42))},
@@ -42,7 +41,7 @@ func TestCompileWithVariableBinds(t *testing.T) {
 }
 
 func TestCompileWithFunctionBinds(t *testing.T) {
-	m := compile.Compile(
+	m := compileToCore(
 		ast.NewModule(
 			"foo",
 			[]ast.Bind{
