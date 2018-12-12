@@ -14,7 +14,7 @@ import (
 )
 
 // Executable generates an executable file.
-func Executable(f string, m ast.Module) error {
+func Executable(m ast.Module, file, root string) error {
 	mm, err := compile.Compile(m)
 
 	if err != nil {
@@ -45,23 +45,17 @@ func Executable(f string, m ast.Module) error {
 		return err
 	}
 
-	f = strings.TrimSuffix(f, filepath.Ext(f)) + ".o"
+	f := strings.TrimSuffix(file, filepath.Ext(file)) + ".o"
 
 	if err = ioutil.WriteFile(f, b.Bytes(), 0644); err != nil {
 		return err
 	}
 
-	r, err := getRuntimeRoot()
-
-	if err != nil {
-		return err
-	}
-
 	bs, err := exec.Command(
 		"cc",
-		filepath.Join(r, filepath.FromSlash("runtime/executable/libexecutable.a")),
+		resolveRuntimePath(root, "runtime/executable/libexecutable.a"),
 		f,
-		filepath.Join(r, filepath.FromSlash("runtime/io/target/release/libio.a")),
+		resolveRuntimePath(root, "runtime/io/target/release/libio.a"),
 		"-lpthread",
 		"-ldl",
 	).CombinedOutput()
@@ -71,14 +65,8 @@ func Executable(f string, m ast.Module) error {
 	return err
 }
 
-func getRuntimeRoot() (string, error) {
-	s := os.Getenv("EIN_ROOT")
-
-	if s == "" {
-		return "", errors.New("EIN_ROOT environment variable not set")
-	}
-
-	return s, nil
+func resolveRuntimePath(r, p string) string {
+	return filepath.Join(r, filepath.FromSlash(p))
 }
 
 func renameMainFunction(m llvm.Module) error {

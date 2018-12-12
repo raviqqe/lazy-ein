@@ -26,6 +26,12 @@ var buildCommand = cobra.Command{
 			return err
 		}
 
-		return generate.Executable(as[0], compile.Compile(m))
+		r, err := getRuntimeRoot()
+
+		if err != nil {
+			return err
+		}
+
+		return generate.Executable(compile.Compile(m), as[0], r)
 	},
 }
