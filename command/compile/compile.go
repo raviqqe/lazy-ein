@@ -61,6 +61,14 @@ func compileBind(b ast.Bind) coreast.Bind {
 
 func compileExpression(e ast.Expression) coreast.Expression {
 	switch e := e.(type) {
+	case ast.Let:
+		bs := make([]coreast.Bind, 0, len(e.Binds()))
+
+		for _, b := range e.Binds() {
+			bs = append(bs, compileBind(b))
+		}
+
+		return coreast.NewLet(bs, compileExpression(e.Expression()))
 	case ast.Number:
 		return coreast.NewFloat64(e.Value())
 	case ast.Variable:
