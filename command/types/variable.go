@@ -1,6 +1,9 @@
 package types
 
-import "github.com/ein-lang/ein/command/debug"
+import (
+	coretypes "github.com/ein-lang/ein/command/core/types"
+	"github.com/ein-lang/ein/command/debug"
+)
 
 // Variable is a type variable.
 type Variable struct {
@@ -27,4 +30,9 @@ func (v *Variable) Unify(t Type) error {
 // DebugInformation returns debug information.
 func (v Variable) DebugInformation() *debug.Information {
 	return v.debugInformation
+}
+
+// ToCore returns a type in the core language.
+func (Variable) ToCore() coretypes.Type {
+	panic("unreachable")
 }

@@ -1,6 +1,9 @@
 package types
 
-import "github.com/ein-lang/ein/command/debug"
+import (
+	coretypes "github.com/ein-lang/ein/command/core/types"
+	"github.com/ein-lang/ein/command/debug"
+)
 
 // Number is a number type.
 type Number struct {
@@ -24,4 +27,9 @@ func (n Number) Unify(t Type) error {
 // DebugInformation returns debug information.
 func (n Number) DebugInformation() *debug.Information {
 	return n.debugInformation
+}
+
+// ToCore returns a type in the core language.
+func (n Number) ToCore() coretypes.Type {
+	return coretypes.NewBoxed(coretypes.NewFloat64())
 }

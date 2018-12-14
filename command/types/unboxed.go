@@ -1,6 +1,9 @@
 package types
 
-import "github.com/ein-lang/ein/command/debug"
+import (
+	coretypes "github.com/ein-lang/ein/command/core/types"
+	"github.com/ein-lang/ein/command/debug"
+)
 
 // Unboxed is an unboxed type.
 type Unboxed struct {
@@ -36,4 +39,9 @@ func (u Unboxed) Unify(t Type) error {
 // DebugInformation returns debug information.
 func (u Unboxed) DebugInformation() *debug.Information {
 	return u.debugInformation
+}
+
+// ToCore returns a type in the core language.
+func (u Unboxed) ToCore() coretypes.Type {
+	return coretypes.Unbox(u.content.ToCore())
 }

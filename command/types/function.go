@@ -1,6 +1,9 @@
 package types
 
-import "github.com/ein-lang/ein/command/debug"
+import (
+	coretypes "github.com/ein-lang/ein/command/core/types"
+	"github.com/ein-lang/ein/command/debug"
+)
 
 // Function is a function type.
 type Function struct {
@@ -40,4 +43,20 @@ func (f Function) Unify(t Type) error {
 // DebugInformation returns debug information.
 func (f Function) DebugInformation() *debug.Information {
 	return f.debugInformation
+}
+
+// ToCore returns a type in the core language.
+func (f Function) ToCore() coretypes.Type {
+	as := []coretypes.Type{}
+
+	for {
+		as = append(as, f.Argument().ToCore())
+		t, ok := f.Result().(Function)
+
+		if !ok {
+			return coretypes.NewFunction(as, f.Result().ToCore())
+		}
+
+		f = t
+	}
 }

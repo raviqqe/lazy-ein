@@ -6,7 +6,6 @@ import (
 	coreast "github.com/ein-lang/ein/command/core/ast"
 	corecompile "github.com/ein-lang/ein/command/core/compile"
 	coretypes "github.com/ein-lang/ein/command/core/types"
-	"github.com/ein-lang/ein/command/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
@@ -35,12 +34,12 @@ func compileBind(b ast.Bind) coreast.Bind {
 				true,
 				nil,
 				compileExpression(b.Expression()),
-				compileType(b.Type()),
+				b.Type().ToCore(),
 			),
 		)
 	}
 
-	t := compileType(b.Type()).(coretypes.Function)
+	t := b.Type().ToCore().(coretypes.Function)
 	as := make([]coreast.Argument, 0, len(b.Arguments()))
 
 	for i, n := range b.Arguments() {
@@ -76,35 +75,4 @@ func compileExpression(e ast.Expression) coreast.Expression {
 	}
 
 	panic("unreahable")
-}
-
-func compileType(t types.Type) coretypes.Type {
-	switch t := t.(type) {
-	case types.Function:
-		as := []coretypes.Type{}
-
-		for {
-			as = append(as, compileType(t.Argument()))
-			f, ok := t.Result().(types.Function)
-
-			if !ok {
-				return coretypes.NewFunction(as, compileType(t.Result()))
-			}
-
-			t = f
-		}
-	case types.Unboxed:
-		return compileRawType(t.Content())
-	}
-
-	return coretypes.NewBoxed(compileRawType(t))
-}
-
-func compileRawType(t types.Type) coretypes.Type {
-	switch t.(type) {
-	case types.Number:
-		return coretypes.NewFloat64()
-	}
-
-	panic("unreachable")
 }
