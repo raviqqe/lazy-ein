@@ -18,3 +18,13 @@ Feature: Build binaries
     When I successfully run `ein build main.ein`
     And I successfully run `sh -c ./a.out`
     Then the stdout from "sh -c ./a.out" should contain exactly "42"
+
+  Scenario: Build let expressions
+    Given a file named "main.ein" with:
+    """
+    main : Number -> Number
+    main x = let y = x in x
+    """
+    When I successfully run `ein build main.ein`
+    And I successfully run `sh -c ./a.out`
+    Then the stdout from "sh -c ./a.out" should contain exactly "42"
