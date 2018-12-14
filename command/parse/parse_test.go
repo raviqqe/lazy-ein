@@ -27,6 +27,7 @@ func TestStateModule(t *testing.T) {
 		"x : Number\nx = 42\ny : Number\ny = 42",
 		"f : Number -> Number\nf x = 42",
 		"f : Number -> Number -> Number\nf x y = 42",
+		"f : Number -> Number\nf x = let y = x in y",
 	} {
 		_, err := newState("", s).module("")()
 		assert.Nil(t, err)
@@ -144,7 +145,8 @@ func TestStateLet(t *testing.T) {
 		"let x = 42\n    y = 42 in 42",
 		"let x = 42\nin 42",
 	} {
-		_, err := newState("", s).let()()
+		s := newState("", s)
+		_, err := s.Exhaust(s.let())()
 		assert.Nil(t, err)
 	}
 }
@@ -155,7 +157,8 @@ func TestStateLetError(t *testing.T) {
 		"let\n x =\n 42 in 42",
 		"let x = 42\n y = 42 in 42",
 	} {
-		_, err := newState("", s).let()()
+		s := newState("", s)
+		_, err := s.Exhaust(s.let())()
 		assert.Error(t, err)
 	}
 }

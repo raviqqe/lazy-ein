@@ -113,10 +113,13 @@ func (s *state) arguments() parcom.Parser {
 }
 
 func (s *state) expression() parcom.Parser {
-	return s.Or(
-		s.numberLiteral(),
-		s.variable(),
-	)
+	return s.Lazy(func() parcom.Parser {
+		return s.Or(
+			s.numberLiteral(),
+			s.let(),
+			s.variable(),
+		)
+	})
 }
 
 func (s *state) numberLiteral() parcom.Parser {
@@ -155,12 +158,26 @@ func (s *state) variable() parcom.Parser {
 }
 
 func (s *state) let() parcom.Parser {
-	return s.And(
-		s.WithBlock1(
-			s.keyword(letKeyword),
-			s.untypedBind(),
+	return s.App(
+		func(x interface{}) (interface{}, error) {
+			xs := x.([]interface{})
+			ys := xs[0].([]interface{})
+			bs := make([]ast.Bind, 0, len(ys))
+
+			for _, y := range ys {
+				bs = append(bs, y.(ast.Bind))
+			}
+
+			return ast.NewLet(bs, xs[2].(ast.Expression)), nil
+		},
+		s.And(
+			s.WithBlock1(
+				s.keyword(letKeyword),
+				s.untypedBind(),
+			),
+			s.keyword(inKeyword),
+			s.expression(),
 		),
-		s.keyword(inKeyword),
 	)
 }
 
