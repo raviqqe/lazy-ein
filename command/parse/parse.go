@@ -115,11 +115,19 @@ func (s *state) arguments() parcom.Parser {
 func (s *state) expression() parcom.Parser {
 	return s.Lazy(func() parcom.Parser {
 		return s.Or(
-			s.numberLiteral(),
-			s.let(),
-			s.variable(),
+			s.application(),
+			s.nonApplicationExpression(),
 		)
 	})
+}
+
+func (s *state) nonApplicationExpression() parcom.Parser {
+	return s.Or(
+		s.numberLiteral(),
+		s.let(),
+		s.variable(),
+		s.parenthesesed(s.expression()),
+	)
 }
 
 func (s *state) numberLiteral() parcom.Parser {
@@ -154,6 +162,23 @@ func (s *state) variable() parcom.Parser {
 			return ast.NewVariable(x.(string)), nil
 		},
 		s.identifier(),
+	)
+}
+
+func (s *state) application() parcom.Parser {
+	return s.App(
+		func(x interface{}) (interface{}, error) {
+			xs := x.([]interface{})
+			ys := xs[1].([]interface{})
+			es := make([]ast.Expression, 0, len(ys))
+
+			for _, y := range ys {
+				es = append(es, y.(ast.Expression))
+			}
+
+			return ast.NewApplication(xs[0].(ast.Expression), es), nil
+		},
+		s.And(s.nonApplicationExpression(), s.Many1(s.nonApplicationExpression())),
 	)
 }
 

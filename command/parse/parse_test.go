@@ -138,6 +138,32 @@ func TestStateVariable(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestStateApplication(t *testing.T) {
+	for s, a := range map[string]ast.Application{
+		"f x": ast.NewApplication(ast.NewVariable("f"), []ast.Expression{ast.NewVariable("x")}),
+		"f x y": ast.NewApplication(
+			ast.NewVariable("f"),
+			[]ast.Expression{ast.NewVariable("x"), ast.NewVariable("y")},
+		),
+		"f (f x) y": ast.NewApplication(
+			ast.NewVariable("f"),
+			[]ast.Expression{
+				ast.NewApplication(ast.NewVariable("f"), []ast.Expression{ast.NewVariable("x")}),
+				ast.NewVariable("y"),
+			},
+		),
+		"(f x) x": ast.NewApplication(
+			ast.NewApplication(ast.NewVariable("f"), []ast.Expression{ast.NewVariable("x")}),
+			[]ast.Expression{ast.NewVariable("x")},
+		),
+	} {
+		aa, err := newState("", s).application()()
+
+		assert.Nil(t, err)
+		assert.Equal(t, a, aa)
+	}
+}
+
 func TestStateLet(t *testing.T) {
 	for _, s := range []string{
 		"let x = 42 in 42",
