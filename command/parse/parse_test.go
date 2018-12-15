@@ -105,7 +105,7 @@ func TestStateIdentifierError(t *testing.T) {
 
 func TestStateIdentifierErrorWithKeywords(t *testing.T) {
 	_, err := newState("", "let").identifier()()
-	assert.Equal(t, `"let" is a keyword`, err.Error())
+	assert.Equal(t, "ParseError: 'let' is a keyword", err.Error())
 }
 
 func TestStateNumberLiteral(t *testing.T) {

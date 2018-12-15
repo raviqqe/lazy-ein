@@ -19,5 +19,5 @@ func (e Error) DebugInformation() *Information {
 }
 
 func (e Error) Error() string {
-	return fmt.Sprintf("%v: %v\n%v", e.kind, e.message, e.debugInformation)
+	return fmt.Sprintf("%v: %v", e.kind, e.message)
 }

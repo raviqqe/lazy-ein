@@ -263,7 +263,7 @@ func (s *state) identifier() parcom.Parser {
 		s.token(s.Stringify(s.And(s.alphabet(), s.Many(s.Or(s.alphabet(), s.number()))))),
 		func(x interface{}, i *debug.Information) (interface{}, error) {
 			if _, ok := keywords[keyword(x.(string))]; ok {
-				return nil, newError(fmt.Sprintf("%#v is a keyword", x), i)
+				return nil, newError(fmt.Sprintf("'%v' is a keyword", x), i)
 			}
 
 			return x, nil

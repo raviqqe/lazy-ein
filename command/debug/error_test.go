@@ -15,7 +15,7 @@ func TestErrorDebugInformation(t *testing.T) {
 func TestErrorError(t *testing.T) {
 	assert.Equal(
 		t,
-		"MyError: you are wrong\nfoo.go:42:2049:\tfunc foo() {}",
+		"MyError: you are wrong",
 		debug.NewError(
 			"MyError",
 			"you are wrong",

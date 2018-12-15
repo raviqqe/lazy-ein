@@ -7,11 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestErrorError(t *testing.T) {
-	assert.Equal(t, "foo", newError("foo", debug.NewInformation("", 0, 0, "")).Error())
-}
-
-func TestErrorDebugInformation(t *testing.T) {
-	i := debug.NewInformation("", 0, 0, "")
-	assert.Equal(t, i, newError("foo", i).DebugInformation())
+func TestNewError(t *testing.T) {
+	assert.Error(t, newError("foo", debug.NewInformation("", 0, 0, "")))
 }
