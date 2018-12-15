@@ -33,6 +33,10 @@ func (v Variable) DebugInformation() *debug.Information {
 }
 
 // ToCore returns a type in the core language.
-func (v Variable) ToCore() coretypes.Type {
+func (v Variable) ToCore() (coretypes.Type, error) {
+	if v.inferredType == nil {
+		return nil, newTypeInferenceError(v.debugInformation)
+	}
+
 	return v.inferredType.ToCore()
 }

@@ -7,5 +7,5 @@ import (
 )
 
 func TestNewTypeError(t *testing.T) {
-	newTypeError("you are wrong", debug.NewInformation("foo.go", 42, 2049, "func foo() {}"))
+	NewTypeError("you are wrong", debug.NewInformation("foo.go", 42, 2049, "func foo() {}"))
 }

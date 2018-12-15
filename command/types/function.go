@@ -32,7 +32,7 @@ func (f Function) Unify(t Type) error {
 	ff, ok := t.(Function)
 
 	if !ok {
-		return newTypeError("not a function", t.DebugInformation())
+		return NewTypeError("not a function", t.DebugInformation())
 	} else if err := ff.argument.Unify(f.argument); err != nil {
 		return err
 	}
@@ -46,17 +46,29 @@ func (f Function) DebugInformation() *debug.Information {
 }
 
 // ToCore returns a type in the core language.
-func (f Function) ToCore() coretypes.Type {
+func (f Function) ToCore() (coretypes.Type, error) {
 	as := []coretypes.Type{}
 
 	for {
-		as = append(as, f.Argument().ToCore())
-		t, ok := f.Result().(Function)
+		a, err := f.Argument().ToCore()
 
-		if !ok {
-			return coretypes.NewFunction(as, f.Result().ToCore())
+		if err != nil {
+			return nil, err
 		}
 
-		f = t
+		as = append(as, a)
+		ff, ok := f.Result().(Function)
+
+		if !ok {
+			r, err := f.Result().ToCore()
+
+			if err != nil {
+				return nil, err
+			}
+
+			return coretypes.NewFunction(as, r), nil
+		}
+
+		f = ff
 	}
 }

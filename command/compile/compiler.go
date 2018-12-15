@@ -6,6 +6,7 @@ import (
 	"github.com/ein-lang/ein/command/ast"
 	coreast "github.com/ein-lang/ein/command/core/ast"
 	coretypes "github.com/ein-lang/ein/command/core/types"
+	"github.com/ein-lang/ein/command/types"
 )
 
 type compiler struct {
@@ -13,16 +14,22 @@ type compiler struct {
 	freeVariableFinder freeVariableFinder
 }
 
-func newCompiler(m ast.Module) compiler {
+func newCompiler(m ast.Module) (compiler, error) {
 	vs := make(map[string]coretypes.Type, len(m.Binds()))
 	gs := make(map[string]struct{}, len(m.Binds()))
 
 	for _, b := range m.Binds() {
-		vs[b.Name()] = b.Type().ToCore()
+		t, err := b.Type().ToCore()
+
+		if err != nil {
+			return compiler{}, err
+		}
+
+		vs[b.Name()] = t
 		gs[b.Name()] = struct{}{}
 	}
 
-	return compiler{vs, newFreeVariableFinder(gs)}
+	return compiler{vs, newFreeVariableFinder(gs)}, nil
 }
 
 func (c compiler) Compile(m ast.Module) (coreast.Module, error) {
@@ -42,7 +49,13 @@ func (c compiler) Compile(m ast.Module) (coreast.Module, error) {
 }
 
 func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
-	c = c.addVariable(b.Name(), b.Type().ToCore())
+	t, err := b.Type().ToCore()
+
+	if err != nil {
+		return coreast.Bind{}, err
+	}
+
+	c = c.addVariable(b.Name(), t)
 
 	if len(b.Arguments()) == 0 {
 		vs, err := c.compileFreeVariables(b.Expression())
@@ -57,17 +70,19 @@ func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
 			return coreast.Bind{}, err
 		}
 
-		return coreast.NewBind(
-			b.Name(),
-			coreast.NewLambda(vs, true, nil, e, b.Type().ToCore()),
-		), nil
+		return coreast.NewBind(b.Name(), coreast.NewLambda(vs, true, nil, e, t)), nil
 	}
 
-	t := b.Type().ToCore().(coretypes.Function)
+	f, ok := t.(coretypes.Function)
+
+	if !ok {
+		return coreast.Bind{}, types.NewTypeError("not a function", b.Type().DebugInformation())
+	}
+
 	as := make([]coreast.Argument, 0, len(b.Arguments()))
 
 	for i, n := range b.Arguments() {
-		t := t.Arguments()[i]
+		t := f.Arguments()[i]
 		as = append(as, coreast.NewArgument(n, t))
 		c = c.addVariable(n, t)
 	}
@@ -84,10 +99,7 @@ func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
 		return coreast.Bind{}, err
 	}
 
-	return coreast.NewBind(
-		b.Name(),
-		coreast.NewLambda(vs, false, as, e, t.Result()),
-	), nil
+	return coreast.NewBind(b.Name(), coreast.NewLambda(vs, false, as, e, f.Result())), nil
 }
 
 func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error) {

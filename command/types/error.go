@@ -2,6 +2,11 @@ package types
 
 import "github.com/ein-lang/ein/command/debug"
 
-func newTypeError(m string, i *debug.Information) error {
+// NewTypeError creates a type error.
+func NewTypeError(m string, i *debug.Information) error {
 	return debug.NewError("TypeError", m, i)
+}
+
+func newTypeInferenceError(i *debug.Information) error {
+	return debug.NewError("TypeInferenceError", "failed to infer a type", i)
 }

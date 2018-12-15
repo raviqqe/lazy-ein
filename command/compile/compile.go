@@ -29,6 +29,11 @@ func compileToCore(m ast.Module) (coreast.Module, error) {
 	}
 
 	m = desugar.Desugar(m)
+	c, err := newCompiler(m)
 
-	return newCompiler(m).Compile(m)
+	if err != nil {
+		return coreast.Module{}, err
+	}
+
+	return c.Compile(m)
 }

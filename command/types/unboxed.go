@@ -30,7 +30,7 @@ func (u Unboxed) Unify(t Type) error {
 	uu, ok := t.(Unboxed)
 
 	if !ok {
-		return newTypeError("not an unboxed", t.DebugInformation())
+		return NewTypeError("not an unboxed", t.DebugInformation())
 	}
 
 	return u.content.Unify(uu.content)
@@ -42,6 +42,12 @@ func (u Unboxed) DebugInformation() *debug.Information {
 }
 
 // ToCore returns a type in the core language.
-func (u Unboxed) ToCore() coretypes.Type {
-	return coretypes.Unbox(u.content.ToCore())
+func (u Unboxed) ToCore() (coretypes.Type, error) {
+	t, err := u.content.ToCore()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return coretypes.Unbox(t), nil
 }

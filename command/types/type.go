@@ -9,5 +9,5 @@ import (
 type Type interface {
 	Unify(Type) error
 	DebugInformation() *debug.Information
-	ToCore() coretypes.Type
+	ToCore() (coretypes.Type, error)
 }

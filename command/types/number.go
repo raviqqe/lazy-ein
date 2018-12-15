@@ -21,7 +21,7 @@ func (n Number) Unify(t Type) error {
 		return nil
 	}
 
-	return newTypeError("not a number", t.DebugInformation())
+	return NewTypeError("not a number", t.DebugInformation())
 }
 
 // DebugInformation returns debug information.
@@ -30,6 +30,6 @@ func (n Number) DebugInformation() *debug.Information {
 }
 
 // ToCore returns a type in the core language.
-func (n Number) ToCore() coretypes.Type {
-	return coretypes.NewBoxed(coretypes.NewFloat64())
+func (n Number) ToCore() (coretypes.Type, error) {
+	return coretypes.NewBoxed(coretypes.NewFloat64()), nil
 }
