@@ -33,6 +33,6 @@ func (v Variable) DebugInformation() *debug.Information {
 }
 
 // ToCore returns a type in the core language.
-func (Variable) ToCore() coretypes.Type {
-	panic("unreachable")
+func (v Variable) ToCore() coretypes.Type {
+	return v.inferredType.ToCore()
 }
