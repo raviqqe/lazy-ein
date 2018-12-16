@@ -10,8 +10,35 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCompile(t *testing.T) {
+func TestCompileWithEmptySource(t *testing.T) {
 	_, err := Compile(ast.NewModule("", []ast.Bind{}))
+	assert.Nil(t, err)
+}
+
+func TestCompileWithFunctionApplications(t *testing.T) {
+	_, err := Compile(
+		ast.NewModule(
+			"",
+			[]ast.Bind{
+				ast.NewBind(
+					"f",
+					[]string{"x"},
+					types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
+					ast.NewVariable("x"),
+				),
+				ast.NewBind(
+					"x",
+					nil,
+					types.NewNumber(nil),
+					ast.NewApplication(
+						ast.NewVariable("f"),
+						[]ast.Expression{ast.NewNumber(42)},
+					),
+				),
+			},
+		),
+	)
+
 	assert.Nil(t, err)
 }
 
