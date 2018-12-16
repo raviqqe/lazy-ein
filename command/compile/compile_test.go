@@ -10,14 +10,37 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCompileWithEmptySource(t *testing.T) {
+func TestCompile(t *testing.T) {
+	_, err := Compile(ast.NewModule("", []ast.Bind{}))
+	assert.Nil(t, err)
+}
+
+func TestCompileErrorWithUnknownVariables(t *testing.T) {
+	_, err := Compile(
+		ast.NewModule(
+			"",
+			[]ast.Bind{ast.NewBind("x", nil, types.NewNumber(nil), ast.NewVariable("y"))}),
+	)
+	assert.Error(t, err)
+}
+
+func TestCompileErrorWithUntypedGlobals(t *testing.T) {
+	_, err := Compile(
+		ast.NewModule(
+			"",
+			[]ast.Bind{ast.NewBind("x", nil, types.NewVariable(nil), ast.NewNumber(42))}),
+	)
+	assert.Error(t, err)
+}
+
+func TestCompileToCoreWithEmptySource(t *testing.T) {
 	m, err := compileToCore(ast.NewModule("", []ast.Bind{}))
 	assert.Nil(t, err)
 
 	assert.Equal(t, coreast.NewModule("", nil, []coreast.Bind{}), m)
 }
 
-func TestCompileWithVariableBinds(t *testing.T) {
+func TestCompileToCoreWithVariableBinds(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
 			"",
@@ -42,7 +65,7 @@ func TestCompileWithVariableBinds(t *testing.T) {
 	)
 }
 
-func TestCompileWithFunctionBinds(t *testing.T) {
+func TestCompileToCoreWithFunctionBinds(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
 			"foo",
@@ -95,7 +118,7 @@ func TestCompileWithFunctionBinds(t *testing.T) {
 	)
 }
 
-func TestCompileWithLetExpressions(t *testing.T) {
+func TestCompileToCoreWithLetExpressions(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
 			"foo",
@@ -154,7 +177,7 @@ func TestCompileWithLetExpressions(t *testing.T) {
 	)
 }
 
-func TestCompileWithLetExpressionsAndFreeVariables(t *testing.T) {
+func TestCompileToCoreWithLetExpressionsAndFreeVariables(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
 			"foo",
