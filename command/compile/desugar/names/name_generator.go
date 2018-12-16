@@ -1,20 +1,25 @@
 package names
 
-import "strconv"
+import "fmt"
 
 // NameGenerator is a name generator.
 type NameGenerator struct {
-	prefix string
-	index  int
+	prefix  string
+	indexes map[string]int
 }
 
 // NewNameGenerator creates a new name generator.
-func NewNameGenerator(s string) *NameGenerator {
-	return &NameGenerator{s, -1}
+func NewNameGenerator(s string) NameGenerator {
+	if s != "" {
+		s += "."
+	}
+
+	return NameGenerator{s, map[string]int{}}
 }
 
 // Generate generates a new name which is not duplicate.
-func (g *NameGenerator) Generate() string {
-	g.index++
-	return g.prefix + "-" + strconv.Itoa(g.index)
+func (g NameGenerator) Generate(s string) string {
+	i := g.indexes[s]
+	g.indexes[s]++
+	return fmt.Sprintf("%v%v-%v", g.prefix, s, i)
 }

@@ -16,7 +16,7 @@ func newInferrer(m ast.Module) inferrer {
 	vs := make(map[string]types.Type, len(m.Binds()))
 
 	for _, b := range m.Binds() {
-		vs[b.Name()] = b.Type()
+		vs[b.Name()] = types.Box(b.Type())
 	}
 
 	return inferrer{vs}

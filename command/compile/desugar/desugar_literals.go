@@ -7,7 +7,7 @@ import (
 )
 
 func desugarLiterals(m ast.Module) ast.Module {
-	g := names.NewNameGenerator(m.Name() + ".literal")
+	g := names.NewNameGenerator(m.Name())
 	bs := []ast.Bind{}
 
 	for _, b := range m.Binds() {
@@ -32,7 +32,7 @@ func desugarLiterals(m ast.Module) ast.Module {
 				return e
 			}
 
-			s := g.Generate()
+			s := g.Generate("literal")
 
 			// TODO: Handle other literals.
 			switch l := l.(type) {

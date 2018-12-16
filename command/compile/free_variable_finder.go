@@ -12,6 +12,14 @@ func newFreeVariableFinder(vs map[string]struct{}) freeVariableFinder {
 
 func (f freeVariableFinder) Find(e ast.Expression) []string {
 	switch e := e.(type) {
+	case ast.Application:
+		ss := f.Find(e.Function())
+
+		for _, a := range e.Arguments() {
+			ss = append(ss, f.Find(a)...)
+		}
+
+		return ss
 	case ast.Let:
 		ss := make([]string, 0, len(e.Binds()))
 
@@ -19,7 +27,7 @@ func (f freeVariableFinder) Find(e ast.Expression) []string {
 			ss = append(ss, b.Name())
 		}
 
-		return f.addLocalVariables(ss...).Find(e.Expression())
+		return f.addVariables(ss...).Find(e.Expression())
 	case ast.Number:
 		return nil
 	case ast.Variable:
@@ -33,7 +41,7 @@ func (f freeVariableFinder) Find(e ast.Expression) []string {
 	panic("unreahable")
 }
 
-func (f freeVariableFinder) addLocalVariables(ss ...string) freeVariableFinder {
+func (f freeVariableFinder) addVariables(ss ...string) freeVariableFinder {
 	m := make(map[string]struct{}, len(f.variables)+len(ss))
 
 	for k := range m {

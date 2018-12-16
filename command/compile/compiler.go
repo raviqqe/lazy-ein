@@ -10,8 +10,8 @@ import (
 )
 
 type compiler struct {
-	variables          map[string]coretypes.Type
-	freeVariableFinder freeVariableFinder
+	variables       map[string]coretypes.Type
+	globalVariables map[string]struct{}
 }
 
 func newCompiler(m ast.Module) (compiler, error) {
@@ -19,7 +19,7 @@ func newCompiler(m ast.Module) (compiler, error) {
 	gs := make(map[string]struct{}, len(m.Binds()))
 
 	for _, b := range m.Binds() {
-		t, err := b.Type().ToCore()
+		t, err := types.Box(b.Type()).ToCore()
 
 		if err != nil {
 			return compiler{}, err
@@ -29,7 +29,7 @@ func newCompiler(m ast.Module) (compiler, error) {
 		gs[b.Name()] = struct{}{}
 	}
 
-	return compiler{vs, newFreeVariableFinder(gs)}, nil
+	return compiler{vs, gs}, nil
 }
 
 func (c compiler) Compile(m ast.Module) (coreast.Module, error) {
@@ -58,7 +58,7 @@ func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
 	c = c.addVariable(b.Name(), t)
 
 	if len(b.Arguments()) == 0 {
-		vs, err := c.compileFreeVariables(b.Expression())
+		vs, err := c.compileFreeVariables(b)
 
 		if err != nil {
 			return coreast.Bind{}, err
@@ -87,7 +87,7 @@ func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
 		c = c.addVariable(n, t)
 	}
 
-	vs, err := c.compileFreeVariables(b.Expression())
+	vs, err := c.compileFreeVariables(b)
 
 	if err != nil {
 		return coreast.Bind{}, err
@@ -104,6 +104,17 @@ func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
 
 func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error) {
 	switch e := e.(type) {
+	case ast.Application:
+		as := make([]coreast.Atom, 0, len(e.Arguments()))
+
+		for _, a := range e.Arguments() {
+			as = append(as, coreast.NewVariable(a.(ast.Variable).Name()))
+		}
+
+		return coreast.NewApplication(
+			coreast.NewVariable(e.Function().(ast.Variable).Name()),
+			as,
+		), nil
 	case ast.Let:
 		bs := make([]coreast.Bind, 0, len(e.Binds()))
 
@@ -133,8 +144,8 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 	panic("unreahable")
 }
 
-func (c compiler) compileFreeVariables(e ast.Expression) ([]coreast.Argument, error) {
-	ss := c.freeVariableFinder.Find(e)
+func (c compiler) compileFreeVariables(b ast.Bind) ([]coreast.Argument, error) {
+	ss := c.findFreeVariables(b)
 
 	if len(ss) == 0 {
 		return nil, nil // to normalize empty slices
@@ -155,6 +166,20 @@ func (c compiler) compileFreeVariables(e ast.Expression) ([]coreast.Argument, er
 	return as, nil
 }
 
+func (c compiler) findFreeVariables(b ast.Bind) []string {
+	m := make(map[string]struct{}, len(c.globalVariables)+len(b.Arguments()))
+
+	for k := range c.globalVariables {
+		m[k] = struct{}{}
+	}
+
+	for _, k := range b.Arguments() {
+		m[k] = struct{}{}
+	}
+
+	return newFreeVariableFinder(m).Find(b.Expression())
+}
+
 func (c compiler) addVariable(s string, t coretypes.Type) compiler {
 	m := make(map[string]coretypes.Type, len(c.variables)+1)
 
@@ -164,5 +189,5 @@ func (c compiler) addVariable(s string, t coretypes.Type) compiler {
 
 	m[s] = t
 
-	return compiler{m, c.freeVariableFinder}
+	return compiler{m, c.globalVariables}
 }
