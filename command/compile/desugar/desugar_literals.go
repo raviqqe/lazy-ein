@@ -11,14 +11,14 @@ func desugarLiterals(m ast.Module) ast.Module {
 	bs := []ast.Bind{}
 
 	for _, b := range m.Binds() {
-		if _, ok := b.Expression().(ast.Literal); ok && len(b.Arguments()) == 0 {
+		if l, ok := b.Expression().(ast.Literal); ok && len(b.Arguments()) == 0 {
 			bs = append(
 				bs,
 				ast.NewBind(
 					b.Name(),
 					nil,
 					types.NewUnboxed(b.Type(), b.Type().DebugInformation()),
-					b.Expression(),
+					ast.NewUnboxed(l),
 				),
 			)
 
@@ -37,7 +37,10 @@ func desugarLiterals(m ast.Module) ast.Module {
 			// TODO: Handle other literals.
 			switch l := l.(type) {
 			case ast.Number:
-				bs = append(bs, ast.NewBind(s, nil, types.NewUnboxed(types.NewNumber(nil), nil), l))
+				bs = append(
+					bs,
+					ast.NewBind(s, nil, types.NewUnboxed(types.NewNumber(nil), nil), ast.NewUnboxed(l)),
+				)
 				return ast.NewVariable(s)
 			}
 

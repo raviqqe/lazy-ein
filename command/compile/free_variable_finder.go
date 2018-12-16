@@ -28,7 +28,7 @@ func (f freeVariableFinder) Find(e ast.Expression) []string {
 		}
 
 		return f.addVariables(ss...).Find(e.Expression())
-	case ast.Number:
+	case ast.Unboxed:
 		return nil
 	case ast.Variable:
 		if _, ok := f.variables[e.Name()]; ok {

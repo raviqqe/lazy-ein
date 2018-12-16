@@ -25,7 +25,12 @@ func TestDesugarLiterals(t *testing.T) {
 			ast.NewModule(
 				"",
 				[]ast.Bind{
-					ast.NewBind("x", nil, types.NewUnboxed(types.NewNumber(nil), nil), ast.NewNumber(42)),
+					ast.NewBind(
+						"x",
+						nil,
+						types.NewUnboxed(types.NewNumber(nil), nil),
+						ast.NewUnboxed(ast.NewNumber(42)),
+					),
 				},
 			),
 		},
@@ -48,7 +53,7 @@ func TestDesugarLiterals(t *testing.T) {
 						"foo.literal-0",
 						nil,
 						types.NewUnboxed(types.NewNumber(nil), nil),
-						ast.NewNumber(42),
+						ast.NewUnboxed(ast.NewNumber(42)),
 					),
 					ast.NewBind(
 						"f",

@@ -135,8 +135,12 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 		}
 
 		return coreast.NewLet(bs, ee), nil
-	case ast.Number:
-		return coreast.NewFloat64(e.Value()), nil
+	case ast.Unboxed:
+		// TODO: Handle other literals.
+		switch e := e.Content().(type) {
+		case ast.Number:
+			return coreast.NewFloat64(e.Value()), nil
+		}
 	case ast.Variable:
 		return coreast.NewApplication(coreast.NewVariable(e.Name()), nil), nil
 	}
