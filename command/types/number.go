@@ -19,6 +19,8 @@ func NewNumber(i *debug.Information) Number {
 func (n Number) Unify(t Type) error {
 	if _, ok := t.(Number); ok {
 		return nil
+	} else if v, ok := t.(*Variable); ok {
+		return v.Unify(n)
 	}
 
 	return NewTypeError("not a number", t.DebugInformation())

@@ -42,6 +42,38 @@ func TestCompileWithFunctionApplications(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestCompileWithNestedFunctionApplications(t *testing.T) {
+	_, err := Compile(
+		ast.NewModule(
+			"",
+			[]ast.Bind{
+				ast.NewBind(
+					"f",
+					[]string{"x"},
+					types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
+					ast.NewVariable("x"),
+				),
+				ast.NewBind(
+					"x",
+					nil,
+					types.NewNumber(nil),
+					ast.NewApplication(
+						ast.NewVariable("f"),
+						[]ast.Expression{
+							ast.NewApplication(
+								ast.NewVariable("f"),
+								[]ast.Expression{ast.NewNumber(42)},
+							),
+						},
+					),
+				),
+			},
+		),
+	)
+
+	assert.Nil(t, err)
+}
+
 func TestCompileErrorWithUnknownVariables(t *testing.T) {
 	_, err := Compile(
 		ast.NewModule(

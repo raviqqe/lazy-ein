@@ -36,7 +36,7 @@ func (c compiler) Compile(m ast.Module) (coreast.Module, error) {
 	bs := make([]coreast.Bind, 0, len(m.Binds()))
 
 	for _, b := range m.Binds() {
-		b, err := c.compileBind(b)
+		b, err := c.compileBind(b, true)
 
 		if err != nil {
 			return coreast.Module{}, err
@@ -48,7 +48,7 @@ func (c compiler) Compile(m ast.Module) (coreast.Module, error) {
 	return coreast.NewModule(m.Name(), nil, bs), nil
 }
 
-func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
+func (c compiler) compileBind(b ast.Bind, global bool) (coreast.Bind, error) {
 	t, err := b.Type().ToCore()
 
 	if err != nil {
@@ -58,7 +58,7 @@ func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
 	c = c.addVariable(b.Name(), t)
 
 	if len(b.Arguments()) == 0 {
-		vs, err := c.compileFreeVariables(b)
+		vs, err := c.compileFreeVariables(b, global)
 
 		if err != nil {
 			return coreast.Bind{}, err
@@ -87,7 +87,7 @@ func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
 		c = c.addVariable(n, t)
 	}
 
-	vs, err := c.compileFreeVariables(b)
+	vs, err := c.compileFreeVariables(b, global)
 
 	if err != nil {
 		return coreast.Bind{}, err
@@ -119,7 +119,7 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 		bs := make([]coreast.Bind, 0, len(e.Binds()))
 
 		for _, b := range e.Binds() {
-			b, err := c.compileBind(b)
+			b, err := c.compileBind(b, false)
 
 			if err != nil {
 				return nil, err
@@ -148,7 +148,11 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 	panic("unreahable")
 }
 
-func (c compiler) compileFreeVariables(b ast.Bind) ([]coreast.Argument, error) {
+func (c compiler) compileFreeVariables(b ast.Bind, global bool) ([]coreast.Argument, error) {
+	if global {
+		return nil, nil
+	}
+
 	ss := c.findFreeVariables(b)
 
 	if len(ss) == 0 {

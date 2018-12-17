@@ -115,8 +115,40 @@ func (i inferrer) inferExpression(e ast.Expression) (ast.Expression, error) {
 
 func (i inferrer) inferExpressionType(e ast.Expression) (types.Type, error) {
 	switch e := e.(type) {
+	case ast.Application:
+		t, err := i.inferExpressionType(e.Function())
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, a := range e.Arguments() {
+			f, ok := t.(types.Function)
+
+			if !ok {
+				return nil, types.NewTypeError("not a function", t.DebugInformation())
+			}
+
+			a, err := i.inferExpressionType(a)
+
+			if err != nil {
+				return nil, err
+			} else if err := f.Argument().Unify(a); err != nil {
+				return nil, err
+			}
+
+			t = f.Result()
+		}
+
+		return t, nil
 	case ast.Let:
-		return i.inferExpressionType(e.Expression())
+		vs := make(map[string]types.Type, len(e.Binds()))
+
+		for _, b := range e.Binds() {
+			vs[b.Name()] = b.Type()
+		}
+
+		return i.addVariables(vs).inferExpressionType(e.Expression())
 	case ast.Number:
 		return types.NewNumber(nil), nil
 	case ast.Variable:

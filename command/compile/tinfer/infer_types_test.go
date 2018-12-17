@@ -234,6 +234,50 @@ func TestInferTypesWithArguments(t *testing.T) {
 	assert.Equal(t, m, mm)
 }
 
+func TestInferTypesWithFunctionApplications(t *testing.T) {
+	m := ast.NewModule(
+		"",
+		[]ast.Bind{
+			ast.NewBind(
+				"a",
+				nil,
+				types.NewNumber(nil),
+				ast.NewNumber(42),
+			),
+			ast.NewBind(
+				"f",
+				[]string{"x"},
+				types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
+				ast.NewVariable("x"),
+			),
+			ast.NewBind(
+				"x",
+				nil,
+				types.NewNumber(nil),
+				ast.NewLet(
+					[]ast.Bind{
+						ast.NewBind(
+							"y",
+							nil,
+							types.NewVariable(nil),
+							ast.NewApplication(ast.NewVariable("f"), []ast.Expression{ast.NewVariable("a")}),
+						),
+					},
+					ast.NewVariable("y"),
+				),
+			),
+		},
+	)
+	mm, err := tinfer.InferTypes(m)
+
+	assert.Nil(t, err)
+	assert.Equal(
+		t,
+		inferredVariable(t, types.NewNumber(nil)),
+		mm.Binds()[2].Expression().(ast.Let).Binds()[0].Type(),
+	)
+}
+
 func TestInferTypesErrorWithTooManyArguments(t *testing.T) {
 	_, err := tinfer.InferTypes(
 		ast.NewModule(
