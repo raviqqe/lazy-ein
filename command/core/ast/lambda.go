@@ -16,6 +16,11 @@ func NewLambda(vs []Argument, u bool, as []Argument, e Expression, t types.Type)
 	return Lambda{as, e, t, vs, u}
 }
 
+// Arguments returns arguments.
+func (l Lambda) Arguments() []Argument {
+	return l.arguments
+}
+
 // ArgumentNames returns argument names.
 func (l Lambda) ArgumentNames() []string {
 	return argumentsToNames(l.arguments)
