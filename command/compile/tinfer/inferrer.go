@@ -1,7 +1,6 @@
 package tinfer
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/ein-lang/ein/command/ast"
@@ -26,30 +25,21 @@ func (i inferrer) Infer(m ast.Module) (ast.Module, error) {
 	bs := make([]ast.Bind, 0, len(m.Binds()))
 
 	for _, b := range m.Binds() {
-		vs := make(map[string]types.Type)
-		t := b.Type()
-
-		for _, s := range b.Arguments() {
-			f, ok := t.(types.Function)
-
-			if !ok {
-				return ast.Module{}, errors.New("too many arguments")
-			}
-
-			vs[s] = f.Argument()
-
-			t = f.Result()
-		}
-
-		i = i.addVariables(vs)
-
 		e, err := i.inferExpression(b.Expression())
 
 		if err != nil {
 			return ast.Module{}, err
 		}
 
-		bs = append(bs, ast.NewBind(b.Name(), b.Arguments(), b.Type(), e))
+		t, err := i.inferExpressionType(b.Expression())
+
+		if err != nil {
+			return ast.Module{}, err
+		} else if err := b.Type().Unify(t); err != nil {
+			return ast.Module{}, err
+		}
+
+		bs = append(bs, ast.NewBind(b.Name(), b.Type(), e))
 	}
 
 	return ast.NewModule(m.Name(), bs), nil
@@ -67,26 +57,6 @@ func (i inferrer) inferExpression(e ast.Expression) (ast.Expression, error) {
 	bs := make([]ast.Bind, 0, len(l.Binds()))
 
 	for _, b := range l.Binds() {
-		t := b.Type()
-
-		if len(b.Arguments()) > 0 {
-			vs := make(map[string]types.Type)
-			t = types.Type(types.NewVariable(b.Type().DebugInformation()))
-			f := t
-
-			for i := len(b.Arguments()) - 1; i >= 0; i-- {
-				v := types.NewVariable(nil)
-				vs[b.Arguments()[i]] = v
-				f = types.NewFunction(v, f, b.Type().DebugInformation())
-			}
-
-			i = i.addVariables(vs)
-
-			if err := b.Type().Unify(f); err != nil {
-				return nil, err
-			}
-		}
-
 		e, err := i.inferExpression(b.Expression())
 
 		if err != nil {
@@ -97,11 +67,11 @@ func (i inferrer) inferExpression(e ast.Expression) (ast.Expression, error) {
 
 		if err != nil {
 			return nil, err
-		} else if err = t.Unify(tt); err != nil {
+		} else if err = b.Type().Unify(tt); err != nil {
 			return nil, err
 		}
 
-		bs = append(bs, ast.NewBind(b.Name(), b.Arguments(), b.Type(), e))
+		bs = append(bs, ast.NewBind(b.Name(), b.Type(), e))
 	}
 
 	e, err := i.inferExpression(l.Expression())
@@ -141,6 +111,27 @@ func (i inferrer) inferExpressionType(e ast.Expression) (types.Type, error) {
 		}
 
 		return t, nil
+	case ast.Lambda:
+		as := make([]types.Type, 0, len(e.Arguments()))
+		vs := make(map[string]types.Type, len(e.Arguments()))
+
+		for _, s := range e.Arguments() {
+			t := types.NewVariable(nil)
+			as = append(as, t)
+			vs[s] = t
+		}
+
+		t, err := i.addVariables(vs).inferExpressionType(e.Expression())
+
+		if err != nil {
+			return nil, err
+		}
+
+		for i := len(as) - 1; i >= 0; i-- {
+			t = types.NewFunction(as[i], t, nil)
+		}
+
+		return t, nil
 	case ast.Let:
 		vs := make(map[string]types.Type, len(e.Binds()))
 
@@ -151,6 +142,14 @@ func (i inferrer) inferExpressionType(e ast.Expression) (types.Type, error) {
 		return i.addVariables(vs).inferExpressionType(e.Expression())
 	case ast.Number:
 		return types.NewNumber(nil), nil
+	case ast.Unboxed:
+		t, err := i.inferExpressionType(e.Content())
+
+		if err != nil {
+			return nil, err
+		}
+
+		return types.NewUnboxed(t, nil), nil
 	case ast.Variable:
 		t, ok := i.variables[e.Name()]
 

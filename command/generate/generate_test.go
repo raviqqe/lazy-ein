@@ -17,9 +17,8 @@ func TestExecutable(t *testing.T) {
 		[]ast.Bind{
 			ast.NewBind(
 				"main",
-				[]string{"x"},
 				types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
-				ast.NewNumber(42),
+				ast.NewLambda([]string{"x"}, ast.NewNumber(42)),
 			),
 		},
 	))

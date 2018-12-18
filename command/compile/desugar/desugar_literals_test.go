@@ -20,14 +20,13 @@ func TestDesugarLiterals(t *testing.T) {
 		{
 			ast.NewModule(
 				"",
-				[]ast.Bind{ast.NewBind("x", nil, types.NewNumber(nil), ast.NewNumber(42))},
+				[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
 			),
 			ast.NewModule(
 				"",
 				[]ast.Bind{
 					ast.NewBind(
 						"x",
-						nil,
 						types.NewUnboxed(types.NewNumber(nil), nil),
 						ast.NewUnboxed(ast.NewNumber(42)),
 					),
@@ -41,9 +40,8 @@ func TestDesugarLiterals(t *testing.T) {
 				[]ast.Bind{
 					ast.NewBind(
 						"f",
-						[]string{"x"},
 						types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
-						ast.NewNumber(42)),
+						ast.NewLambda([]string{"x"}, ast.NewNumber(42))),
 				},
 			),
 			ast.NewModule(
@@ -51,15 +49,13 @@ func TestDesugarLiterals(t *testing.T) {
 				[]ast.Bind{
 					ast.NewBind(
 						"foo.literal-0",
-						nil,
 						types.NewUnboxed(types.NewNumber(nil), nil),
 						ast.NewUnboxed(ast.NewNumber(42)),
 					),
 					ast.NewBind(
 						"f",
-						[]string{"x"},
 						types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
-						ast.NewVariable("foo.literal-0")),
+						ast.NewLambda([]string{"x"}, ast.NewVariable("foo.literal-0"))),
 				},
 			),
 		},
@@ -70,9 +66,9 @@ func TestDesugarLiterals(t *testing.T) {
 				[]ast.Bind{
 					ast.NewBind(
 						"f",
-						[]string{"x"},
 						types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
-						ast.NewVariable("x")),
+						ast.NewLambda([]string{"x"}, ast.NewVariable("x")),
+					),
 				},
 			),
 			ast.NewModule(
@@ -80,9 +76,9 @@ func TestDesugarLiterals(t *testing.T) {
 				[]ast.Bind{
 					ast.NewBind(
 						"f",
-						[]string{"x"},
 						types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
-						ast.NewVariable("x")),
+						ast.NewLambda([]string{"x"}, ast.NewVariable("x")),
+					),
 				},
 			),
 		},

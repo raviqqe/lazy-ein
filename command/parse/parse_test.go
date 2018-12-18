@@ -68,7 +68,6 @@ func TestStateBindWithVariableBind(t *testing.T) {
 			[]ast.Bind{
 				ast.NewBind(
 					"x",
-					[]string{},
 					types.NewNumber(debug.NewInformation("", 1, 5, "x : Number")),
 					ast.NewNumber(42),
 				),

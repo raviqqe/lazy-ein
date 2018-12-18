@@ -22,13 +22,11 @@ func TestCompileWithFunctionApplications(t *testing.T) {
 			[]ast.Bind{
 				ast.NewBind(
 					"f",
-					[]string{"x"},
 					types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
-					ast.NewVariable("x"),
+					ast.NewLambda([]string{"x"}, ast.NewVariable("x")),
 				),
 				ast.NewBind(
 					"x",
-					nil,
 					types.NewNumber(nil),
 					ast.NewApplication(
 						ast.NewVariable("f"),
@@ -49,13 +47,11 @@ func TestCompileWithNestedFunctionApplications(t *testing.T) {
 			[]ast.Bind{
 				ast.NewBind(
 					"f",
-					[]string{"x"},
 					types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
-					ast.NewVariable("x"),
+					ast.NewLambda([]string{"x"}, ast.NewVariable("x")),
 				),
 				ast.NewBind(
 					"x",
-					nil,
 					types.NewNumber(nil),
 					ast.NewApplication(
 						ast.NewVariable("f"),
@@ -78,7 +74,7 @@ func TestCompileErrorWithUnknownVariables(t *testing.T) {
 	_, err := Compile(
 		ast.NewModule(
 			"",
-			[]ast.Bind{ast.NewBind("x", nil, types.NewNumber(nil), ast.NewVariable("y"))}),
+			[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewVariable("y"))}),
 	)
 	assert.Error(t, err)
 }
@@ -87,7 +83,7 @@ func TestCompileErrorWithUntypedGlobals(t *testing.T) {
 	_, err := Compile(
 		ast.NewModule(
 			"",
-			[]ast.Bind{ast.NewBind("x", nil, types.NewVariable(nil), ast.NewNumber(42))}),
+			[]ast.Bind{ast.NewBind("x", types.NewVariable(nil), ast.NewNumber(42))}),
 	)
 	assert.Error(t, err)
 }
@@ -103,7 +99,7 @@ func TestCompileToCoreWithVariableBinds(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
 			"",
-			[]ast.Bind{ast.NewBind("x", nil, types.NewNumber(nil), ast.NewNumber(42))},
+			[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
 		),
 	)
 	assert.Nil(t, err)
@@ -131,7 +127,6 @@ func TestCompileToCoreWithFunctionBinds(t *testing.T) {
 			[]ast.Bind{
 				ast.NewBind(
 					"f",
-					[]string{"x", "y"},
 					types.NewFunction(
 						types.NewNumber(nil),
 						types.NewFunction(
@@ -141,7 +136,7 @@ func TestCompileToCoreWithFunctionBinds(t *testing.T) {
 						),
 						nil,
 					),
-					ast.NewNumber(42),
+					ast.NewLambda([]string{"x", "y"}, ast.NewNumber(42)),
 				),
 			},
 		),
@@ -184,10 +179,9 @@ func TestCompileToCoreWithLetExpressions(t *testing.T) {
 			[]ast.Bind{
 				ast.NewBind(
 					"x",
-					nil,
 					types.NewNumber(nil),
 					ast.NewLet(
-						[]ast.Bind{ast.NewBind("y", nil, types.NewNumber(nil), ast.NewNumber(42))},
+						[]ast.Bind{ast.NewBind("y", types.NewNumber(nil), ast.NewNumber(42))},
 						ast.NewVariable("y"),
 					),
 				),
@@ -243,11 +237,13 @@ func TestCompileToCoreWithLetExpressionsAndFreeVariables(t *testing.T) {
 			[]ast.Bind{
 				ast.NewBind(
 					"f",
-					[]string{"x"},
 					types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
-					ast.NewLet(
-						[]ast.Bind{ast.NewBind("y", nil, types.NewNumber(nil), ast.NewVariable("x"))},
-						ast.NewVariable("y"),
+					ast.NewLambda(
+						[]string{"x"},
+						ast.NewLet(
+							[]ast.Bind{ast.NewBind("y", types.NewNumber(nil), ast.NewVariable("x"))},
+							ast.NewVariable("y"),
+						),
 					),
 				),
 			},

@@ -22,19 +22,17 @@ func TestDesugarApplications(t *testing.T) {
 				[]ast.Bind{
 					ast.NewBind(
 						"f",
-						[]string{"x"},
 						types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
-						ast.NewVariable("x"),
+						ast.NewLambda([]string{"x"}, ast.NewVariable("x")),
 					),
 					ast.NewBind(
 						"x",
-						nil,
 						types.NewNumber(nil),
 						ast.NewApplication(
 							ast.NewVariable("f"),
 							[]ast.Expression{
 								ast.NewLet(
-									[]ast.Bind{ast.NewBind("y", nil, types.NewVariable(nil), ast.NewNumber(42))},
+									[]ast.Bind{ast.NewBind("y", types.NewVariable(nil), ast.NewNumber(42))},
 									ast.NewVariable("y"),
 								),
 							},
@@ -47,23 +45,20 @@ func TestDesugarApplications(t *testing.T) {
 				[]ast.Bind{
 					ast.NewBind(
 						"f",
-						[]string{"x"},
 						types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
-						ast.NewVariable("x"),
+						ast.NewLambda([]string{"x"}, ast.NewVariable("x")),
 					),
 					ast.NewBind(
 						"x",
-						nil,
 						types.NewNumber(nil),
 						ast.NewLet(
 							[]ast.Bind{
 								ast.NewBind(
 									"foo.application.argument-0",
-									nil,
 									types.NewVariable(nil),
 									ast.NewLet(
 										[]ast.Bind{
-											ast.NewBind("y", nil, types.NewVariable(nil), ast.NewNumber(42)),
+											ast.NewBind("y", types.NewVariable(nil), ast.NewNumber(42)),
 										},
 										ast.NewVariable("y"),
 									),

@@ -86,12 +86,13 @@ func (s *state) bind() parcom.Parser {
 				)
 			}
 
-			return ast.NewBind(
-				zs[0].(string),
-				zs[1].([]string),
-				ys[2].(types.Type),
-				zs[3].(ast.Expression),
-			), nil
+			e := zs[3].(ast.Expression)
+
+			if as := zs[1].([]string); len(as) != 0 {
+				e = ast.NewLambda(as, e)
+			}
+
+			return ast.NewBind(zs[0].(string), ys[2].(types.Type), e), nil
 		},
 	)
 }
@@ -211,13 +212,13 @@ func (s *state) untypedBind() parcom.Parser {
 		s.WithPosition(s.And(s.identifier(), s.arguments(), s.sign(bindSign), s.expression())),
 		func(x interface{}, i *debug.Information) (interface{}, error) {
 			xs := x.([]interface{})
+			e := xs[3].(ast.Expression)
 
-			return ast.NewBind(
-				xs[0].(string),
-				xs[1].([]string),
-				types.NewVariable(i),
-				xs[3].(ast.Expression),
-			), nil
+			if as := xs[1].([]string); len(as) != 0 {
+				e = ast.NewLambda(as, e)
+			}
+
+			return ast.NewBind(xs[0].(string), types.NewVariable(i), e), nil
 		},
 	)
 }

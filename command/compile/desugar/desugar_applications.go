@@ -21,7 +21,7 @@ func desugarApplications(m ast.Module) ast.Module {
 
 		if !ok {
 			f = ast.NewVariable(g.Generate("function"))
-			bs = append(bs, ast.NewBind(f.Name(), nil, types.NewVariable(nil), app.Function()))
+			bs = append(bs, ast.NewBind(f.Name(), types.NewVariable(nil), app.Function()))
 		}
 
 		as := make([]ast.Expression, 0, len(app.Arguments()))
@@ -31,7 +31,7 @@ func desugarApplications(m ast.Module) ast.Module {
 
 			if !ok {
 				v = ast.NewVariable(g.Generate("argument"))
-				bs = append(bs, ast.NewBind(v.Name(), nil, types.NewVariable(nil), a))
+				bs = append(bs, ast.NewBind(v.Name(), types.NewVariable(nil), a))
 			}
 
 			as = append(as, v)
