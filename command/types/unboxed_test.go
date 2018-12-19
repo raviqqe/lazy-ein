@@ -21,16 +21,17 @@ func TestUnboxedContent(t *testing.T) {
 }
 
 func TestUnboxedUnify(t *testing.T) {
-	assert.Nil(
-		t,
-		types.NewUnboxed(types.NewNumber(nil), nil).Unify(
-			types.NewUnboxed(types.NewNumber(nil), nil),
-		),
+	es, err := types.NewUnboxed(types.NewNumber(nil), nil).Unify(
+		types.NewUnboxed(types.NewNumber(nil), nil),
 	)
+
+	assert.Equal(t, []types.Equation(nil), es)
+	assert.Nil(t, err)
 }
 
 func TestUnboxedUnifyError(t *testing.T) {
-	assert.Error(t, types.NewUnboxed(types.NewNumber(nil), nil).Unify(types.NewNumber(nil)))
+	_, err := types.NewUnboxed(types.NewNumber(nil), nil).Unify(types.NewNumber(nil))
+	assert.Error(t, err)
 }
 
 func TestUnboxedDebugInformation(t *testing.T) {

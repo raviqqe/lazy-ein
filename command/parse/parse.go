@@ -218,7 +218,7 @@ func (s *state) untypedBind() parcom.Parser {
 				e = ast.NewLambda(as, e)
 			}
 
-			return ast.NewBind(xs[0].(string), types.NewVariable(i), e), nil
+			return ast.NewBind(xs[0].(string), types.NewUnknown(i), e), nil
 		},
 	)
 }

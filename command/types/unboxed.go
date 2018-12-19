@@ -26,14 +26,19 @@ func (u Unboxed) Content() Type {
 }
 
 // Unify unifies itself with another type.
-func (u Unboxed) Unify(t Type) error {
+func (u Unboxed) Unify(t Type) ([]Equation, error) {
 	uu, ok := t.(Unboxed)
 
 	if !ok {
-		return NewTypeError("not an unboxed", t.DebugInformation())
+		return fallbackToVariable(u, t, NewTypeError("not an unboxed", t.DebugInformation()))
 	}
 
 	return u.content.Unify(uu.content)
+}
+
+// SubstituteVariable substitutes type variables.
+func (u Unboxed) SubstituteVariable(v Variable, t Type) Type {
+	return NewUnboxed(u.content.SubstituteVariable(v, t), u.debugInformation)
 }
 
 // DebugInformation returns debug information.

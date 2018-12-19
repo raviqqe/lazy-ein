@@ -13,24 +13,9 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 	for _, ls := range [][2]ast.Let{
 		// Constant expressions
 		{
+			ast.NewLet([]ast.Bind{ast.NewBind("x", nil, ast.NewNumber(42))}, ast.NewNumber(42)),
 			ast.NewLet(
-				[]ast.Bind{
-					ast.NewBind(
-						"x",
-						types.NewVariable(nil),
-						ast.NewNumber(42),
-					),
-				},
-				ast.NewNumber(42),
-			),
-			ast.NewLet(
-				[]ast.Bind{
-					ast.NewBind(
-						"x",
-						inferredVariable(t, types.NewNumber(nil)),
-						ast.NewNumber(42),
-					),
-				},
+				[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
 				ast.NewNumber(42),
 			),
 		},
@@ -40,15 +25,9 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 				[]ast.Bind{
 					ast.NewBind(
 						"x",
-						types.NewVariable(nil),
+						nil,
 						ast.NewLet(
-							[]ast.Bind{
-								ast.NewBind(
-									"x",
-									types.NewVariable(nil),
-									ast.NewNumber(42),
-								),
-							},
+							[]ast.Bind{ast.NewBind("x", nil, ast.NewNumber(42))},
 							ast.NewNumber(42),
 						),
 					),
@@ -59,15 +38,9 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 				[]ast.Bind{
 					ast.NewBind(
 						"x",
-						inferredVariable(t, types.NewNumber(nil)),
+						types.NewNumber(nil),
 						ast.NewLet(
-							[]ast.Bind{
-								ast.NewBind(
-									"x",
-									inferredVariable(t, types.NewNumber(nil)),
-									ast.NewNumber(42),
-								),
-							},
+							[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
 							ast.NewNumber(42),
 						),
 					),
@@ -81,15 +54,9 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 				[]ast.Bind{
 					ast.NewBind(
 						"x",
-						types.NewVariable(nil),
+						nil,
 						ast.NewLet(
-							[]ast.Bind{
-								ast.NewBind(
-									"y",
-									types.NewVariable(nil),
-									ast.NewVariable("x"),
-								),
-							},
+							[]ast.Bind{ast.NewBind("y", nil, ast.NewVariable("x"))},
 							ast.NewNumber(42),
 						),
 					),
@@ -100,15 +67,9 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 				[]ast.Bind{
 					ast.NewBind(
 						"x",
-						inferredVariable(t, types.NewNumber(nil)),
+						types.NewNumber(nil),
 						ast.NewLet(
-							[]ast.Bind{
-								ast.NewBind(
-									"y",
-									inferredVariable(t, inferredVariable(t, types.NewNumber(nil))),
-									ast.NewVariable("x"),
-								),
-							},
+							[]ast.Bind{ast.NewBind("y", types.NewNumber(nil), ast.NewVariable("x"))},
 							ast.NewNumber(42),
 						),
 					),
@@ -120,19 +81,15 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 		{
 			ast.NewLet(
 				[]ast.Bind{
-					ast.NewBind("x", types.NewVariable(nil), ast.NewVariable("y")),
-					ast.NewBind("y", types.NewVariable(nil), ast.NewNumber(42)),
+					ast.NewBind("x", nil, ast.NewVariable("y")),
+					ast.NewBind("y", nil, ast.NewNumber(42)),
 				},
 				ast.NewNumber(42),
 			),
 			ast.NewLet(
 				[]ast.Bind{
-					ast.NewBind(
-						"x",
-						inferredVariable(t, inferredVariable(t, types.NewNumber(nil))),
-						ast.NewVariable("y"),
-					),
-					ast.NewBind("y", inferredVariable(t, types.NewNumber(nil)), ast.NewNumber(42)),
+					ast.NewBind("x", types.NewNumber(nil), ast.NewVariable("y")),
+					ast.NewBind("y", types.NewNumber(nil), ast.NewNumber(42)),
 				},
 				ast.NewNumber(42),
 			),
@@ -140,65 +97,55 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 		// Functions with single arguments
 		{
 			ast.NewLet(
-				[]ast.Bind{
-					ast.NewBind(
-						"f",
-						types.NewVariable(nil),
-						ast.NewLambda([]string{"x"}, ast.NewNumber(42)),
-					),
-				},
-				ast.NewNumber(42),
+				[]ast.Bind{ast.NewBind("f", nil, ast.NewLambda([]string{"x"}, ast.NewVariable("x")))},
+				ast.NewApplication(ast.NewVariable("f"), []ast.Expression{ast.NewNumber(42)}),
 			),
 			ast.NewLet(
 				[]ast.Bind{
 					ast.NewBind(
 						"f",
-						inferredVariable(
-							t,
-							types.NewFunction(
-								inferredVariable(t, nil), // TODO: Infer a real type.
-								types.NewNumber(nil),
-								nil,
-							),
+						types.NewFunction(
+							types.NewNumber(nil),
+							types.NewNumber(nil),
+							nil,
 						),
-						ast.NewLambda([]string{"x"}, ast.NewNumber(42)),
+						ast.NewLambda([]string{"x"}, ast.NewVariable("x")),
 					),
 				},
-				ast.NewNumber(42),
+				ast.NewApplication(ast.NewVariable("f"), []ast.Expression{ast.NewNumber(42)}),
 			),
 		},
 		// Functions with multiple arguments
 		{
 			ast.NewLet(
 				[]ast.Bind{
-					ast.NewBind(
-						"f",
-						types.NewVariable(nil),
-						ast.NewLambda([]string{"x", "y"}, ast.NewNumber(42)),
-					),
+					ast.NewBind("f", nil, ast.NewLambda([]string{"x", "y"}, ast.NewVariable("y"))),
 				},
-				ast.NewNumber(42),
+				ast.NewApplication(
+					ast.NewVariable("f"),
+					[]ast.Expression{ast.NewNumber(42), ast.NewNumber(42)},
+				),
 			),
 			ast.NewLet(
 				[]ast.Bind{
 					ast.NewBind(
 						"f",
-						inferredVariable(
-							t,
+						types.NewFunction(
+							types.NewNumber(nil),
 							types.NewFunction(
-								inferredVariable(t, nil), // TODO: Infer a real type.
-								types.NewFunction(
-									inferredVariable(t, nil), // TODO: Infer a real type.
-									types.NewNumber(nil),
-									nil,
-								),
+								types.NewNumber(nil),
+								types.NewNumber(nil),
 								nil,
 							),
+							nil,
 						),
-						ast.NewLambda([]string{"x", "y"}, ast.NewNumber(42)),
+						ast.NewLambda([]string{"x", "y"}, ast.NewVariable("y")),
 					),
 				},
-				ast.NewNumber(42),
+				ast.NewApplication(
+					ast.NewVariable("f"),
+					[]ast.Expression{ast.NewNumber(42), ast.NewNumber(42)},
+				),
 			),
 		},
 	} {
@@ -249,7 +196,7 @@ func TestInferTypesWithFunctionApplications(t *testing.T) {
 					[]ast.Bind{
 						ast.NewBind(
 							"y",
-							types.NewVariable(nil),
+							nil,
 							ast.NewApplication(ast.NewVariable("f"), []ast.Expression{ast.NewVariable("a")}),
 						),
 					},
@@ -263,9 +210,34 @@ func TestInferTypesWithFunctionApplications(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(
 		t,
-		inferredVariable(t, types.NewNumber(nil)),
+		types.NewNumber(nil),
 		mm.Binds()[2].Expression().(ast.Let).Binds()[0].Type(),
 	)
+}
+
+func TestInferTypesWithLambda(t *testing.T) {
+	_, err := tinfer.InferTypes(
+		ast.NewModule(
+			"",
+			[]ast.Bind{
+				ast.NewBind(
+					"f",
+					types.NewFunction(
+						types.NewNumber(nil),
+						types.NewFunction(
+							types.NewNumber(nil),
+							types.NewNumber(nil),
+							nil,
+						),
+						nil,
+					),
+					ast.NewLambda([]string{"x", "y"}, ast.NewNumber(42)),
+				),
+			},
+		),
+	)
+
+	assert.Nil(t, err)
 }
 
 func TestInferTypesErrorWithUnknownVarabiles(t *testing.T) {
@@ -278,7 +250,7 @@ func TestInferTypesErrorWithUnknownVarabiles(t *testing.T) {
 					types.NewNumber(nil),
 					ast.NewLet(
 						[]ast.Bind{
-							ast.NewBind("y", types.NewVariable(nil), ast.NewVariable("z")),
+							ast.NewBind("y", nil, ast.NewVariable("z")),
 						},
 						ast.NewNumber(42),
 					),
@@ -288,12 +260,4 @@ func TestInferTypesErrorWithUnknownVarabiles(t *testing.T) {
 	)
 
 	assert.Error(t, err)
-}
-
-func inferredVariable(t *testing.T, tt types.Type) *types.Variable {
-	v := types.NewVariable(nil)
-
-	assert.Nil(t, v.Unify(tt))
-
-	return v
 }

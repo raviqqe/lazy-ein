@@ -16,14 +16,17 @@ func NewNumber(i *debug.Information) Number {
 }
 
 // Unify unifies itself with another type.
-func (n Number) Unify(t Type) error {
+func (n Number) Unify(t Type) ([]Equation, error) {
 	if _, ok := t.(Number); ok {
-		return nil
-	} else if v, ok := t.(*Variable); ok {
-		return v.Unify(n)
+		return nil, nil
 	}
 
-	return NewTypeError("not a number", t.DebugInformation())
+	return fallbackToVariable(n, t, NewTypeError("not a number", t.DebugInformation()))
+}
+
+// SubstituteVariable substitutes type variables.
+func (n Number) SubstituteVariable(v Variable, t Type) Type {
+	return n
 }
 
 // DebugInformation returns debug information.

@@ -79,13 +79,14 @@ func TestCompileErrorWithUnknownVariables(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestCompileErrorWithUntypedGlobals(t *testing.T) {
-	_, err := Compile(
-		ast.NewModule(
-			"",
-			[]ast.Bind{ast.NewBind("x", types.NewVariable(nil), ast.NewNumber(42))}),
-	)
-	assert.Error(t, err)
+func TestCompilePanicWithUntypedGlobals(t *testing.T) {
+	assert.Panics(t, func() {
+		Compile(
+			ast.NewModule(
+				"",
+				[]ast.Bind{ast.NewBind("x", types.NewUnknown(nil), ast.NewNumber(42))}),
+		)
+	})
 }
 
 func TestCompileToCoreWithEmptySource(t *testing.T) {

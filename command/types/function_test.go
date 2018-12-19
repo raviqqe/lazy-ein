@@ -9,14 +9,14 @@ import (
 )
 
 func TestFunctionUnify(t *testing.T) {
-	assert.Nil(
-		t,
-		types.NewFunction(
-			types.NewNumber(nil),
-			types.NewNumber(nil),
-			nil,
-		).Unify(types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil)),
-	)
+	es, err := types.NewFunction(
+		types.NewNumber(nil),
+		types.NewNumber(nil),
+		nil,
+	).Unify(types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil))
+
+	assert.Nil(t, err)
+	assert.Equal(t, []types.Equation(nil), es)
 }
 
 func TestFunctionUnifyError(t *testing.T) {
@@ -33,8 +33,17 @@ func TestFunctionUnifyError(t *testing.T) {
 			),
 			types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
 		},
+		{
+			types.NewFunction(
+				types.NewNumber(nil),
+				types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
+				nil,
+			),
+			types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
+		},
 	} {
-		assert.Error(t, ts[0].Unify(ts[1]))
+		_, err := ts[0].Unify(ts[1])
+		assert.Error(t, err)
 	}
 }
 

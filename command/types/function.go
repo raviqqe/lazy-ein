@@ -28,16 +28,35 @@ func (f Function) Result() Type {
 }
 
 // Unify unifies itself with another type.
-func (f Function) Unify(t Type) error {
+func (f Function) Unify(t Type) ([]Equation, error) {
 	ff, ok := t.(Function)
 
 	if !ok {
-		return NewTypeError("not a function", t.DebugInformation())
-	} else if err := ff.argument.Unify(f.argument); err != nil {
-		return err
+		return fallbackToVariable(f, t, NewTypeError("not a function", t.DebugInformation()))
 	}
 
-	return f.result.Unify(ff.result)
+	es, err := f.argument.Unify(ff.argument)
+
+	if err != nil {
+		return nil, err
+	}
+
+	ees, err := f.result.Unify(ff.result)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return append(es, ees...), nil
+}
+
+// SubstituteVariable substitutes type variables.
+func (f Function) SubstituteVariable(v Variable, t Type) Type {
+	return NewFunction(
+		f.argument.SubstituteVariable(v, t),
+		f.result.SubstituteVariable(v, t),
+		f.debugInformation,
+	)
 }
 
 // DebugInformation returns debug information.

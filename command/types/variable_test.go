@@ -9,20 +9,13 @@ import (
 )
 
 func TestVariableUnify(t *testing.T) {
-	for _, ts := range [][2]types.Type{
-		{types.NewVariable(nil), types.NewVariable(nil)},
-		{types.NewVariable(nil), types.NewNumber(nil)},
-	} {
-		assert.Nil(t, ts[0].Unify(ts[1]))
-	}
-}
+	v, n := types.NewVariable(0, nil), types.NewNumber(nil)
+	es, err := v.Unify(n)
 
-func TestVariableUnifyWithUnifiedVariables(t *testing.T) {
-	tt := types.NewVariable(nil)
-	assert.Nil(t, tt.Unify(types.NewNumber(nil)))
-	assert.Nil(t, tt.Unify(types.NewNumber(nil)))
+	assert.Equal(t, []types.Equation{types.NewEquation(v, n)}, es)
+	assert.Nil(t, err)
 }
 
 func TestVariableDebugInformation(t *testing.T) {
-	assert.Equal(t, (*debug.Information)(nil), types.NewVariable(nil).DebugInformation())
+	assert.Equal(t, (*debug.Information)(nil), types.NewVariable(0, nil).DebugInformation())
 }
