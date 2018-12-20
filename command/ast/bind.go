@@ -11,6 +11,10 @@ type Bind struct {
 
 // NewBind creates a new bind.
 func NewBind(n string, t types.Type, e Expression) Bind {
+	if t == nil {
+		panic("unreachable")
+	}
+
 	return Bind{n, t, e}
 }
 

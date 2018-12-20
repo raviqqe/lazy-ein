@@ -32,7 +32,7 @@ func TestDesugarApplications(t *testing.T) {
 							ast.NewVariable("f"),
 							[]ast.Expression{
 								ast.NewLet(
-									[]ast.Bind{ast.NewBind("y", nil, ast.NewNumber(42))},
+									[]ast.Bind{ast.NewBind("y", types.NewUnknown(nil), ast.NewNumber(42))},
 									ast.NewVariable("y"),
 								),
 							},
@@ -58,7 +58,7 @@ func TestDesugarApplications(t *testing.T) {
 									types.NewUnknown(nil),
 									ast.NewLet(
 										[]ast.Bind{
-											ast.NewBind("y", nil, ast.NewNumber(42)),
+											ast.NewBind("y", types.NewUnknown(nil), ast.NewNumber(42)),
 										},
 										ast.NewVariable("y"),
 									),
