@@ -6,7 +6,7 @@ import "github.com/ein-lang/ein/command/ast"
 func Desugar(m ast.Module) ast.Module {
 	for _, f := range []func(ast.Module) ast.Module{
 		desugarLiterals,
-		desugarApplications,
+		desugarComplexApplications,
 	} {
 		m = f(m)
 	}

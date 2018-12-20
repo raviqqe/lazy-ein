@@ -6,7 +6,7 @@ import (
 	"github.com/ein-lang/ein/command/types"
 )
 
-func desugarApplications(m ast.Module) ast.Module {
+func desugarComplexApplications(m ast.Module) ast.Module {
 	g := names.NewNameGenerator(m.Name() + ".application")
 
 	return m.ConvertExpression(func(e ast.Expression) ast.Expression {
