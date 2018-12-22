@@ -8,6 +8,9 @@ Feature: Build binaries
     g : Number -> Number -> Number
     g x y = y
 
+    h : Number -> Number -> Number -> Number
+    h x y z = z
+
     main : Number -> Number
     <bind>
     """
@@ -22,7 +25,10 @@ Feature: Build binaries
       | main x = let y = x in x |
       | main x = f x            |
       | main x = g 13 x         |
+      | main x = h 13 13 x      |
       | main x = f (f x)        |
       | main x = f (f (f x))    |
+      | main x = g (f x) (f x)  |
       | main = f                |
       | main = g 13             |
+      | main = h 13 13          |
