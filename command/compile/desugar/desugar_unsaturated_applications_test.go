@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDesugarUnsaturatedApplications(t *testing.T) {
+func TestDesugarPartialApplications(t *testing.T) {
 	for _, ms := range [][2]ast.Module{
 		// Empty modules
 		{
@@ -309,6 +309,6 @@ func TestDesugarUnsaturatedApplications(t *testing.T) {
 			),
 		},
 	} {
-		assert.Equal(t, ms[1], desugarUnsaturatedApplications(ms[0]))
+		assert.Equal(t, ms[1], desugarPartialApplications(ms[0]))
 	}
 }

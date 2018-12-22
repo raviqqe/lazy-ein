@@ -16,5 +16,5 @@ func WithoutTypes(m ast.Module) ast.Module {
 
 // WithTypes desugars an AST with type information.
 func WithTypes(m ast.Module) ast.Module {
-	return desugarUnsaturatedApplications(m)
+	return desugarPartialApplications(m)
 }

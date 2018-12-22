@@ -7,17 +7,17 @@ import (
 	"github.com/ein-lang/ein/command/types"
 )
 
-func desugarUnsaturatedApplications(m ast.Module) ast.Module {
+func desugarPartialApplications(m ast.Module) ast.Module {
 	bs := make([]ast.Bind, 0, len(m.Binds()))
 
 	for _, b := range m.Binds() {
-		bs = append(bs, desugarUnsaturatedApplicationsInBind(b))
+		bs = append(bs, desugarPartialApplicationsInBind(b))
 	}
 
 	return ast.NewModule(m.Name(), bs)
 }
 
-func desugarUnsaturatedApplicationsInBind(b ast.Bind) ast.Bind {
+func desugarPartialApplicationsInBind(b ast.Bind) ast.Bind {
 	e := b.Expression().ConvertExpression(
 		func(e ast.Expression) ast.Expression {
 			l, ok := e.(ast.Let)
@@ -29,7 +29,7 @@ func desugarUnsaturatedApplicationsInBind(b ast.Bind) ast.Bind {
 			bs := make([]ast.Bind, 0, len(l.Binds()))
 
 			for _, b := range l.Binds() {
-				bs = append(bs, desugarUnsaturatedApplicationsInBind(b))
+				bs = append(bs, desugarPartialApplicationsInBind(b))
 			}
 
 			return ast.NewLet(bs, l.Expression())
@@ -44,24 +44,24 @@ func desugarUnsaturatedApplicationsInBind(b ast.Bind) ast.Bind {
 		ss, es := generateAdditionalArguments(t.ArgumentsCount() - len(l.Arguments()))
 		e = ast.NewLambda(
 			append(l.Arguments(), ss...),
-			desugarUnsaturatedExpression(l.Expression(), es),
+			desugarPartialExpression(l.Expression(), es),
 		)
 	} else if !ok {
 		ss, es := generateAdditionalArguments(t.ArgumentsCount())
-		e = ast.NewLambda(ss, desugarUnsaturatedExpression(b.Expression(), es))
+		e = ast.NewLambda(ss, desugarPartialExpression(b.Expression(), es))
 	}
 
 	return ast.NewBind(b.Name(), b.Type(), e)
 }
 
-func desugarUnsaturatedExpression(e ast.Expression, as []ast.Expression) ast.Expression {
+func desugarPartialExpression(e ast.Expression, as []ast.Expression) ast.Expression {
 	switch e := e.(type) {
 	case ast.Application:
 		return ast.NewApplication(e.Function(), append(e.Arguments(), as...))
 	case ast.Variable:
 		return ast.NewApplication(e, as)
 	case ast.Let:
-		return ast.NewLet(e.Binds(), desugarUnsaturatedExpression(e.Expression(), as))
+		return ast.NewLet(e.Binds(), desugarPartialExpression(e.Expression(), as))
 	}
 
 	panic("unreachable")
