@@ -10,12 +10,12 @@ import (
 
 func TestDesugarComplexApplications(t *testing.T) {
 	for _, ms := range [][2]ast.Module{
-		// Don't convert empty modules
+		// Empty modules
 		{
 			ast.NewModule("", []ast.Bind{}),
 			ast.NewModule("", []ast.Bind{}),
 		},
-		// Convert arguments
+		// Arguments
 		{
 			ast.NewModule(
 				"foo",
@@ -75,7 +75,65 @@ func TestDesugarComplexApplications(t *testing.T) {
 				},
 			),
 		},
-		// TODO: Add test to convert functions.
+		// Functions
+		{
+			ast.NewModule(
+				"foo",
+				[]ast.Bind{
+					ast.NewBind(
+						"f",
+						types.NewFunction(
+							types.NewNumber(nil),
+							types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
+							nil,
+						),
+						ast.NewLambda([]string{"x", "y"}, ast.NewVariable("x")),
+					),
+					ast.NewBind(
+						"x",
+						types.NewNumber(nil),
+						ast.NewApplication(
+							ast.NewApplication(ast.NewVariable("f"), []ast.Expression{ast.NewVariable("x")}),
+							[]ast.Expression{ast.NewVariable("x")},
+						),
+					),
+				},
+			),
+			ast.NewModule(
+				"foo",
+				[]ast.Bind{
+					ast.NewBind(
+						"f",
+						types.NewFunction(
+							types.NewNumber(nil),
+							types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
+							nil,
+						),
+						ast.NewLambda([]string{"x", "y"}, ast.NewVariable("x")),
+					),
+					ast.NewBind(
+						"x",
+						types.NewNumber(nil),
+						ast.NewLet(
+							[]ast.Bind{
+								ast.NewBind(
+									"foo.application.function-0",
+									types.NewUnknown(nil),
+									ast.NewApplication(
+										ast.NewVariable("f"),
+										[]ast.Expression{ast.NewVariable("x")},
+									),
+								),
+							},
+							ast.NewApplication(
+								ast.NewVariable("foo.application.function-0"),
+								[]ast.Expression{ast.NewVariable("x")},
+							),
+						),
+					),
+				},
+			),
+		},
 	} {
 		assert.Equal(t, ms[1], desugarComplexApplications(ms[0]))
 	}
