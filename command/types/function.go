@@ -27,6 +27,15 @@ func (f Function) Result() Type {
 	return f.result
 }
 
+// ArgumentsCount returns a number of arguments.
+func (f Function) ArgumentsCount() int {
+	if f, ok := f.result.(Function); ok {
+		return 1 + f.ArgumentsCount()
+	}
+
+	return 1
+}
+
 // Unify unifies itself with another type.
 func (f Function) Unify(t Type) ([]Equation, error) {
 	ff, ok := t.(Function)

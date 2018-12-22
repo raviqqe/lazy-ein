@@ -31,5 +31,5 @@ func (l Let) ConvertExpression(f func(Expression) Expression) node {
 		bs = append(bs, b.ConvertExpression(f).(Bind))
 	}
 
-	return NewLet(bs, f(l.expression.ConvertExpression(f).(Expression)))
+	return f(NewLet(bs, l.expression.ConvertExpression(f).(Expression)))
 }

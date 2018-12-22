@@ -26,10 +26,10 @@ func (a Application) ConvertExpression(f func(Expression) Expression) node {
 	as := make([]Expression, 0, len(a.arguments))
 
 	for _, a := range a.arguments {
-		as = append(as, f(a.ConvertExpression(f).(Expression)).(Expression))
+		as = append(as, a.ConvertExpression(f).(Expression).(Expression))
 	}
 
-	return NewApplication(f(a.function.ConvertExpression(f).(Expression)), as)
+	return f(NewApplication(a.function.ConvertExpression(f).(Expression), as))
 }
 
 func (Application) isExpression() {}

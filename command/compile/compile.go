@@ -21,12 +21,13 @@ func Compile(m ast.Module) (llvm.Module, error) {
 }
 
 func compileToCore(m ast.Module) (coreast.Module, error) {
-	m, err := tinfer.InferTypes(desugar.Desugar(m))
+	m, err := tinfer.InferTypes(desugar.WithoutTypes(m))
 
 	if err != nil {
 		return coreast.Module{}, err
 	}
 
+	m = desugar.WithTypes(m)
 	c, err := newCompiler(m)
 
 	if err != nil {
