@@ -117,7 +117,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 }
 
 func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm.Value {
-	f := llir.AddFunction(g.module, names.ToUpdatedEntry(n), t)
+	f := llir.AddFunction(g.module, names.ToNormalFormEntry(n), t)
 	f.FirstParam().SetName(environmentArgumentName)
 
 	b := llvm.NewBuilder()

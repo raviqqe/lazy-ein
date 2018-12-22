@@ -68,7 +68,7 @@ func TestGlobalThunkForce(t *testing.T) {
 	assert.Equal(t, 42.0, *(*float64)(unsafe.Pointer(uintptr(g) + payloadOffset)))
 
 	assert.Equal(t, 42.0, e.RunFunction(
-		e.FindFunction(names.ToUpdatedEntry(functionName)),
+		e.FindFunction(names.ToNormalFormEntry(functionName)),
 		[]llvm.GenericValue{
 			llvm.NewGenericValueFromPointer(p),
 		},

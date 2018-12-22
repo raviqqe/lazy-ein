@@ -5,10 +5,9 @@ func ToEntry(s string) string {
 	return s + ".entry"
 }
 
-// ToUpdatedEntry converts a function name into its updated entry name.
-// TODO: Change this function name to "normal form entry".
-func ToUpdatedEntry(s string) string {
-	return s + ".updated-entry"
+// ToNormalFormEntry converts a function name into its normal form entry name.
+func ToNormalFormEntry(s string) string {
+	return s + ".normal-form.entry"
 }
 
 // ToTag converts a constructor name into its tag name.
