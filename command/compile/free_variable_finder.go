@@ -35,7 +35,15 @@ func (f freeVariableFinder) Find(e ast.Expression) []string {
 			ss = append(ss, b.Name())
 		}
 
-		return f.addVariables(ss...).Find(e.Expression())
+		f = f.addVariables(ss...)
+
+		sss := []string{}
+
+		for _, b := range e.Binds() {
+			sss = append(sss, f.Find(b.Expression())...)
+		}
+
+		return append(sss, f.Find(e.Expression())...)
 	case ast.Unboxed:
 		return nil
 	case ast.Variable:
@@ -52,7 +60,7 @@ func (f freeVariableFinder) Find(e ast.Expression) []string {
 func (f freeVariableFinder) addVariables(ss ...string) freeVariableFinder {
 	m := make(map[string]struct{}, len(f.variables)+len(ss))
 
-	for k := range m {
+	for k := range f.variables {
 		m[k] = struct{}{}
 	}
 

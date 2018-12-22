@@ -58,9 +58,47 @@ func TestCompileWithNestedFunctionApplications(t *testing.T) {
 						[]ast.Expression{
 							ast.NewApplication(
 								ast.NewVariable("f"),
-								[]ast.Expression{ast.NewNumber(42)},
+								[]ast.Expression{ast.NewVariable("x")},
 							),
 						},
+					),
+				),
+			},
+		),
+	)
+
+	assert.Nil(t, err)
+}
+
+func TestCompileWithDeeplyNestedFunctionApplicationsInLambdaExpressions(t *testing.T) {
+	_, err := Compile(
+		ast.NewModule(
+			"",
+			[]ast.Bind{
+				ast.NewBind(
+					"f",
+					types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
+					ast.NewLambda([]string{"x"}, ast.NewVariable("x")),
+				),
+				ast.NewBind(
+					"g",
+					types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
+					ast.NewLambda(
+						[]string{"x"},
+						ast.NewApplication(
+							ast.NewVariable("f"),
+							[]ast.Expression{
+								ast.NewApplication(
+									ast.NewVariable("f"),
+									[]ast.Expression{
+										ast.NewApplication(
+											ast.NewVariable("f"),
+											[]ast.Expression{ast.NewVariable("x")},
+										),
+									},
+								),
+							},
+						),
 					),
 				),
 			},
@@ -277,6 +315,93 @@ func TestCompileToCoreWithLetExpressionsAndFreeVariables(t *testing.T) {
 										true,
 										nil,
 										coreast.NewApplication(coreast.NewVariable("x"), nil),
+										coretypes.NewBoxed(coretypes.NewFloat64()),
+									),
+								),
+							},
+							coreast.NewApplication(coreast.NewVariable("y"), nil),
+						),
+						coretypes.NewBoxed(coretypes.NewFloat64()),
+					),
+				),
+			},
+		),
+		m,
+	)
+}
+
+func TestCompileToCoreWithNestedLetExpressionsInLambdaExpressions(t *testing.T) {
+	m, err := compileToCore(
+		ast.NewModule(
+			"foo",
+			[]ast.Bind{
+				ast.NewBind(
+					"f",
+					types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
+					ast.NewLambda(
+						[]string{"x"},
+						ast.NewLet(
+							[]ast.Bind{
+								ast.NewBind(
+									"y", types.NewUnknown(nil), ast.NewLet(
+										[]ast.Bind{ast.NewBind("z", types.NewUnknown(nil), ast.NewVariable("x"))},
+										ast.NewVariable("z"),
+									),
+								),
+							},
+							ast.NewVariable("y"),
+						),
+					),
+				),
+			},
+		),
+	)
+	assert.Nil(t, err)
+
+	assert.Equal(
+		t,
+		coreast.NewModule(
+			"foo",
+			nil,
+			[]coreast.Bind{
+				coreast.NewBind(
+					"f",
+					coreast.NewLambda(
+						nil,
+						false,
+						[]coreast.Argument{
+							coreast.NewArgument("x", coretypes.NewBoxed(coretypes.NewFloat64())),
+						},
+						coreast.NewLet(
+							[]coreast.Bind{
+								coreast.NewBind(
+									"y",
+									coreast.NewLambda(
+										[]coreast.Argument{
+											coreast.NewArgument("x", coretypes.NewBoxed(coretypes.NewFloat64())),
+										},
+										true,
+										nil,
+										coreast.NewLet(
+											[]coreast.Bind{
+												coreast.NewBind(
+													"z",
+													coreast.NewLambda(
+														[]coreast.Argument{
+															coreast.NewArgument(
+																"x",
+																coretypes.NewBoxed(coretypes.NewFloat64()),
+															),
+														},
+														true,
+														nil,
+														coreast.NewApplication(coreast.NewVariable("x"), nil),
+														coretypes.NewBoxed(coretypes.NewFloat64()),
+													),
+												),
+											},
+											coreast.NewApplication(coreast.NewVariable("z"), nil),
+										),
 										coretypes.NewBoxed(coretypes.NewFloat64()),
 									),
 								),
