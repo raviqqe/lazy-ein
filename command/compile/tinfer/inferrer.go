@@ -60,17 +60,17 @@ func (i inferrer) inferType(e ast.Expression) (types.Type, []types.Equation, err
 			ee = e.Function()
 		}
 
-		f, es, err := i.inferType(ee)
+		t, es, err := i.inferType(ee)
 
 		if err != nil {
 			return nil, nil, err
 		}
 
-		ff, ok := f.(types.Function)
+		f, ok := t.(types.Function)
 
 		if !ok {
-			ff = types.NewFunction(i.createTypeVariable(), i.createTypeVariable(), nil)
-			ees, err := f.Unify(ff)
+			f = types.NewFunction(i.createTypeVariable(), i.createTypeVariable(), nil)
+			ees, err := t.Unify(f)
 
 			if err != nil {
 				return nil, nil, err
@@ -87,13 +87,13 @@ func (i inferrer) inferType(e ast.Expression) (types.Type, []types.Equation, err
 
 		es = append(es, ees...)
 
-		ees, err = ff.Argument().Unify(a)
+		ees, err = f.Argument().Unify(a)
 
 		if err != nil {
 			return nil, nil, err
 		}
 
-		return ff.Result(), append(es, ees...), nil
+		return f.Result(), append(es, ees...), nil
 	case ast.Lambda:
 		as := make(map[string]types.Type, len(e.Arguments()))
 
