@@ -44,24 +44,24 @@ func desugarPartialApplicationsInBind(b ast.Bind) ast.Bind {
 		ss, es := generateAdditionalArguments(t.ArgumentsCount() - len(l.Arguments()))
 		e = ast.NewLambda(
 			append(l.Arguments(), ss...),
-			desugarPartialExpression(l.Expression(), es),
+			desugarPartialApplication(l.Expression(), es),
 		)
 	} else if !ok {
 		ss, es := generateAdditionalArguments(t.ArgumentsCount())
-		e = ast.NewLambda(ss, desugarPartialExpression(b.Expression(), es))
+		e = ast.NewLambda(ss, desugarPartialApplication(b.Expression(), es))
 	}
 
 	return ast.NewBind(b.Name(), b.Type(), e)
 }
 
-func desugarPartialExpression(e ast.Expression, as []ast.Expression) ast.Expression {
+func desugarPartialApplication(e ast.Expression, as []ast.Expression) ast.Expression {
 	switch e := e.(type) {
 	case ast.Application:
 		return ast.NewApplication(e.Function(), append(e.Arguments(), as...))
 	case ast.Variable:
 		return ast.NewApplication(e, as)
 	case ast.Let:
-		return ast.NewLet(e.Binds(), desugarPartialExpression(e.Expression(), as))
+		return ast.NewLet(e.Binds(), desugarPartialApplication(e.Expression(), as))
 	}
 
 	panic("unreachable")
