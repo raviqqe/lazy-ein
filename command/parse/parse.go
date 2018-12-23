@@ -14,11 +14,15 @@ import (
 type sign string
 
 const (
-	bindSign             sign = "="
-	typeDefinitionSign        = ":"
-	functionSign              = "->"
-	openParenthesisSign       = "("
-	closeParenthesisSign      = ")"
+	bindSign               sign = "="
+	typeDefinitionSign          = ":"
+	functionSign                = "->"
+	openParenthesisSign         = "("
+	closeParenthesisSign        = ")"
+	additionOperator            = sign(ast.Add)
+	subtractionOperator         = sign(ast.Subtract)
+	multiplicationOperator      = sign(ast.Multiply)
+	divisionOperator            = sign(ast.Divide)
 )
 
 type keyword string
@@ -115,19 +119,29 @@ func (s *state) arguments() parcom.Parser {
 
 func (s *state) expression() parcom.Parser {
 	return s.Lazy(func() parcom.Parser {
-		return s.Or(
-			s.application(),
-			s.nonApplicationExpression(),
-		)
+		return s.expressionWithOptions(true, true)
 	})
 }
 
-func (s *state) nonApplicationExpression() parcom.Parser {
+func (s *state) expressionWithOptions(b, a bool) parcom.Parser {
+	ps := []parcom.Parser{}
+
+	if b {
+		ps = append(ps, s.binaryOperatorTerm())
+	}
+
+	if a {
+		ps = append(ps, s.application())
+	}
+
 	return s.Or(
-		s.numberLiteral(),
-		s.let(),
-		s.variable(),
-		s.parenthesesed(s.expression()),
+		append(
+			ps,
+			s.numberLiteral(),
+			s.let(),
+			s.variable(),
+			s.parenthesesed(s.expression()),
+		)...,
 	)
 }
 
@@ -179,7 +193,7 @@ func (s *state) application() parcom.Parser {
 
 			return ast.NewApplication(xs[0].(ast.Expression), es), nil
 		},
-		s.And(s.nonApplicationExpression(), s.Many1(s.nonApplicationExpression())),
+		s.And(s.expressionWithOptions(false, false), s.Many1(s.expressionWithOptions(false, false))),
 	)
 }
 
@@ -205,6 +219,61 @@ func (s *state) let() parcom.Parser {
 			s.expression(),
 		),
 	)
+}
+
+func (s *state) binaryOperatorTerm() parcom.Parser {
+	return s.App(
+		func(x interface{}) (interface{}, error) {
+			xs := x.([]interface{})
+			os := []ast.BinaryOperator{}
+			es := []ast.Expression{xs[0].(ast.Expression)}
+
+			for _, y := range xs[1].([]interface{}) {
+				ys := y.([]interface{})
+
+				os = append(os, ast.BinaryOperator(ys[0].(string)))
+				es = append(es, ys[1].(ast.Expression))
+			}
+
+			for len(es) > 1 {
+				es, os = reduceBinaryOperatorTerms(es, os)
+			}
+
+			return es[0], nil
+		},
+		s.And(
+			s.expressionWithOptions(false, true),
+			s.Many1(
+				s.And(
+					s.Or(
+						s.sign(additionOperator),
+						s.sign(subtractionOperator),
+						s.sign(multiplicationOperator),
+						s.sign(divisionOperator),
+					),
+					s.expressionWithOptions(false, true),
+				),
+			),
+		),
+	)
+}
+
+func reduceBinaryOperatorTerms(
+	es []ast.Expression,
+	os []ast.BinaryOperator,
+) ([]ast.Expression, []ast.BinaryOperator) {
+	if len(es) == 1 {
+		return es, nil
+	} else if len(es) == 2 || os[0].Priority() >= os[1].Priority() {
+		return append(
+			[]ast.Expression{ast.NewBinaryOperatorTerm(os[0], es[0], es[1])},
+			es[2:]...,
+		), os[1:]
+	}
+
+	ees, oos := reduceBinaryOperatorTerms(es[1:], os[1:])
+
+	return append([]ast.Expression{es[0]}, ees...), append([]ast.BinaryOperator{os[0]}, oos...)
 }
 
 func (s *state) untypedBind() parcom.Parser {

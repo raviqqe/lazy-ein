@@ -188,6 +188,129 @@ func TestStateLetError(t *testing.T) {
 	}
 }
 
+func TestStateExpressionWithOperators(t *testing.T) {
+	for _, c := range []struct {
+		source     string
+		expression ast.Expression
+	}{
+		{
+			"1 + 1",
+			ast.NewBinaryOperatorTerm(ast.Add, ast.NewNumber(1), ast.NewNumber(1)),
+		},
+		{
+			"(1 + 1) + 1",
+			ast.NewBinaryOperatorTerm(
+				ast.Add,
+				ast.NewBinaryOperatorTerm(ast.Add, ast.NewNumber(1), ast.NewNumber(1)),
+				ast.NewNumber(1),
+			),
+		},
+		{
+			"1 + (1 + 1)",
+			ast.NewBinaryOperatorTerm(
+				ast.Add,
+				ast.NewNumber(1),
+				ast.NewBinaryOperatorTerm(ast.Add, ast.NewNumber(1), ast.NewNumber(1)),
+			),
+		},
+		{
+			"1 + 1 + 1",
+			ast.NewBinaryOperatorTerm(
+				ast.Add,
+				ast.NewBinaryOperatorTerm(ast.Add, ast.NewNumber(1), ast.NewNumber(1)),
+				ast.NewNumber(1),
+			),
+		},
+		{
+			"1 + 1 * 1",
+			ast.NewBinaryOperatorTerm(
+				ast.Add,
+				ast.NewNumber(1),
+				ast.NewBinaryOperatorTerm(ast.Multiply, ast.NewNumber(1), ast.NewNumber(1)),
+			),
+		},
+		{
+			"1 + 1 * 1 + 1",
+			ast.NewBinaryOperatorTerm(
+				ast.Add,
+				ast.NewBinaryOperatorTerm(
+					ast.Add,
+					ast.NewNumber(1),
+					ast.NewBinaryOperatorTerm(ast.Multiply, ast.NewNumber(1), ast.NewNumber(1)),
+				),
+				ast.NewNumber(1),
+			),
+		},
+		{
+			"1 + 1 * 1 + 1 * 1 / 2 - 3",
+			ast.NewBinaryOperatorTerm(
+				ast.Subtract,
+				ast.NewBinaryOperatorTerm(
+					ast.Add,
+					ast.NewBinaryOperatorTerm(
+						ast.Add,
+						ast.NewNumber(1),
+						ast.NewBinaryOperatorTerm(ast.Multiply, ast.NewNumber(1), ast.NewNumber(1)),
+					),
+					ast.NewBinaryOperatorTerm(
+						ast.Divide,
+						ast.NewBinaryOperatorTerm(
+							ast.Multiply,
+							ast.NewNumber(1),
+							ast.NewNumber(1),
+						),
+						ast.NewNumber(2),
+					),
+				),
+				ast.NewNumber(3),
+			),
+		},
+		{
+			"f x + 1",
+			ast.NewBinaryOperatorTerm(
+				ast.Add,
+				ast.NewApplication(ast.NewVariable("f"), []ast.Expression{ast.NewVariable("x")}),
+				ast.NewNumber(1),
+			),
+		},
+		{
+			"1 + f x",
+			ast.NewBinaryOperatorTerm(
+				ast.Add,
+				ast.NewNumber(1),
+				ast.NewApplication(ast.NewVariable("f"), []ast.Expression{ast.NewVariable("x")}),
+			),
+		},
+		{
+			"1 + let x = y in 2 - 3",
+			ast.NewBinaryOperatorTerm(
+				ast.Add,
+				ast.NewNumber(1),
+				ast.NewLet(
+					[]ast.Bind{
+						ast.NewBind(
+							"x",
+							types.NewUnknown(debug.NewInformation("", 1, 9, "1 + let x = y in 2 - 3")),
+							ast.NewVariable("y"),
+						),
+					},
+					ast.NewBinaryOperatorTerm(
+						ast.Subtract,
+						ast.NewNumber(2),
+						ast.NewNumber(3),
+					),
+				),
+			),
+		},
+	} {
+		s := newState("", c.source)
+		e, err := s.Exhaust(s.expression())()
+
+		assert.Nil(t, err)
+		assert.Equal(t, c.expression, e)
+	}
+}
+
 func TestStateType(t *testing.T) {
 	for _, s := range []string{
 		"Number",
