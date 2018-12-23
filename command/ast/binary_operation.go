@@ -26,13 +26,13 @@ func (t BinaryOperation) RHS() Expression {
 	return t.rhs
 }
 
-// ConvertExpression visits expressions.
-func (t BinaryOperation) ConvertExpression(f func(Expression) Expression) node {
+// ConvertExpressions visits expressions.
+func (t BinaryOperation) ConvertExpressions(f func(Expression) Expression) node {
 	return f(
 		NewBinaryOperation(
 			t.operator,
-			t.lhs.ConvertExpression(f).(Expression),
-			t.rhs.ConvertExpression(f).(Expression),
+			t.lhs.ConvertExpressions(f).(Expression),
+			t.rhs.ConvertExpressions(f).(Expression),
 		),
 	)
 }

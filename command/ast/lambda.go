@@ -21,9 +21,9 @@ func (b Lambda) Expression() Expression {
 	return b.expression
 }
 
-// ConvertExpression visits expressions.
-func (b Lambda) ConvertExpression(f func(Expression) Expression) node {
-	return f(NewLambda(b.arguments, b.expression.ConvertExpression(f).(Expression)))
+// ConvertExpressions visits expressions.
+func (b Lambda) ConvertExpressions(f func(Expression) Expression) node {
+	return f(NewLambda(b.arguments, b.expression.ConvertExpressions(f).(Expression)))
 }
 
 func (Lambda) isExpression() {}

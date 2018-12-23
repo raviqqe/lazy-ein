@@ -23,13 +23,13 @@ func (l Let) Expression() Expression {
 
 func (Let) isExpression() {}
 
-// ConvertExpression visits expressions.
-func (l Let) ConvertExpression(f func(Expression) Expression) node {
+// ConvertExpressions visits expressions.
+func (l Let) ConvertExpressions(f func(Expression) Expression) node {
 	bs := make([]Bind, 0, len(l.binds))
 
 	for _, b := range l.binds {
-		bs = append(bs, b.ConvertExpression(f).(Bind))
+		bs = append(bs, b.ConvertExpressions(f).(Bind))
 	}
 
-	return f(NewLet(bs, l.expression.ConvertExpression(f).(Expression)))
+	return f(NewLet(bs, l.expression.ConvertExpressions(f).(Expression)))
 }

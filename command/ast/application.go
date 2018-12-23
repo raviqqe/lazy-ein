@@ -21,15 +21,15 @@ func (a Application) Arguments() []Expression {
 	return a.arguments
 }
 
-// ConvertExpression visits expressions.
-func (a Application) ConvertExpression(f func(Expression) Expression) node {
+// ConvertExpressions visits expressions.
+func (a Application) ConvertExpressions(f func(Expression) Expression) node {
 	as := make([]Expression, 0, len(a.arguments))
 
 	for _, a := range a.arguments {
-		as = append(as, a.ConvertExpression(f).(Expression).(Expression))
+		as = append(as, a.ConvertExpressions(f).(Expression).(Expression))
 	}
 
-	return f(NewApplication(a.function.ConvertExpression(f).(Expression), as))
+	return f(NewApplication(a.function.ConvertExpressions(f).(Expression), as))
 }
 
 func (Application) isExpression() {}

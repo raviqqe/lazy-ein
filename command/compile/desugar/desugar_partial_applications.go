@@ -18,7 +18,7 @@ func desugarPartialApplications(m ast.Module) ast.Module {
 }
 
 func desugarPartialApplicationsInBind(b ast.Bind) ast.Bind {
-	e := b.Expression().ConvertExpression(
+	e := b.Expression().ConvertExpressions(
 		func(e ast.Expression) ast.Expression {
 			l, ok := e.(ast.Let)
 

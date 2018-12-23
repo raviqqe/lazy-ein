@@ -1,5 +1,5 @@
 package ast
 
 type node interface {
-	ConvertExpression(func(Expression) Expression) node
+	ConvertExpressions(func(Expression) Expression) node
 }

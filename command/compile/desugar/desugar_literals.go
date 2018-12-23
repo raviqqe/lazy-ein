@@ -24,7 +24,7 @@ func desugarLiterals(m ast.Module) ast.Module {
 			continue
 		}
 
-		bs = append(bs, b.ConvertExpression(func(e ast.Expression) ast.Expression {
+		bs = append(bs, b.ConvertExpressions(func(e ast.Expression) ast.Expression {
 			l, ok := e.(ast.Literal)
 
 			if !ok {

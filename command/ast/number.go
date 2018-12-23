@@ -15,8 +15,8 @@ func (n Number) Value() float64 {
 	return n.value
 }
 
-// ConvertExpression visits expressions.
-func (n Number) ConvertExpression(f func(Expression) Expression) node {
+// ConvertExpressions visits expressions.
+func (n Number) ConvertExpressions(f func(Expression) Expression) node {
 	return f(n)
 }
 

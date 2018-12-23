@@ -9,7 +9,7 @@ import (
 func desugarComplexApplications(m ast.Module) ast.Module {
 	g := names.NewNameGenerator(m.Name() + ".application")
 
-	return m.ConvertExpression(func(e ast.Expression) ast.Expression {
+	return m.ConvertExpressions(func(e ast.Expression) ast.Expression {
 		app, ok := e.(ast.Application)
 
 		if !ok {

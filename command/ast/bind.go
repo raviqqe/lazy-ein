@@ -33,7 +33,7 @@ func (b Bind) Expression() Expression {
 	return b.expression
 }
 
-// ConvertExpression visits expressions.
-func (b Bind) ConvertExpression(f func(Expression) Expression) node {
-	return NewBind(b.name, b.typ, b.expression.ConvertExpression(f).(Expression))
+// ConvertExpressions visits expressions.
+func (b Bind) ConvertExpressions(f func(Expression) Expression) node {
+	return NewBind(b.name, b.typ, b.expression.ConvertExpressions(f).(Expression))
 }

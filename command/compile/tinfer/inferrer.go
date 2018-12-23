@@ -226,7 +226,7 @@ func (inferrer) substituteVariablesInEquations(
 }
 
 func (inferrer) substituteVariablesInModule(m ast.Module, ss map[int]types.Type) ast.Module {
-	return m.ConvertExpression(func(e ast.Expression) ast.Expression {
+	return m.ConvertExpressions(func(e ast.Expression) ast.Expression {
 		l, ok := e.(ast.Let)
 
 		if !ok {
@@ -277,7 +277,7 @@ func (i inferrer) createTypeVariable() types.Variable {
 }
 
 func (i inferrer) insertTypeVariables(m ast.Module) ast.Module {
-	return m.ConvertExpression(func(e ast.Expression) ast.Expression {
+	return m.ConvertExpressions(func(e ast.Expression) ast.Expression {
 		l, ok := e.(ast.Let)
 
 		if !ok {
