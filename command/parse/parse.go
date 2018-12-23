@@ -129,7 +129,7 @@ func (s *state) expressionWithOptions(b, a bool) parcom.Parser {
 	ps := []parcom.Parser{}
 
 	if b {
-		ps = append(ps, s.binaryOperatorTerm())
+		ps = append(ps, s.binaryOperation())
 	}
 
 	if a {
@@ -220,7 +220,7 @@ func (s *state) let() parcom.Parser {
 	)
 }
 
-func (s *state) binaryOperatorTerm() parcom.Parser {
+func (s *state) binaryOperation() parcom.Parser {
 	return s.App(
 		func(x interface{}) (interface{}, error) {
 			xs := x.([]interface{})
@@ -235,7 +235,7 @@ func (s *state) binaryOperatorTerm() parcom.Parser {
 			}
 
 			for len(es) > 1 {
-				es, os = reduceBinaryOperatorTerms(es, os)
+				es, os = reduceBinaryOperations(es, os)
 			}
 
 			return es[0], nil
@@ -257,7 +257,7 @@ func (s *state) binaryOperatorTerm() parcom.Parser {
 	)
 }
 
-func reduceBinaryOperatorTerms(
+func reduceBinaryOperations(
 	es []ast.Expression,
 	os []ast.BinaryOperator,
 ) ([]ast.Expression, []ast.BinaryOperator) {
@@ -265,12 +265,12 @@ func reduceBinaryOperatorTerms(
 		return es, nil
 	} else if len(es) == 2 || os[0].Priority() >= os[1].Priority() {
 		return append(
-			[]ast.Expression{ast.NewBinaryOperatorTerm(os[0], es[0], es[1])},
+			[]ast.Expression{ast.NewBinaryOperation(os[0], es[0], es[1])},
 			es[2:]...,
 		), os[1:]
 	}
 
-	ees, oos := reduceBinaryOperatorTerms(es[1:], os[1:])
+	ees, oos := reduceBinaryOperations(es[1:], os[1:])
 
 	return append([]ast.Expression{es[0]}, ees...), append([]ast.BinaryOperator{os[0]}, oos...)
 }

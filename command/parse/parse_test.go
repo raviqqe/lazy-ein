@@ -195,66 +195,66 @@ func TestStateExpressionWithOperators(t *testing.T) {
 	}{
 		{
 			"1 + 1",
-			ast.NewBinaryOperatorTerm(ast.Add, ast.NewNumber(1), ast.NewNumber(1)),
+			ast.NewBinaryOperation(ast.Add, ast.NewNumber(1), ast.NewNumber(1)),
 		},
 		{
 			"(1 + 1) + 1",
-			ast.NewBinaryOperatorTerm(
+			ast.NewBinaryOperation(
 				ast.Add,
-				ast.NewBinaryOperatorTerm(ast.Add, ast.NewNumber(1), ast.NewNumber(1)),
+				ast.NewBinaryOperation(ast.Add, ast.NewNumber(1), ast.NewNumber(1)),
 				ast.NewNumber(1),
 			),
 		},
 		{
 			"1 + (1 + 1)",
-			ast.NewBinaryOperatorTerm(
+			ast.NewBinaryOperation(
 				ast.Add,
 				ast.NewNumber(1),
-				ast.NewBinaryOperatorTerm(ast.Add, ast.NewNumber(1), ast.NewNumber(1)),
+				ast.NewBinaryOperation(ast.Add, ast.NewNumber(1), ast.NewNumber(1)),
 			),
 		},
 		{
 			"1 + 1 + 1",
-			ast.NewBinaryOperatorTerm(
+			ast.NewBinaryOperation(
 				ast.Add,
-				ast.NewBinaryOperatorTerm(ast.Add, ast.NewNumber(1), ast.NewNumber(1)),
+				ast.NewBinaryOperation(ast.Add, ast.NewNumber(1), ast.NewNumber(1)),
 				ast.NewNumber(1),
 			),
 		},
 		{
 			"1 + 1 * 1",
-			ast.NewBinaryOperatorTerm(
+			ast.NewBinaryOperation(
 				ast.Add,
 				ast.NewNumber(1),
-				ast.NewBinaryOperatorTerm(ast.Multiply, ast.NewNumber(1), ast.NewNumber(1)),
+				ast.NewBinaryOperation(ast.Multiply, ast.NewNumber(1), ast.NewNumber(1)),
 			),
 		},
 		{
 			"1 + 1 * 1 + 1",
-			ast.NewBinaryOperatorTerm(
+			ast.NewBinaryOperation(
 				ast.Add,
-				ast.NewBinaryOperatorTerm(
+				ast.NewBinaryOperation(
 					ast.Add,
 					ast.NewNumber(1),
-					ast.NewBinaryOperatorTerm(ast.Multiply, ast.NewNumber(1), ast.NewNumber(1)),
+					ast.NewBinaryOperation(ast.Multiply, ast.NewNumber(1), ast.NewNumber(1)),
 				),
 				ast.NewNumber(1),
 			),
 		},
 		{
 			"1 + 1 * 1 + 1 * 1 / 2 - 3",
-			ast.NewBinaryOperatorTerm(
+			ast.NewBinaryOperation(
 				ast.Subtract,
-				ast.NewBinaryOperatorTerm(
+				ast.NewBinaryOperation(
 					ast.Add,
-					ast.NewBinaryOperatorTerm(
+					ast.NewBinaryOperation(
 						ast.Add,
 						ast.NewNumber(1),
-						ast.NewBinaryOperatorTerm(ast.Multiply, ast.NewNumber(1), ast.NewNumber(1)),
+						ast.NewBinaryOperation(ast.Multiply, ast.NewNumber(1), ast.NewNumber(1)),
 					),
-					ast.NewBinaryOperatorTerm(
+					ast.NewBinaryOperation(
 						ast.Divide,
-						ast.NewBinaryOperatorTerm(
+						ast.NewBinaryOperation(
 							ast.Multiply,
 							ast.NewNumber(1),
 							ast.NewNumber(1),
@@ -267,7 +267,7 @@ func TestStateExpressionWithOperators(t *testing.T) {
 		},
 		{
 			"f x + 1",
-			ast.NewBinaryOperatorTerm(
+			ast.NewBinaryOperation(
 				ast.Add,
 				ast.NewApplication(ast.NewVariable("f"), []ast.Expression{ast.NewVariable("x")}),
 				ast.NewNumber(1),
@@ -275,7 +275,7 @@ func TestStateExpressionWithOperators(t *testing.T) {
 		},
 		{
 			"1 + f x",
-			ast.NewBinaryOperatorTerm(
+			ast.NewBinaryOperation(
 				ast.Add,
 				ast.NewNumber(1),
 				ast.NewApplication(ast.NewVariable("f"), []ast.Expression{ast.NewVariable("x")}),
@@ -283,7 +283,7 @@ func TestStateExpressionWithOperators(t *testing.T) {
 		},
 		{
 			"1 + let x = y in 2 - 3",
-			ast.NewBinaryOperatorTerm(
+			ast.NewBinaryOperation(
 				ast.Add,
 				ast.NewNumber(1),
 				ast.NewLet(
@@ -294,7 +294,7 @@ func TestStateExpressionWithOperators(t *testing.T) {
 							ast.NewVariable("y"),
 						),
 					},
-					ast.NewBinaryOperatorTerm(
+					ast.NewBinaryOperation(
 						ast.Subtract,
 						ast.NewNumber(2),
 						ast.NewNumber(3),
