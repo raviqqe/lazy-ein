@@ -118,9 +118,11 @@ func (s *state) arguments() parcom.Parser {
 }
 
 func (s *state) expression() parcom.Parser {
-	return s.Lazy(func() parcom.Parser {
-		return s.expressionWithOptions(true, true)
-	})
+	return s.Lazy(
+		func() parcom.Parser {
+			return s.expressionWithOptions(true, true)
+		},
+	)
 }
 
 func (s *state) expressionWithOptions(b, a bool) parcom.Parser {
@@ -211,10 +213,7 @@ func (s *state) let() parcom.Parser {
 			return ast.NewLet(bs, xs[2].(ast.Expression)), nil
 		},
 		s.And(
-			s.WithBlock1(
-				s.keyword(letKeyword),
-				s.untypedBind(),
-			),
+			s.WithBlock1(s.keyword(letKeyword), s.untypedBind()),
 			s.keyword(inKeyword),
 			s.expression(),
 		),
@@ -293,13 +292,13 @@ func (s *state) untypedBind() parcom.Parser {
 }
 
 func (s *state) typ() parcom.Parser {
-	return s.Lazy(func() parcom.Parser { return s.strictType() })
-}
-
-func (s *state) strictType() parcom.Parser {
-	return s.Or(
-		s.functionType(),
-		s.scalarType(),
+	return s.Lazy(
+		func() parcom.Parser {
+			return s.Or(
+				s.functionType(),
+				s.scalarType(),
+			)
+		},
 	)
 }
 
@@ -320,15 +319,15 @@ func (s *state) scalarType() parcom.Parser {
 }
 
 func (s *state) functionType() parcom.Parser {
-	return s.Lazy(func() parcom.Parser { return s.strictFunctionType() })
-}
-
-func (s *state) strictFunctionType() parcom.Parser {
-	return s.withDebugInformation(
-		s.And(s.argumentType(), s.sign(functionSign), s.typ()),
-		func(x interface{}, i *debug.Information) (interface{}, error) {
-			xs := x.([]interface{})
-			return types.NewFunction(xs[0].(types.Type), xs[2].(types.Type), i), nil
+	return s.Lazy(
+		func() parcom.Parser {
+			return s.withDebugInformation(
+				s.And(s.argumentType(), s.sign(functionSign), s.typ()),
+				func(x interface{}, i *debug.Information) (interface{}, error) {
+					xs := x.([]interface{})
+					return types.NewFunction(xs[0].(types.Type), xs[2].(types.Type), i), nil
+				},
+			)
 		},
 	)
 }
