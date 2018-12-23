@@ -94,6 +94,20 @@ func (i inferrer) inferType(e ast.Expression) (types.Type, []types.Equation, err
 		}
 
 		return f.Result(), append(es, ees...), nil
+	case ast.BinaryOperation:
+		es := []types.Equation{}
+
+		for _, e := range []ast.Expression{e.LHS(), e.RHS()} {
+			l, ees, err := i.inferType(e)
+
+			if err != nil {
+				return nil, nil, err
+			}
+
+			es = append(append(es, ees...), types.NewEquation(l, types.NewNumber(nil)))
+		}
+
+		return types.NewNumber(nil), es, nil
 	case ast.Lambda:
 		as := make(map[string]types.Type, len(e.Arguments()))
 

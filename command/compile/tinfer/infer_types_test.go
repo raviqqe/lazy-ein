@@ -161,6 +161,28 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 				),
 			),
 		},
+		// Binary operations
+		{
+			ast.NewLet(
+				[]ast.Bind{
+					ast.NewBind("x",
+						types.NewUnknown(nil),
+						ast.NewBinaryOperation(ast.Add, ast.NewNumber(42), ast.NewNumber(42)),
+					),
+				},
+				ast.NewNumber(42),
+			),
+			ast.NewLet(
+				[]ast.Bind{
+					ast.NewBind(
+						"x",
+						types.NewNumber(nil),
+						ast.NewBinaryOperation(ast.Add, ast.NewNumber(42), ast.NewNumber(42)),
+					),
+				},
+				ast.NewNumber(42),
+			),
+		},
 	} {
 		m, err := tinfer.InferTypes(
 			ast.NewModule("", []ast.Bind{ast.NewBind("bar", types.NewNumber(nil), ls[0])}),
