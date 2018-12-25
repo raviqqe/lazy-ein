@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -16,7 +17,7 @@ type sign string
 const (
 	bindSign               sign = "="
 	typeDefinitionSign          = ":"
-	functionSign                = "->"
+	mapSign                     = "->"
 	openParenthesisSign         = "("
 	closeParenthesisSign        = ")"
 	additionOperator            = sign(ast.Add)
@@ -220,6 +221,61 @@ func (s *state) let() parcom.Parser {
 	)
 }
 
+func (s *state) caseOf() parcom.Parser {
+	return s.App(
+		func(x interface{}) (interface{}, error) {
+			xs := x.([]interface{})
+			ys := xs[1].([]interface{})
+
+			e := xs[0].(ast.Expression)
+			as := make([]ast.Alternative, 0, len(ys))
+
+			for i, y := range ys {
+				switch a := y.(type) {
+				case ast.Alternative:
+					as = append(as, a)
+				case ast.DefaultAlternative:
+					if i != len(ys)-1 {
+						return nil, errors.New("default alternative must be the last alternative")
+					}
+
+					return ast.NewCase(e, as, a), nil
+				}
+			}
+
+			return ast.NewCaseWithoutDefault(e, as), nil
+		},
+		s.WithBlock1(
+			s.Wrap(
+				s.keyword(caseKeyword),
+				s.expression(),
+				s.keyword(ofKeyword),
+			),
+			s.Or(s.alternative(), s.defaultAlternative()),
+		),
+	)
+}
+
+func (s *state) alternative() parcom.Parser {
+	return s.App(
+		func(x interface{}) (interface{}, error) {
+			xs := x.([]interface{})
+			return ast.NewAlternative(xs[0].(ast.Literal), xs[2].(ast.Expression)), nil
+		},
+		s.WithPosition(s.And(s.numberLiteral(), s.sign(mapSign), s.expression())),
+	)
+}
+
+func (s *state) defaultAlternative() parcom.Parser {
+	return s.App(
+		func(x interface{}) (interface{}, error) {
+			xs := x.([]interface{})
+			return ast.NewDefaultAlternative(xs[0].(string), xs[2].(ast.Expression)), nil
+		},
+		s.WithPosition(s.And(s.identifier(), s.sign(mapSign), s.expression())),
+	)
+}
+
 func (s *state) binaryOperation() parcom.Parser {
 	return s.App(
 		func(x interface{}) (interface{}, error) {
@@ -322,7 +378,7 @@ func (s *state) functionType() parcom.Parser {
 	return s.Lazy(
 		func() parcom.Parser {
 			return s.withDebugInformation(
-				s.And(s.argumentType(), s.sign(functionSign), s.typ()),
+				s.And(s.argumentType(), s.sign(mapSign), s.typ()),
 				func(x interface{}, i *debug.Information) (interface{}, error) {
 					xs := x.([]interface{})
 					return types.NewFunction(xs[0].(types.Type), xs[2].(types.Type), i), nil

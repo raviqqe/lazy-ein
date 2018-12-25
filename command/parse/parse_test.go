@@ -188,6 +188,52 @@ func TestStateLetError(t *testing.T) {
 	}
 }
 
+func TestStateCaseOf(t *testing.T) {
+	for _, c := range []struct {
+		source string
+		ast    ast.Case
+	}{
+		{
+			"case 1 of 2 -> 3",
+			ast.NewCaseWithoutDefault(
+				ast.NewNumber(1),
+				[]ast.Alternative{ast.NewAlternative(ast.NewNumber(2), ast.NewNumber(3))},
+			),
+		},
+		{
+			"case 1 of\n 2 -> 3\n 4 -> 5",
+			ast.NewCaseWithoutDefault(
+				ast.NewNumber(1),
+				[]ast.Alternative{
+					ast.NewAlternative(ast.NewNumber(2), ast.NewNumber(3)),
+					ast.NewAlternative(ast.NewNumber(4), ast.NewNumber(5)),
+				},
+			),
+		},
+		{
+			"case 1 of x -> 2",
+			ast.NewCase(
+				ast.NewNumber(1),
+				[]ast.Alternative{},
+				ast.NewDefaultAlternative("x", ast.NewNumber(2)),
+			),
+		},
+		{
+			"case 1 of\n 2 -> 3\n x -> 4",
+			ast.NewCase(
+				ast.NewNumber(1),
+				[]ast.Alternative{ast.NewAlternative(ast.NewNumber(2), ast.NewNumber(3))},
+				ast.NewDefaultAlternative("x", ast.NewNumber(4)),
+			),
+		},
+	} {
+		a, err := newState("", c.source).caseOf()()
+
+		assert.Nil(t, err)
+		assert.Equal(t, c.ast, a)
+	}
+}
+
 func TestStateExpressionWithOperators(t *testing.T) {
 	for _, c := range []struct {
 		source     string
