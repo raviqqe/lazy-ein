@@ -13,8 +13,11 @@ type Unboxed struct {
 
 // NewUnboxed creates a unboxed type.
 func NewUnboxed(c Type, i *debug.Information) Unboxed {
-	if _, ok := c.(Unboxed); ok {
+	switch c.(type) {
+	case Unboxed:
 		panic("cannot unbox unboxed types")
+	case Function:
+		panic("cannot unbox function types")
 	}
 
 	return Unboxed{c, i}

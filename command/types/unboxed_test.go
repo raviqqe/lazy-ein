@@ -14,6 +14,7 @@ func TestNewUnboxed(t *testing.T) {
 
 func TestNewUnboxedPanic(t *testing.T) {
 	assert.Panics(t, func() { types.NewUnboxed(types.NewUnboxed(types.NewNumber(nil), nil), nil) })
+	assert.Panics(t, func() { types.NewUnboxed(types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil), nil) })
 }
 
 func TestUnboxedContent(t *testing.T) {
