@@ -66,7 +66,7 @@ func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
 	l, ok := b.Expression().(ast.Lambda)
 
 	if !ok {
-		vs, err := c.compileFreeVariables(b)
+		vs, err := c.compileFreeVariables(b.Expression())
 
 		if err != nil {
 			return coreast.Bind{}, err
@@ -95,7 +95,7 @@ func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
 		c = c.addVariable(s, t)
 	}
 
-	vs, err := c.compileFreeVariables(b)
+	vs, err := c.compileFreeVariables(b.Expression())
 
 	if err != nil {
 		return coreast.Bind{}, err
@@ -123,8 +123,77 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 			coreast.NewVariable(e.Function().(ast.Variable).Name()),
 			as,
 		), nil
+	case ast.BinaryOperation:
+		l, err := c.compileExpression(e.LHS())
+
+		if err != nil {
+			return nil, err
+		}
+
+		r, err := c.compileExpression(e.RHS())
+
+		if err != nil {
+			return nil, err
+		}
+
+		x := l.(coreast.Application).Function().Name()
+		y := r.(coreast.Application).Function().Name()
+
+		vs, err := c.compileFreeVariables(e)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return coreast.NewLet(
+			[]coreast.Bind{
+				coreast.NewBind(
+					"result",
+					coreast.NewLambda(
+						vs,
+						true,
+						nil,
+						coreast.NewPrimitiveCase(
+							coreast.NewApplication(coreast.NewVariable(x), nil),
+							coretypes.NewBoxed(coretypes.NewFloat64()),
+							nil,
+							coreast.NewDefaultAlternative(
+								"lhs",
+								coreast.NewPrimitiveCase(
+									coreast.NewApplication(coreast.NewVariable(y), nil),
+									coretypes.NewBoxed(coretypes.NewFloat64()),
+									nil,
+									coreast.NewDefaultAlternative(
+										"rhs",
+										coreast.NewPrimitiveOperation(
+											binaryOperatorToPrimitive(e.Operator()),
+											[]coreast.Atom{
+												coreast.NewVariable("lhs"),
+												coreast.NewVariable("rhs"),
+											},
+										),
+									),
+								),
+							),
+						),
+						coretypes.NewFloat64(),
+					),
+				),
+			},
+			coreast.NewApplication(coreast.NewVariable("result"), nil),
+		), nil
 	case ast.Let:
 		bs := make([]coreast.Bind, 0, len(e.Binds()))
+
+		for _, b := range e.Binds() {
+			t, err := b.Type().ToCore()
+
+			if err != nil {
+				return nil, err
+			}
+
+			c = c.addVariable(b.Name(), t)
+		}
 
 		for _, b := range e.Binds() {
 			b, err := c.compileBind(b)
@@ -156,8 +225,8 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 	panic("unreahable")
 }
 
-func (c compiler) compileFreeVariables(b ast.Bind) ([]coreast.Argument, error) {
-	ss := c.freeVariableFinder.Find(b.Expression())
+func (c compiler) compileFreeVariables(e ast.Expression) ([]coreast.Argument, error) {
+	ss := c.freeVariableFinder.Find(e)
 
 	if len(ss) == 0 {
 		return nil, nil // to normalize empty slices

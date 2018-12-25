@@ -416,3 +416,108 @@ func TestCompileToCoreWithNestedLetExpressionsInLambdaExpressions(t *testing.T) 
 		m,
 	)
 }
+
+func TestCompileToCoreWithBinaryOperations(t *testing.T) {
+	m, err := compileToCore(
+		ast.NewModule(
+			"foo",
+			[]ast.Bind{
+				ast.NewBind(
+					"x",
+					types.NewNumber(nil),
+					ast.NewBinaryOperation(ast.Add, ast.NewNumber(1), ast.NewNumber(1)),
+				),
+			},
+		),
+	)
+	assert.Nil(t, err)
+
+	assert.Equal(
+		t,
+		coreast.NewModule(
+			"foo",
+			nil,
+			[]coreast.Bind{
+				coreast.NewBind(
+					"foo.literal-0",
+					coreast.NewLambda(nil, true, nil, coreast.NewFloat64(1), coretypes.NewFloat64()),
+				),
+				coreast.NewBind(
+					"foo.literal-1",
+					coreast.NewLambda(nil, true, nil, coreast.NewFloat64(1), coretypes.NewFloat64()),
+				),
+				coreast.NewBind(
+					"x",
+					coreast.NewLambda(
+						nil,
+						true,
+						nil,
+						coreast.NewLet(
+							[]coreast.Bind{
+								coreast.NewBind(
+									"result",
+									coreast.NewLambda(
+										nil,
+										true,
+										nil,
+										coreast.NewPrimitiveCase(
+											coreast.NewApplication(coreast.NewVariable("foo.literal-0"), nil),
+											coretypes.NewBoxed(coretypes.NewFloat64()),
+											nil,
+											coreast.NewDefaultAlternative(
+												"lhs",
+												coreast.NewPrimitiveCase(
+													coreast.NewApplication(coreast.NewVariable("foo.literal-1"), nil),
+													coretypes.NewBoxed(coretypes.NewFloat64()),
+													nil,
+													coreast.NewDefaultAlternative(
+														"rhs",
+														coreast.NewPrimitiveOperation(
+															coreast.AddFloat64,
+															[]coreast.Atom{
+																coreast.NewVariable("lhs"),
+																coreast.NewVariable("rhs"),
+															},
+														),
+													),
+												),
+											),
+										),
+										coretypes.NewFloat64(),
+									),
+								),
+							},
+							coreast.NewApplication(coreast.NewVariable("result"), nil),
+						),
+						coretypes.NewBoxed(coretypes.NewFloat64()),
+					),
+				),
+			},
+		),
+		m,
+	)
+}
+
+func TestCompileWithComplexBinaryOperations(t *testing.T) {
+	_, err := Compile(
+		ast.NewModule(
+			"foo",
+			[]ast.Bind{
+				ast.NewBind(
+					"x",
+					types.NewNumber(nil),
+					ast.NewBinaryOperation(
+						ast.Add,
+						ast.NewNumber(1),
+						ast.NewBinaryOperation(
+							ast.Multiply,
+							ast.NewNumber(2),
+							ast.NewNumber(3),
+						),
+					),
+				),
+			},
+		),
+	)
+	assert.Nil(t, err)
+}

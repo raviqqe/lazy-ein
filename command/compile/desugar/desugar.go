@@ -7,6 +7,7 @@ func WithoutTypes(m ast.Module) ast.Module {
 	for _, f := range []func(ast.Module) ast.Module{
 		desugarLiterals,
 		desugarComplexApplications,
+		desugarComplexBinaryOperations,
 	} {
 		m = f(m)
 	}
