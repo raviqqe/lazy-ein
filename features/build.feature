@@ -35,3 +35,4 @@ Feature: Build binaries
       | main x = 40 + 2              |
       | main x = 21 + 7 * 3          |
       | main x = 7 + 12 / 3 * 10 - 5 |
+      | main x = f 40 + 2            |
