@@ -203,7 +203,7 @@ func (s *state) let() parcom.Parser {
 	return s.App(
 		func(x interface{}) (interface{}, error) {
 			xs := x.([]interface{})
-			ys := xs[0].([]interface{})
+			ys := xs[0].([]interface{})[1].([]interface{})
 			bs := make([]ast.Bind, 0, len(ys))
 
 			for _, y := range ys {
