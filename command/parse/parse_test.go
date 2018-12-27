@@ -197,6 +197,7 @@ func TestStateCaseOf(t *testing.T) {
 			"case 1 of 2 -> 3",
 			ast.NewCaseWithoutDefault(
 				ast.NewNumber(1),
+				types.NewUnknown(debug.NewInformation("", 1, 1, "case 1 of 2 -> 3")),
 				[]ast.Alternative{ast.NewAlternative(ast.NewNumber(2), ast.NewNumber(3))},
 			),
 		},
@@ -204,6 +205,7 @@ func TestStateCaseOf(t *testing.T) {
 			"case 1 of\n 2 -> 3\n 4 -> 5",
 			ast.NewCaseWithoutDefault(
 				ast.NewNumber(1),
+				types.NewUnknown(debug.NewInformation("", 1, 1, "case 1 of")),
 				[]ast.Alternative{
 					ast.NewAlternative(ast.NewNumber(2), ast.NewNumber(3)),
 					ast.NewAlternative(ast.NewNumber(4), ast.NewNumber(5)),
@@ -214,6 +216,7 @@ func TestStateCaseOf(t *testing.T) {
 			"case 1 of x -> 2",
 			ast.NewCase(
 				ast.NewNumber(1),
+				types.NewUnknown(debug.NewInformation("", 1, 1, "case 1 of x -> 2")),
 				[]ast.Alternative{},
 				ast.NewDefaultAlternative("x", ast.NewNumber(2)),
 			),
@@ -222,6 +225,7 @@ func TestStateCaseOf(t *testing.T) {
 			"case 1 of\n 2 -> 3\n x -> 4",
 			ast.NewCase(
 				ast.NewNumber(1),
+				types.NewUnknown(debug.NewInformation("", 1, 1, "case 1 of")),
 				[]ast.Alternative{ast.NewAlternative(ast.NewNumber(2), ast.NewNumber(3))},
 				ast.NewDefaultAlternative("x", ast.NewNumber(4)),
 			),

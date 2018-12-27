@@ -193,6 +193,7 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 						types.NewUnknown(nil),
 						ast.NewCase(
 							ast.NewNumber(42),
+							types.NewUnknown(nil),
 							[]ast.Alternative{
 								ast.NewAlternative(ast.NewNumber(42), ast.NewNumber(42)),
 							},
@@ -209,6 +210,7 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 						types.NewNumber(nil),
 						ast.NewCase(
 							ast.NewNumber(42),
+							types.NewNumber(nil),
 							[]ast.Alternative{
 								ast.NewAlternative(ast.NewNumber(42), ast.NewNumber(42)),
 							},

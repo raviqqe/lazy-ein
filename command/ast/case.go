@@ -1,25 +1,33 @@
 package ast
 
+import "github.com/ein-lang/ein/command/types"
+
 // Case is a case expression.
 type Case struct {
 	expression         Expression
+	typ                types.Type
 	alternatives       []Alternative
 	defaultAlternative DefaultAlternative
 }
 
 // NewCase creates a case expression.
-func NewCase(e Expression, as []Alternative, d DefaultAlternative) Case {
-	return Case{e, as, d}
+func NewCase(e Expression, t types.Type, as []Alternative, d DefaultAlternative) Case {
+	return Case{e, t, as, d}
 }
 
 // NewCaseWithoutDefault creates a case expression.
-func NewCaseWithoutDefault(e Expression, as []Alternative) Case {
-	return Case{e, as, DefaultAlternative{}}
+func NewCaseWithoutDefault(e Expression, t types.Type, as []Alternative) Case {
+	return Case{e, t, as, DefaultAlternative{}}
 }
 
 // Expression returns an expression.
 func (c Case) Expression() Expression {
 	return c.expression
+}
+
+// Type returns an expression.
+func (c Case) Type() types.Type {
+	return c.typ
 }
 
 // Alternatives returns alternatives.
@@ -47,6 +55,7 @@ func (c Case) ConvertExpressions(f func(Expression) Expression) node {
 	return f(
 		Case{
 			c.expression.ConvertExpressions(f).(Expression),
+			c.typ,
 			as,
 			c.defaultAlternative.ConvertExpressions(f).(DefaultAlternative),
 		},

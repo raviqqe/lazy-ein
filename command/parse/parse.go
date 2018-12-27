@@ -222,29 +222,7 @@ func (s *state) let() parcom.Parser {
 }
 
 func (s *state) caseOf() parcom.Parser {
-	return s.App(
-		func(x interface{}) (interface{}, error) {
-			xs := x.([]interface{})
-			ys := xs[1].([]interface{})
-
-			e := xs[0].(ast.Expression)
-			as := make([]ast.Alternative, 0, len(ys))
-
-			for i, y := range ys {
-				switch a := y.(type) {
-				case ast.Alternative:
-					as = append(as, a)
-				case ast.DefaultAlternative:
-					if i != len(ys)-1 {
-						return nil, errors.New("default alternative must be the last alternative")
-					}
-
-					return ast.NewCase(e, as, a), nil
-				}
-			}
-
-			return ast.NewCaseWithoutDefault(e, as), nil
-		},
+	return s.withDebugInformation(
 		s.WithBlock1(
 			s.Wrap(
 				s.keyword(caseKeyword),
@@ -253,6 +231,28 @@ func (s *state) caseOf() parcom.Parser {
 			),
 			s.Or(s.alternative(), s.defaultAlternative()),
 		),
+		func(x interface{}, i *debug.Information) (interface{}, error) {
+			xs := x.([]interface{})
+			ys := xs[1].([]interface{})
+
+			e := xs[0].(ast.Expression)
+			as := make([]ast.Alternative, 0, len(ys))
+
+			for j, y := range ys {
+				switch a := y.(type) {
+				case ast.Alternative:
+					as = append(as, a)
+				case ast.DefaultAlternative:
+					if j != len(ys)-1 {
+						return nil, errors.New("default alternative must be the last alternative")
+					}
+
+					return ast.NewCase(e, types.NewUnknown(i), as, a), nil
+				}
+			}
+
+			return ast.NewCaseWithoutDefault(e, types.NewUnknown(i), as), nil
+		},
 	)
 }
 

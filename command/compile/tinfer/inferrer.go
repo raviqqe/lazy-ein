@@ -109,11 +109,19 @@ func (i inferrer) inferType(e ast.Expression) (types.Type, []types.Equation, err
 
 		return types.NewNumber(nil), es, nil
 	case ast.Case:
-		_, es, err := i.inferType(e.Expression())
+		t, es, err := i.inferType(e.Expression())
 
 		if err != nil {
 			return nil, nil, err
 		}
+
+		ees, err := e.Type().Unify(t)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		es = append(es, ees...)
 
 		ts := make([]types.Type, 0, len(e.Alternatives())+1)
 
@@ -281,25 +289,44 @@ func (inferrer) substituteVariablesInEquations(
 	return ees
 }
 
-func (inferrer) substituteVariablesInModule(m ast.Module, ss map[int]types.Type) ast.Module {
+func (i inferrer) substituteVariablesInModule(m ast.Module, ss map[int]types.Type) ast.Module {
 	return m.ConvertExpressions(func(e ast.Expression) ast.Expression {
-		l, ok := e.(ast.Let)
+		switch e := e.(type) {
+		case ast.Case:
+			a, ok := e.DefaultAlternative()
 
-		if !ok {
-			return e
-		}
+			if !ok {
+				return ast.NewCaseWithoutDefault(
+					e.Expression(),
+					i.substituteVariable(e.Type(), ss),
+					e.Alternatives())
+			}
 
-		bs := make([]ast.Bind, 0, len(l.Binds()))
-
-		for _, b := range l.Binds() {
-			bs = append(
-				bs,
-				ast.NewBind(b.Name(), ss[b.Type().(types.Variable).Identifier()], b.Expression()),
+			return ast.NewCase(
+				e.Expression(),
+				i.substituteVariable(e.Type(), ss),
+				e.Alternatives(),
+				a,
 			)
+		case ast.Let:
+			bs := make([]ast.Bind, 0, len(e.Binds()))
+
+			for _, b := range e.Binds() {
+				bs = append(
+					bs,
+					ast.NewBind(b.Name(), i.substituteVariable(b.Type(), ss), b.Expression()),
+				)
+			}
+
+			return ast.NewLet(bs, e.Expression())
 		}
 
-		return ast.NewLet(bs, l.Expression())
+		return e
 	}).(ast.Module)
+}
+
+func (inferrer) substituteVariable(t types.Type, ss map[int]types.Type) types.Type {
+	return ss[t.(types.Variable).Identifier()]
 }
 
 func (i inferrer) addVariablesFromBinds(bs []ast.Bind) inferrer {
@@ -334,18 +361,29 @@ func (i inferrer) createTypeVariable() types.Variable {
 
 func (i inferrer) insertTypeVariables(m ast.Module) ast.Module {
 	return m.ConvertExpressions(func(e ast.Expression) ast.Expression {
-		l, ok := e.(ast.Let)
+		switch e := e.(type) {
+		case ast.Case:
+			a, ok := e.DefaultAlternative()
 
-		if !ok {
-			return e
+			if !ok {
+				return ast.NewCaseWithoutDefault(
+					e.Expression(),
+					i.createTypeVariable(),
+					e.Alternatives(),
+				)
+			}
+
+			return ast.NewCase(e.Expression(), i.createTypeVariable(), e.Alternatives(), a)
+		case ast.Let:
+			bs := make([]ast.Bind, 0, len(e.Binds()))
+
+			for _, b := range e.Binds() {
+				bs = append(bs, ast.NewBind(b.Name(), i.createTypeVariable(), b.Expression()))
+			}
+
+			return ast.NewLet(bs, e.Expression())
 		}
 
-		bs := make([]ast.Bind, 0, len(l.Binds()))
-
-		for _, b := range l.Binds() {
-			bs = append(bs, ast.NewBind(b.Name(), i.createTypeVariable(), b.Expression()))
-		}
-
-		return ast.NewLet(bs, l.Expression())
+		return e
 	}).(ast.Module)
 }
