@@ -182,6 +182,49 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 			},
 			coreast.NewApplication(coreast.NewVariable("result"), nil),
 		), nil
+	case ast.Case:
+		ee, err := c.compileExpression(e.Expression())
+
+		if err != nil {
+			return nil, err
+		}
+
+		as := make([]coreast.PrimitiveAlternative, 0, len(e.Alternatives()))
+
+		for _, a := range e.Alternatives() {
+			e, err := c.compileExpression(a.Expression())
+
+			if err != nil {
+				return nil, err
+			}
+
+			as = append(as, coreast.NewPrimitiveAlternative(c.compileUnboxedLiteral(a.Literal()), e))
+		}
+
+		t, err := e.Type().ToCore()
+
+		if err != nil {
+			return nil, err
+		}
+
+		d, ok := e.DefaultAlternative()
+
+		if !ok {
+			return coreast.NewPrimitiveCaseWithoutDefault(ee, t, as), nil
+		}
+
+		de, err := c.compileExpression(d.Expression())
+
+		if err != nil {
+			return nil, err
+		}
+
+		return coreast.NewPrimitiveCase(
+			ee,
+			t,
+			as,
+			coreast.NewDefaultAlternative(d.Variable(), de),
+		), nil
 	case ast.Let:
 		bs := make([]coreast.Bind, 0, len(e.Binds()))
 
@@ -220,6 +263,15 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 		}
 	case ast.Variable:
 		return coreast.NewApplication(coreast.NewVariable(e.Name()), nil), nil
+	}
+
+	panic("unreahable")
+}
+
+func (compiler) compileUnboxedLiteral(l ast.Literal) coreast.Literal {
+	switch l := l.(type) {
+	case ast.Number:
+		return coreast.NewFloat64(l.Value())
 	}
 
 	panic("unreahable")

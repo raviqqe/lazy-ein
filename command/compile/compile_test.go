@@ -519,5 +519,47 @@ func TestCompileWithComplexBinaryOperations(t *testing.T) {
 			},
 		),
 	)
+
 	assert.Nil(t, err)
+}
+
+func TestCompileWithCaseExpressions(t *testing.T) {
+	for _, c := range []ast.Case{
+		ast.NewCase(
+			ast.NewNumber(1),
+			types.NewUnknown(nil),
+			[]ast.Alternative{
+				ast.NewAlternative(ast.NewNumber(2), ast.NewNumber(3)),
+			},
+			ast.NewDefaultAlternative("x", ast.NewNumber(4)),
+		),
+		ast.NewCaseWithoutDefault(
+			ast.NewNumber(1),
+			types.NewUnknown(nil),
+			[]ast.Alternative{
+				ast.NewAlternative(ast.NewNumber(2), ast.NewNumber(3)),
+			},
+		),
+		ast.NewCase(
+			ast.NewNumber(1),
+			types.NewUnknown(nil),
+			nil,
+			ast.NewDefaultAlternative("x", ast.NewNumber(2)),
+		),
+	} {
+		_, err := Compile(
+			ast.NewModule(
+				"foo",
+				[]ast.Bind{
+					ast.NewBind(
+						"x",
+						types.NewNumber(nil),
+						c,
+					),
+				},
+			),
+		)
+
+		assert.Nil(t, err)
+	}
 }
