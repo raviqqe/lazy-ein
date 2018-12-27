@@ -22,6 +22,6 @@ func (a Alternative) Expression() Expression {
 }
 
 // ConvertExpressions visits expressions.
-func (a Alternative) ConvertExpressions(f func(Expression) Expression) node {
+func (a Alternative) ConvertExpressions(f func(Expression) Expression) Node {
 	return NewAlternative(a.literal, a.expression.ConvertExpressions(f).(Expression))
 }

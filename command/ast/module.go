@@ -22,7 +22,7 @@ func (m Module) Binds() []Bind {
 }
 
 // ConvertExpressions visits expressions.
-func (m Module) ConvertExpressions(f func(Expression) Expression) node {
+func (m Module) ConvertExpressions(f func(Expression) Expression) Node {
 	bs := make([]Bind, 0, len(m.binds))
 
 	for _, b := range m.binds {

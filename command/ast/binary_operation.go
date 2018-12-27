@@ -27,7 +27,7 @@ func (t BinaryOperation) RHS() Expression {
 }
 
 // ConvertExpressions visits expressions.
-func (t BinaryOperation) ConvertExpressions(f func(Expression) Expression) node {
+func (t BinaryOperation) ConvertExpressions(f func(Expression) Expression) Node {
 	return f(
 		NewBinaryOperation(
 			t.operator,

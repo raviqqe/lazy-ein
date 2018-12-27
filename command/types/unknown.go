@@ -20,7 +20,7 @@ func (Unknown) Unify(Type) ([]Equation, error) {
 	panic("unreachable")
 }
 
-// SubstituteUnknown substitutes type variables.
+// SubstituteVariable substitutes type variables.
 func (Unknown) SubstituteVariable(Variable, Type) Type {
 	panic("unreachable")
 }

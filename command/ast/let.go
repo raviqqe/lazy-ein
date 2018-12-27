@@ -24,7 +24,7 @@ func (l Let) Expression() Expression {
 func (Let) isExpression() {}
 
 // ConvertExpressions visits expressions.
-func (l Let) ConvertExpressions(f func(Expression) Expression) node {
+func (l Let) ConvertExpressions(f func(Expression) Expression) Node {
 	bs := make([]Bind, 0, len(l.binds))
 
 	for _, b := range l.binds {

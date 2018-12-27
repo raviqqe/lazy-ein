@@ -22,7 +22,7 @@ func (a Application) Arguments() []Expression {
 }
 
 // ConvertExpressions visits expressions.
-func (a Application) ConvertExpressions(f func(Expression) Expression) node {
+func (a Application) ConvertExpressions(f func(Expression) Expression) Node {
 	as := make([]Expression, 0, len(a.arguments))
 
 	for _, a := range a.arguments {

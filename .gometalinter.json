@@ -5,6 +5,7 @@
     "gochecknoinits",
     "gofmt",
     "goimports",
+    "golint",
     "misspell",
     "unparam"
   ]

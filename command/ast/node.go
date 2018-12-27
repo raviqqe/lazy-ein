@@ -1,5 +1,6 @@
 package ast
 
-type node interface {
-	ConvertExpressions(func(Expression) Expression) node
+// Node is an AST node.
+type Node interface {
+	ConvertExpressions(func(Expression) Expression) Node
 }
