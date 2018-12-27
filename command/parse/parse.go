@@ -142,6 +142,7 @@ func (s *state) expressionWithOptions(b, a bool) parcom.Parser {
 			ps,
 			s.numberLiteral(),
 			s.let(),
+			s.caseOf(),
 			s.variable(),
 			s.parenthesesed(s.expression()),
 		)...,
