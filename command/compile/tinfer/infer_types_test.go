@@ -165,7 +165,8 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 		{
 			ast.NewLet(
 				[]ast.Bind{
-					ast.NewBind("x",
+					ast.NewBind(
+						"x",
 						types.NewUnknown(nil),
 						ast.NewBinaryOperation(ast.Add, ast.NewNumber(42), ast.NewNumber(42)),
 					),
@@ -178,6 +179,41 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 						"x",
 						types.NewNumber(nil),
 						ast.NewBinaryOperation(ast.Add, ast.NewNumber(42), ast.NewNumber(42)),
+					),
+				},
+				ast.NewNumber(42),
+			),
+		},
+		// Case expressions
+		{
+			ast.NewLet(
+				[]ast.Bind{
+					ast.NewBind(
+						"x",
+						types.NewUnknown(nil),
+						ast.NewCase(
+							ast.NewNumber(42),
+							[]ast.Alternative{
+								ast.NewAlternative(ast.NewNumber(42), ast.NewNumber(42)),
+							},
+							ast.NewDefaultAlternative("x", ast.NewNumber(42)),
+						),
+					),
+				},
+				ast.NewNumber(42),
+			),
+			ast.NewLet(
+				[]ast.Bind{
+					ast.NewBind(
+						"x",
+						types.NewNumber(nil),
+						ast.NewCase(
+							ast.NewNumber(42),
+							[]ast.Alternative{
+								ast.NewAlternative(ast.NewNumber(42), ast.NewNumber(42)),
+							},
+							ast.NewDefaultAlternative("x", ast.NewNumber(42)),
+						),
 					),
 				},
 				ast.NewNumber(42),

@@ -108,6 +108,48 @@ func (i inferrer) inferType(e ast.Expression) (types.Type, []types.Equation, err
 		}
 
 		return types.NewNumber(nil), es, nil
+	case ast.Case:
+		_, es, err := i.inferType(e.Expression())
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		ts := make([]types.Type, 0, len(e.Alternatives())+1)
+
+		for _, a := range e.Alternatives() {
+			t, ees, err := i.inferType(a.Expression())
+
+			if err != nil {
+				return nil, nil, err
+			}
+
+			ts = append(ts, t)
+			es = append(es, ees...)
+		}
+
+		if a, ok := e.DefaultAlternative(); ok {
+			t, ees, err := i.inferType(a.Expression())
+
+			if err != nil {
+				return nil, nil, err
+			}
+
+			ts = append(ts, t)
+			es = append(es, ees...)
+		}
+
+		for _, t := range ts[1:] {
+			ees, err := ts[0].Unify(t)
+
+			if err != nil {
+				return nil, nil, err
+			}
+
+			es = append(es, ees...)
+		}
+
+		return ts[0], es, nil
 	case ast.Lambda:
 		as := make(map[string]types.Type, len(e.Arguments()))
 

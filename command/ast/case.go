@@ -17,14 +17,23 @@ func NewCaseWithoutDefault(e Expression, as []Alternative) Case {
 	return Case{e, as, DefaultAlternative{}}
 }
 
+// Expression returns an expression.
+func (c Case) Expression() Expression {
+	return c.expression
+}
+
 // Alternatives returns alternatives.
 func (c Case) Alternatives() []Alternative {
 	return c.alternatives
 }
 
 // DefaultAlternative returns an expression.
-func (c Case) DefaultAlternative() DefaultAlternative {
-	return c.defaultAlternative
+func (c Case) DefaultAlternative() (DefaultAlternative, bool) {
+	if c.defaultAlternative == (DefaultAlternative{}) {
+		return DefaultAlternative{}, false
+	}
+
+	return c.defaultAlternative, true
 }
 
 // ConvertExpressions visits expressions.
