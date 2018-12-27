@@ -20,14 +20,6 @@ func (f freeVariableFinder) Find(e ast.Expression) []string {
 		}
 
 		return ss
-	case ast.Lambda:
-		ss := make([]string, 0, len(e.Arguments()))
-
-		for _, s := range e.Arguments() {
-			ss = append(ss, s)
-		}
-
-		return f.addVariables(ss...).Find(e.Expression())
 	case ast.BinaryOperation:
 		return append(f.Find(e.LHS()), f.Find(e.RHS())...)
 	case ast.Case:
@@ -37,11 +29,19 @@ func (f freeVariableFinder) Find(e ast.Expression) []string {
 			ss = append(ss, f.Find(a.Expression())...)
 		}
 
-		if a, ok := e.DefaultAlternative(); ok {
-			ss = append(ss, f.Find(a.Expression())...)
+		if d, ok := e.DefaultAlternative(); ok {
+			ss = append(ss, f.addVariables(d.Variable()).Find(d.Expression())...)
 		}
 
 		return ss
+	case ast.Lambda:
+		ss := make([]string, 0, len(e.Arguments()))
+
+		for _, s := range e.Arguments() {
+			ss = append(ss, s)
+		}
+
+		return f.addVariables(ss...).Find(e.Expression())
 	case ast.Let:
 		ss := make([]string, 0, len(e.Binds()))
 

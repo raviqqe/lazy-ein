@@ -197,7 +197,7 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 							[]ast.Alternative{
 								ast.NewAlternative(ast.NewNumber(42), ast.NewNumber(42)),
 							},
-							ast.NewDefaultAlternative("x", ast.NewNumber(42)),
+							ast.NewDefaultAlternative("y", ast.NewVariable("y")),
 						),
 					),
 				},
@@ -214,7 +214,7 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 							[]ast.Alternative{
 								ast.NewAlternative(ast.NewNumber(42), ast.NewNumber(42)),
 							},
-							ast.NewDefaultAlternative("x", ast.NewNumber(42)),
+							ast.NewDefaultAlternative("y", ast.NewVariable("y")),
 						),
 					),
 				},

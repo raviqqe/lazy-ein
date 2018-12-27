@@ -213,17 +213,27 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 			return coreast.NewPrimitiveCaseWithoutDefault(ee, t, as), nil
 		}
 
+		c = c.addVariable(d.Variable(), t)
 		de, err := c.compileExpression(d.Expression())
 
 		if err != nil {
 			return nil, err
 		}
 
-		return coreast.NewPrimitiveCase(
-			ee,
-			t,
-			as,
-			coreast.NewDefaultAlternative(d.Variable(), de),
+		vs, err := c.compileFreeVariables(e.Expression())
+
+		if err != nil {
+			return nil, err
+		}
+
+		return coreast.NewLet(
+			[]coreast.Bind{coreast.NewBind(d.Variable(), coreast.NewLambda(vs, true, nil, ee, t))},
+			coreast.NewPrimitiveCase(
+				coreast.NewApplication(coreast.NewVariable(d.Variable()), nil),
+				t,
+				as,
+				coreast.NewDefaultAlternative("", de),
+			),
 		), nil
 	case ast.Let:
 		bs := make([]coreast.Bind, 0, len(e.Binds()))

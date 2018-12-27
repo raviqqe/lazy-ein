@@ -531,7 +531,7 @@ func TestCompileWithCaseExpressions(t *testing.T) {
 			[]ast.Alternative{
 				ast.NewAlternative(ast.NewNumber(2), ast.NewNumber(3)),
 			},
-			ast.NewDefaultAlternative("x", ast.NewNumber(4)),
+			ast.NewDefaultAlternative("y", ast.NewVariable("y")),
 		),
 		ast.NewCaseWithoutDefault(
 			ast.NewNumber(1),
@@ -544,7 +544,7 @@ func TestCompileWithCaseExpressions(t *testing.T) {
 			ast.NewNumber(1),
 			types.NewUnknown(nil),
 			nil,
-			ast.NewDefaultAlternative("x", ast.NewNumber(2)),
+			ast.NewDefaultAlternative("y", ast.NewVariable("y")),
 		),
 	} {
 		_, err := Compile(

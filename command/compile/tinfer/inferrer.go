@@ -136,8 +136,10 @@ func (i inferrer) inferType(e ast.Expression) (types.Type, []types.Equation, err
 			es = append(es, ees...)
 		}
 
-		if a, ok := e.DefaultAlternative(); ok {
-			t, ees, err := i.inferType(a.Expression())
+		if d, ok := e.DefaultAlternative(); ok {
+			t, ees, err := i.addVariables(map[string]types.Type{d.Variable(): e.Type()}).inferType(
+				d.Expression(),
+			)
 
 			if err != nil {
 				return nil, nil, err
