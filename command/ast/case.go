@@ -52,14 +52,13 @@ func (c Case) ConvertExpressions(f func(Expression) Expression) node {
 		as = append(as, a.ConvertExpressions(f).(Alternative))
 	}
 
-	return f(
-		Case{
-			c.expression.ConvertExpressions(f).(Expression),
-			c.typ,
-			as,
-			c.defaultAlternative.ConvertExpressions(f).(DefaultAlternative),
-		},
-	)
+	d, ok := c.DefaultAlternative()
+
+	if ok {
+		d = c.defaultAlternative.ConvertExpressions(f).(DefaultAlternative)
+	}
+
+	return f(Case{c.expression.ConvertExpressions(f).(Expression), c.typ, as, d})
 }
 
 func (Case) isExpression() {}
