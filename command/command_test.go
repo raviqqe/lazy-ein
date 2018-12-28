@@ -26,28 +26,11 @@ func TestBuildCommand(t *testing.T) {
 	assert.Nil(t, command.Command.Execute())
 }
 
-func TestBuildCommandErrorWithInvalidFilename(t *testing.T) {
-	command.Command.SetArgs([]string{"build", "invalid-filename"})
-	assert.Error(t, command.Command.Execute())
-}
-
 func TestBuildCommandErrorWithInvalidArgument(t *testing.T) {
 	f, err := ioutil.TempFile("", "")
 	assert.Nil(t, err)
 	defer os.Remove(f.Name())
 
 	command.Command.SetArgs([]string{"build", "--invalid-option", f.Name()})
-	assert.Error(t, command.Command.Execute())
-}
-
-func TestBuildCommandErrorWithoutRuntimeRootEnvironmentVariable(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
-	assert.Nil(t, err)
-	f.WriteString("main : Number -> Number\nmain x = 42")
-	defer os.Remove(f.Name())
-
-	os.Unsetenv("EIN_ROOT")
-
-	command.Command.SetArgs([]string{"build", f.Name()})
 	assert.Error(t, command.Command.Execute())
 }

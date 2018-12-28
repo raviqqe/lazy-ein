@@ -11,7 +11,7 @@ var Command = func() cobra.Command {
 	c := cobra.Command{
 		Use: "ein",
 		RunE: func(*cobra.Command, []string) error {
-			return errors.New("a subcommand must be provided")
+			return errors.New("subcommand not provided")
 		},
 		Short:   "Ein programming language",
 		Version: "0.0.0",
