@@ -189,7 +189,7 @@ func TestCompileToCoreWithFunctionBinds(t *testing.T) {
 			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
-					"foo.literal-0",
+					"$literal-0",
 					coreast.NewLambda(nil, true, nil, coreast.NewFloat64(42), coretypes.NewFloat64()),
 				),
 				coreast.NewBind(
@@ -201,7 +201,7 @@ func TestCompileToCoreWithFunctionBinds(t *testing.T) {
 							coreast.NewArgument("x", coretypes.NewBoxed(coretypes.NewFloat64())),
 							coreast.NewArgument("y", coretypes.NewBoxed(coretypes.NewFloat64())),
 						},
-						coreast.NewApplication(coreast.NewVariable("foo.literal-0"), nil),
+						coreast.NewApplication(coreast.NewVariable("$literal-0"), nil),
 						coretypes.NewBoxed(coretypes.NewFloat64()),
 					),
 				),
@@ -236,7 +236,7 @@ func TestCompileToCoreWithLetExpressions(t *testing.T) {
 			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
-					"foo.literal-0",
+					"$literal-0",
 					coreast.NewLambda(nil, true, nil, coreast.NewFloat64(42), coretypes.NewFloat64()),
 				),
 				coreast.NewBind(
@@ -253,7 +253,7 @@ func TestCompileToCoreWithLetExpressions(t *testing.T) {
 										nil,
 										true,
 										nil,
-										coreast.NewApplication(coreast.NewVariable("foo.literal-0"), nil),
+										coreast.NewApplication(coreast.NewVariable("$literal-0"), nil),
 										coretypes.NewBoxed(coretypes.NewFloat64()),
 									),
 								),
@@ -439,11 +439,11 @@ func TestCompileToCoreWithBinaryOperations(t *testing.T) {
 			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
-					"foo.literal-0",
+					"$literal-0",
 					coreast.NewLambda(nil, true, nil, coreast.NewFloat64(1), coretypes.NewFloat64()),
 				),
 				coreast.NewBind(
-					"foo.literal-1",
+					"$literal-1",
 					coreast.NewLambda(nil, true, nil, coreast.NewFloat64(1), coretypes.NewFloat64()),
 				),
 				coreast.NewBind(
@@ -461,13 +461,13 @@ func TestCompileToCoreWithBinaryOperations(t *testing.T) {
 										true,
 										nil,
 										coreast.NewPrimitiveCase(
-											coreast.NewApplication(coreast.NewVariable("foo.literal-0"), nil),
+											coreast.NewApplication(coreast.NewVariable("$literal-0"), nil),
 											coretypes.NewBoxed(coretypes.NewFloat64()),
 											nil,
 											coreast.NewDefaultAlternative(
 												"lhs",
 												coreast.NewPrimitiveCase(
-													coreast.NewApplication(coreast.NewVariable("foo.literal-1"), nil),
+													coreast.NewApplication(coreast.NewVariable("$literal-1"), nil),
 													coretypes.NewBoxed(coretypes.NewFloat64()),
 													nil,
 													coreast.NewDefaultAlternative(

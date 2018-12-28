@@ -53,7 +53,7 @@ func TestDesugarComplexBinaryOperations(t *testing.T) {
 						ast.NewLet(
 							[]ast.Bind{
 								ast.NewBind(
-									"foo.binary-operation.argument-0",
+									"$binary-operation.argument-0",
 									types.NewUnknown(nil),
 									ast.NewLet(
 										[]ast.Bind{ast.NewBind("y", types.NewUnknown(nil), ast.NewNumber(42))},
@@ -64,7 +64,7 @@ func TestDesugarComplexBinaryOperations(t *testing.T) {
 							ast.NewBinaryOperation(
 								ast.Add,
 								ast.NewVariable("a"),
-								ast.NewVariable("foo.binary-operation.argument-0"),
+								ast.NewVariable("$binary-operation.argument-0"),
 							),
 						),
 					),

@@ -54,7 +54,7 @@ func TestDesugarComplexApplications(t *testing.T) {
 						ast.NewLet(
 							[]ast.Bind{
 								ast.NewBind(
-									"foo.application.argument-0",
+									"$application.argument-0",
 									types.NewUnknown(nil),
 									ast.NewLet(
 										[]ast.Bind{
@@ -67,7 +67,7 @@ func TestDesugarComplexApplications(t *testing.T) {
 							ast.NewApplication(
 								ast.NewVariable("f"),
 								[]ast.Expression{
-									ast.NewVariable("foo.application.argument-0"),
+									ast.NewVariable("$application.argument-0"),
 								},
 							),
 						),
@@ -117,7 +117,7 @@ func TestDesugarComplexApplications(t *testing.T) {
 						ast.NewLet(
 							[]ast.Bind{
 								ast.NewBind(
-									"foo.application.function-0",
+									"$application.function-0",
 									types.NewUnknown(nil),
 									ast.NewApplication(
 										ast.NewVariable("f"),
@@ -126,7 +126,7 @@ func TestDesugarComplexApplications(t *testing.T) {
 								),
 							},
 							ast.NewApplication(
-								ast.NewVariable("foo.application.function-0"),
+								ast.NewVariable("$application.function-0"),
 								[]ast.Expression{ast.NewVariable("x")},
 							),
 						),

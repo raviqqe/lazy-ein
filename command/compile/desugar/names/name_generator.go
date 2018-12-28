@@ -21,5 +21,5 @@ func NewNameGenerator(s string) NameGenerator {
 func (g NameGenerator) Generate(s string) string {
 	i := g.indexes[s]
 	g.indexes[s]++
-	return fmt.Sprintf("%v%v-%v", g.prefix, s, i)
+	return fmt.Sprintf("$%v%v-%v", g.prefix, s, i)
 }

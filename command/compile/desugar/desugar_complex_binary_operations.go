@@ -7,7 +7,7 @@ import (
 )
 
 func desugarComplexBinaryOperations(m ast.Module) ast.Module {
-	g := names.NewNameGenerator(m.Name() + ".binary-operation")
+	g := names.NewNameGenerator("binary-operation")
 
 	return m.ConvertExpressions(func(e ast.Expression) ast.Expression {
 		o, ok := e.(ast.BinaryOperation)

@@ -7,7 +7,7 @@ import (
 )
 
 func desugarLiterals(m ast.Module) ast.Module {
-	g := names.NewNameGenerator(m.Name())
+	g := names.NewNameGenerator("")
 	bs := []ast.Bind{}
 
 	for _, b := range m.Binds() {

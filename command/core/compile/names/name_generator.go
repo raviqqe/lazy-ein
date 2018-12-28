@@ -4,8 +4,8 @@ import "fmt"
 
 // NameGenerator is a name generator.
 type NameGenerator struct {
-	prefix      string
-	nameIndices map[string]int
+	prefix  string
+	indexes map[string]int
 }
 
 // NewNameGenerator creates a new name generator.
@@ -17,12 +17,11 @@ func NewNameGenerator(s string) *NameGenerator {
 func (g *NameGenerator) Generate(s string) string {
 	s = g.prefix + "." + s
 
-	if i, ok := g.nameIndices[s]; ok {
-		g.nameIndices[s]++
-		s += "." + fmt.Sprint(i+1)
-	} else {
-		g.nameIndices[s] = 0
+	if i, ok := g.indexes[s]; ok {
+		g.indexes[s]++
+		return s + "-" + fmt.Sprint(i+1)
 	}
 
+	g.indexes[s] = 0
 	return s
 }

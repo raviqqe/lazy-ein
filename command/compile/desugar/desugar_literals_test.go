@@ -48,14 +48,14 @@ func TestDesugarLiterals(t *testing.T) {
 				"foo",
 				[]ast.Bind{
 					ast.NewBind(
-						"foo.literal-0",
+						"$literal-0",
 						types.NewUnboxed(types.NewNumber(nil), nil),
 						ast.NewUnboxed(ast.NewNumber(42)),
 					),
 					ast.NewBind(
 						"f",
 						types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
-						ast.NewLambda([]string{"x"}, ast.NewVariable("foo.literal-0"))),
+						ast.NewLambda([]string{"x"}, ast.NewVariable("$literal-0"))),
 				},
 			),
 		},
