@@ -6,6 +6,7 @@ import (
 	"github.com/ein-lang/ein/command/ast"
 	"github.com/ein-lang/ein/command/debug"
 	"github.com/ein-lang/ein/command/types"
+	"github.com/raviqqe/parcom"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,6 +44,15 @@ func TestStateModuleError(t *testing.T) {
 		_, err := newState("", s).module("")()
 		assert.Error(t, err)
 	}
+}
+
+func TestStateModuleErrorWithErrorMessage(t *testing.T) {
+	_, err := newState("", "x : Number\nx = 🗿").module("")()
+
+	assert.Error(t, err)
+	assert.Equal(t, "invalid character '🗿'", err.Error())
+	assert.Equal(t, 2, err.(parcom.Error).Line())
+	assert.Equal(t, 5, err.(parcom.Error).Column())
 }
 
 func TestStateBind(t *testing.T) {
