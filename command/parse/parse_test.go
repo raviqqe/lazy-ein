@@ -18,8 +18,10 @@ func TestParseWithEmptySource(t *testing.T) {
 }
 
 func TestParseError(t *testing.T) {
-	_, err := Parse("", "foo")
+	_, err := Parse("foo.ein", "bar")
+
 	assert.Error(t, err)
+	assert.Equal(t, "foo.ein:1:4:\tbar", err.(debug.Error).DebugInformation().String())
 }
 
 func TestStateModule(t *testing.T) {
@@ -113,8 +115,10 @@ func TestStateIdentifierError(t *testing.T) {
 }
 
 func TestStateIdentifierErrorWithKeywords(t *testing.T) {
-	_, err := newState("", "let").identifier()()
-	assert.Equal(t, "ParseError: 'let' is a keyword", err.Error())
+	_, err := newState("foo.ein", "let").identifier()()
+
+	assert.Equal(t, "SyntaxError: 'let' is a keyword", err.Error())
+	assert.Equal(t, "foo.ein:1:1:\tlet", err.(debug.Error).DebugInformation().String())
 }
 
 func TestStateNumberLiteral(t *testing.T) {

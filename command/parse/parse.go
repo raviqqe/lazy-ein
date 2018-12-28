@@ -50,7 +50,13 @@ var keywords = map[keyword]struct{}{
 func Parse(f, s string) (ast.Module, error) {
 	x, err := newState(f, s).module(f)()
 
-	if err != nil {
+	switch err := err.(type) {
+	case parcom.Error:
+		return ast.Module{}, newError(
+			err.Error(),
+			debug.NewInformation(f, err.Line(), err.Column(), strings.Split(s, "\n")[err.Line()-1]),
+		)
+	case error:
 		return ast.Module{}, err
 	}
 
