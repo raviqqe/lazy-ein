@@ -1,38 +1,38 @@
 package ast
 
-// Primitive is a primitive operation.
-type Primitive string
+// PrimitiveOperator is a primitive operator.
+type PrimitiveOperator string
 
 const (
-	// AddFloat64 is a primitive operation.
-	AddFloat64 Primitive = "+"
-	// SubtractFloat64 is a primitive operation.
+	// AddFloat64 is a primitive operator.
+	AddFloat64 PrimitiveOperator = "+"
+	// SubtractFloat64 is a primitive operator.
 	SubtractFloat64 = "-"
-	// MultiplyFloat64 is a primitive operation.
+	// MultiplyFloat64 is a primitive operator.
 	MultiplyFloat64 = "*"
-	// DivideFloat64 is a primitive operation.
+	// DivideFloat64 is a primitive operator.
 	DivideFloat64 = "/"
 )
 
 // PrimitiveOperation is a saturated primitive operation.
 type PrimitiveOperation struct {
-	primitive Primitive
-	arguments []Atom
+	primitiveOperator PrimitiveOperator
+	arguments         []Atom
 }
 
 // NewPrimitiveOperation creates a primitive operation.
-func NewPrimitiveOperation(p Primitive, as []Atom) PrimitiveOperation {
+func NewPrimitiveOperation(p PrimitiveOperator, as []Atom) PrimitiveOperation {
 	return PrimitiveOperation{p, as}
 }
 
-// Primitive returns a primitive.
-func (a PrimitiveOperation) Primitive() Primitive {
-	return a.primitive
+// PrimitiveOperator returns a primitive operator.
+func (o PrimitiveOperation) PrimitiveOperator() PrimitiveOperator {
+	return o.primitiveOperator
 }
 
 // Arguments returns arguments.
-func (a PrimitiveOperation) Arguments() []Atom {
-	return a.arguments
+func (o PrimitiveOperation) Arguments() []Atom {
+	return o.arguments
 }
 
-func (a PrimitiveOperation) isExpression() {}
+func (o PrimitiveOperation) isExpression() {}

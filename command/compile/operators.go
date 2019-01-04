@@ -5,7 +5,7 @@ import (
 	coreast "github.com/ein-lang/ein/command/core/ast"
 )
 
-func binaryOperatorToPrimitive(o ast.BinaryOperator) coreast.Primitive {
+func binaryOperatorToPrimitive(o ast.BinaryOperator) coreast.PrimitiveOperator {
 	switch o {
 	case ast.Add:
 		return coreast.AddFloat64

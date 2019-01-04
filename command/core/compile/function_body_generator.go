@@ -299,7 +299,7 @@ func (g *functionBodyGenerator) generatePrimitiveOperation(o ast.PrimitiveOperat
 		return llvm.Value{}, errors.New("invalid number of arguments to a binary primitive operation")
 	}
 
-	switch o.Primitive() {
+	switch o.PrimitiveOperator() {
 	case ast.AddFloat64:
 		return g.builder.CreateFAdd(vs[0], vs[1], ""), nil
 	case ast.SubtractFloat64:
