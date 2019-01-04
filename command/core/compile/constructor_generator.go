@@ -7,19 +7,19 @@ import (
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
-type constructorDefinitionGenerator struct {
+type constructorGenerator struct {
 	module        llvm.Module
 	typeGenerator typeGenerator
 }
 
-func newConstructorDefinitionGenerator(
+func newConstructorGenerator(
 	m llvm.Module,
 	g typeGenerator,
-) constructorDefinitionGenerator {
-	return constructorDefinitionGenerator{m, g}
+) constructorGenerator {
+	return constructorGenerator{m, g}
 }
 
-func (g constructorDefinitionGenerator) Generate(a types.Algebraic) error {
+func (g constructorGenerator) Generate(a types.Algebraic) error {
 	for i, c := range a.Constructors() {
 		if err := g.generateUnionifyFunction(a, c, i); err != nil {
 			return err
@@ -35,7 +35,7 @@ func (g constructorDefinitionGenerator) Generate(a types.Algebraic) error {
 	return nil
 }
 
-func (g constructorDefinitionGenerator) generateUnionifyFunction(
+func (g constructorGenerator) generateUnionifyFunction(
 	a types.Algebraic,
 	c types.Constructor,
 	i int,
@@ -75,7 +75,7 @@ func (g constructorDefinitionGenerator) generateUnionifyFunction(
 	return llvm.VerifyFunction(f, llvm.AbortProcessAction)
 }
 
-func (g constructorDefinitionGenerator) generateStructifyFunction(
+func (g constructorGenerator) generateStructifyFunction(
 	a types.Algebraic,
 	c types.Constructor,
 ) error {
@@ -117,7 +117,7 @@ func (g constructorDefinitionGenerator) generateStructifyFunction(
 	return llvm.VerifyFunction(f, llvm.AbortProcessAction)
 }
 
-func (g constructorDefinitionGenerator) GenerateTag(c types.Constructor, i int) {
+func (g constructorGenerator) GenerateTag(c types.Constructor, i int) {
 	t := g.typeGenerator.GenerateConstructorTag()
 	v := llvm.AddGlobal(g.module, t, names.ToTag(c.Name()))
 	v.SetInitializer(llvm.ConstInt(t, uint64(i), false))

@@ -22,7 +22,7 @@ type moduleGenerator struct {
 
 func newModuleGenerator(m llvm.Module, ds []ast.TypeDefinition) (*moduleGenerator, error) {
 	tg := newTypeGenerator(m, ds)
-	cg := newConstructorDefinitionGenerator(m, tg)
+	cg := newConstructorGenerator(m, tg)
 
 	for _, d := range ds {
 		if t, ok := d.Type().(types.Algebraic); ok {
