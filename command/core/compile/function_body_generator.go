@@ -44,7 +44,7 @@ func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value
 		return g.generateFunctionApplication(e)
 	case ast.Case:
 		return g.generateCase(e)
-	case ast.Constructor:
+	case ast.ConstructorApplication:
 		return g.generateConstructor(e)
 	case ast.Let:
 		return g.generateLet(e)
@@ -225,7 +225,7 @@ func (g *functionBodyGenerator) generateDefaultAlternative(c ast.Case, v llvm.Va
 	return nil
 }
 
-func (g *functionBodyGenerator) generateConstructor(c ast.Constructor) (llvm.Value, error) {
+func (g *functionBodyGenerator) generateConstructor(c ast.ConstructorApplication) (llvm.Value, error) {
 	vs, err := g.generateAtoms(c.Arguments())
 
 	if err != nil {
