@@ -42,7 +42,7 @@ func TestTypeGeneratorGenerateSizedPayload(t *testing.T) {
 		assert.Equal(
 			t,
 			c.size,
-			newTypeGenerator(llvm.NewModule("foo")).generateSizedPayload(c.lambda).ArrayLength(),
+			newTypeGenerator(llvm.NewModule("foo"), nil).generateSizedPayload(c.lambda).ArrayLength(),
 		)
 	}
 }
@@ -58,6 +58,6 @@ func TestTypeGeneratorBytesToWords(t *testing.T) {
 		16: 2,
 		17: 3,
 	} {
-		assert.Equal(t, v, newTypeGenerator(llvm.NewModule("foo")).bytesToWords(k))
+		assert.Equal(t, v, newTypeGenerator(llvm.NewModule("foo"), nil).bytesToWords(k))
 	}
 }

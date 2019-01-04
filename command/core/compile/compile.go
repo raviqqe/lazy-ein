@@ -13,7 +13,7 @@ func Compile(m ast.Module) (llvm.Module, error) {
 	}
 
 	mm := llvm.NewModule(m.Name())
-	g, err := newModuleGenerator(mm, m.ConstructorDefinitions())
+	g, err := newModuleGenerator(mm, m.TypeDefinitions())
 
 	if err != nil {
 		return llvm.Module{}, err

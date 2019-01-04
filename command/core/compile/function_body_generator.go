@@ -23,12 +23,13 @@ func newFunctionBodyGenerator(
 	b llvm.Builder,
 	vs map[string]llvm.Value,
 	c func(string, ast.Lambda) (llvm.Value, error),
+	g typeGenerator,
 ) *functionBodyGenerator {
 	return &functionBodyGenerator{
 		b,
 		c,
 		names.NewNameGenerator(b.GetInsertBlock().Parent().Name()),
-		newTypeGenerator(b.GetInsertBlock().Parent().GlobalParent()),
+		g,
 		vs,
 	}
 }

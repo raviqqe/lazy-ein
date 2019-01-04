@@ -2,13 +2,13 @@ package ast
 
 // Module is a module.
 type Module struct {
-	name                   string
-	constructorDefinitions []ConstructorDefinition
-	binds                  []Bind
+	name            string
+	typeDefinitions []TypeDefinition
+	binds           []Bind
 }
 
 // NewModule creates a module.
-func NewModule(n string, ds []ConstructorDefinition, bs []Bind) Module {
+func NewModule(n string, ds []TypeDefinition, bs []Bind) Module {
 	return Module{n, ds, bs}
 }
 
@@ -17,9 +17,9 @@ func (m Module) Name() string {
 	return m.name
 }
 
-// ConstructorDefinitions returns constructor definitions.
-func (m Module) ConstructorDefinitions() []ConstructorDefinition {
-	return m.constructorDefinitions
+// TypeDefinitions returns constructor definitions.
+func (m Module) TypeDefinitions() []TypeDefinition {
+	return m.typeDefinitions
 }
 
 // Binds returns binds.

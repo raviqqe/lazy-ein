@@ -20,22 +20,19 @@ type moduleGenerator struct {
 	typeGenerator   typeGenerator
 }
 
-func newModuleGenerator(m llvm.Module, ds []ast.ConstructorDefinition) (*moduleGenerator, error) {
-	g := newConstructorDefinitionGenerator(m)
+func newModuleGenerator(m llvm.Module, ds []ast.TypeDefinition) (*moduleGenerator, error) {
+	tg := newTypeGenerator(m, ds)
+	cg := newConstructorDefinitionGenerator(m, tg)
 
 	for _, d := range ds {
-		if err := g.GenerateUnionifyFunction(d); err != nil {
-			return nil, err
+		if t, ok := d.Type().(types.Algebraic); ok {
+			if err := cg.Generate(t); err != nil {
+				return nil, err
+			}
 		}
-
-		if err := g.GenerateStructifyFunction(d); err != nil {
-			return nil, err
-		}
-
-		g.GenerateTag(d)
 	}
 
-	return &moduleGenerator{m, map[string]llvm.Value{}, newTypeGenerator(m)}, nil
+	return &moduleGenerator{m, map[string]llvm.Value{}, tg}, nil
 }
 
 func (g *moduleGenerator) Generate(bs []ast.Bind) error {
@@ -89,6 +86,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 		b,
 		g.createLogicalEnvironment(f, b, l),
 		g.createLambda,
+		g.typeGenerator,
 	).Generate(l.Body())
 
 	if err != nil {

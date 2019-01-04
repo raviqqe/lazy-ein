@@ -8,11 +8,31 @@ import (
 )
 
 type typeGenerator struct {
-	targetData llvm.TargetData
+	typeMap map[string]llvm.Type
+	module  llvm.Module
 }
 
-func newTypeGenerator(m llvm.Module) typeGenerator {
-	return typeGenerator{llvm.NewTargetData(m.DataLayout())}
+func newTypeGenerator(m llvm.Module, ds []ast.TypeDefinition) typeGenerator {
+	g := typeGenerator{make(map[string]llvm.Type, len(ds)), m}
+
+	for _, d := range ds {
+		if _, ok := d.Type().(types.Algebraic); ok {
+			g.typeMap[d.Name()] = g.module.Context().StructCreateNamed(d.Name())
+		}
+	}
+
+	for _, d := range ds {
+		t := g.Generate(d.Type())
+
+		if _, ok := d.Type().(types.Algebraic); !ok {
+			g.typeMap[d.Name()].StructSetBody(t.StructElementTypes(), t.IsStructPacked())
+			continue
+		}
+
+		g.typeMap[d.Name()] = t
+	}
+
+	return g
 }
 
 func (g typeGenerator) Generate(t types.Type) llvm.Type {
@@ -119,7 +139,7 @@ func (g typeGenerator) generateMany(ts []types.Type) []llvm.Type {
 }
 
 func (g typeGenerator) GenerateConstructorTag() llvm.Type {
-	if g.targetData.PointerSize() < 8 {
+	if g.targetData().PointerSize() < 8 {
 		return llvm.Int32Type()
 	}
 
@@ -130,19 +150,25 @@ func (g typeGenerator) GenerateConstructorElements(c types.Constructor) llvm.Typ
 	return llir.StructType(g.generateMany(c.Elements()))
 }
 
-func (g typeGenerator) GenerateConstructorUnionifyFunction(t types.Algebraic, i int) llvm.Type {
-	return llir.FunctionType(g.Generate(t), g.generateMany(t.Constructors()[i].Elements()))
+func (g typeGenerator) GenerateConstructorUnionifyFunction(
+	a types.Algebraic,
+	c types.Constructor,
+) llvm.Type {
+	return llir.FunctionType(g.Generate(a), g.generateMany(c.Elements()))
 }
 
-func (g typeGenerator) GenerateConstructorStructifyFunction(t types.Algebraic, i int) llvm.Type {
+func (g typeGenerator) GenerateConstructorStructifyFunction(
+	a types.Algebraic,
+	c types.Constructor,
+) llvm.Type {
 	return llir.FunctionType(
-		g.GenerateConstructorElements(t.Constructors()[i]),
-		[]llvm.Type{g.Generate(t)},
+		g.GenerateConstructorElements(c),
+		[]llvm.Type{g.Generate(a)},
 	)
 }
 
 func (g typeGenerator) getSize(t llvm.Type) int {
-	return int(g.targetData.TypeAllocSize(t))
+	return int(g.targetData().TypeAllocSize(t))
 }
 
 func (g typeGenerator) bytesToWords(n int) int {
@@ -150,5 +176,9 @@ func (g typeGenerator) bytesToWords(n int) int {
 		return 0
 	}
 
-	return (n-1)/g.targetData.PointerSize() + 1
+	return (n-1)/g.targetData().PointerSize() + 1
+}
+
+func (g typeGenerator) targetData() llvm.TargetData {
+	return llvm.NewTargetData(g.module.DataLayout())
 }

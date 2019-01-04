@@ -11,23 +11,20 @@ import (
 
 func TestFunctionBodyGeneratorGenerate(t *testing.T) {
 	m := llvm.NewModule("foo")
+	g := newTypeGenerator(m, nil)
 	f := llir.AddFunction(
 		m,
 		"foo",
 		llir.FunctionType(
 			llvm.DoubleType(),
-			[]llvm.Type{llir.PointerType(newTypeGenerator(m).GenerateUnsizedPayload())},
+			[]llvm.Type{llir.PointerType(g.GenerateUnsizedPayload())},
 		),
 	)
 
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
 
-	v, err := newFunctionBodyGenerator(
-		b,
-		nil,
-		nil,
-	).Generate(ast.NewFloat64(42))
+	v, err := newFunctionBodyGenerator(b, nil, nil, g).Generate(ast.NewFloat64(42))
 
 	assert.Nil(t, err)
 	assert.True(t, v.IsConstant())
