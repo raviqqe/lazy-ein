@@ -8,7 +8,7 @@ type NameGenerator struct {
 	indexes map[string]int
 }
 
-// NewNameGenerator creates a new name generator.
+// NewNameGenerator creates a name generator.
 func NewNameGenerator(s string) *NameGenerator {
 	return &NameGenerator{s, map[string]int{}}
 }

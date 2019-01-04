@@ -9,7 +9,7 @@ type Bind struct {
 	expression Expression
 }
 
-// NewBind creates a new bind.
+// NewBind creates a bind.
 func NewBind(n string, t types.Type, e Expression) Bind {
 	if t == nil {
 		panic("unreachable")

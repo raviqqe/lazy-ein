@@ -12,7 +12,7 @@ type Function struct {
 	debugInformation *debug.Information
 }
 
-// NewFunction creates a new function type.
+// NewFunction creates a function type.
 func NewFunction(a, r Type, i *debug.Information) Function {
 	return Function{a, r, i}
 }

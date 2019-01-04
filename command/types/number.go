@@ -10,7 +10,7 @@ type Number struct {
 	debugInformation *debug.Information
 }
 
-// NewNumber creates a new number type.
+// NewNumber creates a number type.
 func NewNumber(i *debug.Information) Number {
 	return Number{i}
 }

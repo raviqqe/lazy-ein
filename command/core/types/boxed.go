@@ -5,7 +5,7 @@ type Boxed struct {
 	content Type
 }
 
-// NewBoxed creates a new boxed type.
+// NewBoxed creates a boxed type.
 func NewBoxed(t Type) Boxed {
 	if _, ok := t.(Boxed); ok {
 		panic("cannot box boxed types")

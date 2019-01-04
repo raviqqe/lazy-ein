@@ -5,7 +5,7 @@ type Algebraic struct {
 	constructors []Constructor
 }
 
-// NewAlgebraic creates a new algebraic type.
+// NewAlgebraic creates an algebraic type.
 func NewAlgebraic(cs []Constructor) Algebraic {
 	return Algebraic{cs}
 }

@@ -6,7 +6,7 @@ type Function struct {
 	result    Type
 }
 
-// NewFunction creates a new function type.
+// NewFunction creates a function type.
 func NewFunction(as []Type, r Type) Function {
 	return Function{as, r}
 }
