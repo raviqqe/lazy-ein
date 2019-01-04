@@ -14,7 +14,8 @@ func Validate(m ast.Module) error {
 		}
 	}
 
-	// TODO: Check duplicate constructor names.
+	// TODO: Check duplicate top-level names including constructors.
+	// TODO: Check types.
 
 	return nil
 }
