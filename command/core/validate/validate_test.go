@@ -29,7 +29,7 @@ func TestValidateError(t *testing.T) {
 							[]ast.Argument{ast.NewArgument("x", types.NewBoxed(types.NewFloat64()))},
 							true,
 							nil,
-							ast.NewApplication(ast.NewVariable("x"), nil),
+							ast.NewFunctionApplication(ast.NewVariable("x"), nil),
 							types.NewBoxed(types.NewFloat64()),
 						),
 					),

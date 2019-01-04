@@ -40,8 +40,8 @@ func (g *functionBodyGenerator) Generate(e ast.Expression) (llvm.Value, error) {
 
 func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value, error) {
 	switch e := e.(type) {
-	case ast.Application:
-		return g.generateApplication(e)
+	case ast.FunctionApplication:
+		return g.generateFunctionApplication(e)
 	case ast.Case:
 		return g.generateCase(e)
 	case ast.Constructor:
@@ -57,7 +57,9 @@ func (g *functionBodyGenerator) generateExpression(e ast.Expression) (llvm.Value
 	panic("unreachable")
 }
 
-func (g *functionBodyGenerator) generateApplication(a ast.Application) (llvm.Value, error) {
+func (g *functionBodyGenerator) generateFunctionApplication(
+	a ast.FunctionApplication,
+) (llvm.Value, error) {
 	// TODO: Convert recursive function applications into thunks to allow tail-call elimination.
 	f, err := g.resolveName(a.Function().Name())
 

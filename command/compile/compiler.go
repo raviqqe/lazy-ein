@@ -119,7 +119,7 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 			as = append(as, coreast.NewVariable(a.(ast.Variable).Name()))
 		}
 
-		return coreast.NewApplication(
+		return coreast.NewFunctionApplication(
 			coreast.NewVariable(e.Function().(ast.Variable).Name()),
 			as,
 		), nil
@@ -136,8 +136,8 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 			return nil, err
 		}
 
-		x := l.(coreast.Application).Function().Name()
-		y := r.(coreast.Application).Function().Name()
+		x := l.(coreast.FunctionApplication).Function().Name()
+		y := r.(coreast.FunctionApplication).Function().Name()
 
 		vs, err := c.compileFreeVariables(e)
 
@@ -154,13 +154,13 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 						true,
 						nil,
 						coreast.NewPrimitiveCase(
-							coreast.NewApplication(coreast.NewVariable(x), nil),
+							coreast.NewFunctionApplication(coreast.NewVariable(x), nil),
 							coretypes.NewBoxed(coretypes.NewFloat64()),
 							nil,
 							coreast.NewDefaultAlternative(
 								"lhs",
 								coreast.NewPrimitiveCase(
-									coreast.NewApplication(coreast.NewVariable(y), nil),
+									coreast.NewFunctionApplication(coreast.NewVariable(y), nil),
 									coretypes.NewBoxed(coretypes.NewFloat64()),
 									nil,
 									coreast.NewDefaultAlternative(
@@ -180,7 +180,7 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 					),
 				),
 			},
-			coreast.NewApplication(coreast.NewVariable("result"), nil),
+			coreast.NewFunctionApplication(coreast.NewVariable("result"), nil),
 		), nil
 	case ast.Case:
 		ee, err := c.compileExpression(e.Expression())
@@ -229,7 +229,7 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 		return coreast.NewLet(
 			[]coreast.Bind{coreast.NewBind(d.Variable(), coreast.NewLambda(vs, true, nil, ee, t))},
 			coreast.NewPrimitiveCase(
-				coreast.NewApplication(coreast.NewVariable(d.Variable()), nil),
+				coreast.NewFunctionApplication(coreast.NewVariable(d.Variable()), nil),
 				t,
 				as,
 				coreast.NewDefaultAlternative("", de),
@@ -272,7 +272,7 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 			return coreast.NewFloat64(e.Value()), nil
 		}
 	case ast.Variable:
-		return coreast.NewApplication(coreast.NewVariable(e.Name()), nil), nil
+		return coreast.NewFunctionApplication(coreast.NewVariable(e.Name()), nil), nil
 	}
 
 	panic("unreahable")
