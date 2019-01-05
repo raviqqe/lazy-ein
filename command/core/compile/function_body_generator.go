@@ -239,7 +239,11 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 	vs := make(map[string]llvm.Value, len(l.Binds()))
 
 	for _, b := range l.Binds() {
-		t := g.typeGenerator.GenerateSizedClosure(b.Lambda())
+		t, err := g.typeGenerator.GenerateSizedClosure(b.Lambda())
+
+		if err != nil {
+			return llvm.Value{}, err
+		}
 
 		vs[b.Name()] = g.builder.CreateBitCast(
 			g.builder.CreateMalloc(t, ""),
@@ -261,11 +265,13 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 
 		g.builder.CreateStore(f, g.builder.CreateStructGEP(p, 0, ""))
 
-		e := g.builder.CreateBitCast(
-			g.builder.CreateStructGEP(p, 1, ""),
-			llir.PointerType(g.typeGenerator.GenerateEnvironment(b.Lambda())),
-			"",
-		)
+		t, err := g.typeGenerator.GenerateEnvironment(b.Lambda())
+
+		if err != nil {
+			return llvm.Value{}, err
+		}
+
+		e := g.builder.CreateBitCast(g.builder.CreateStructGEP(p, 1, ""), llir.PointerType(t), "")
 
 		for i, n := range b.Lambda().FreeVariableNames() {
 			v, err := g.resolveName(n)

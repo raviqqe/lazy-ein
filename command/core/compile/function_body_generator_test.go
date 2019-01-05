@@ -11,7 +11,10 @@ import (
 
 func TestFunctionBodyGeneratorGenerate(t *testing.T) {
 	m := llvm.NewModule("foo")
-	g := newTypeGenerator(m, nil)
+
+	g, err := newTypeGenerator(m, nil)
+	assert.Nil(t, err)
+
 	f := llir.AddFunction(
 		m,
 		"foo",

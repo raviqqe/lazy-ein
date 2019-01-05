@@ -21,7 +21,12 @@ type moduleGenerator struct {
 }
 
 func newModuleGenerator(m llvm.Module, ds []ast.TypeDefinition) (*moduleGenerator, error) {
-	tg := newTypeGenerator(m, ds)
+	tg, err := newTypeGenerator(m, ds)
+
+	if err != nil {
+		return nil, err
+	}
+
 	cg := newConstructorGenerator(m, tg)
 
 	for _, d := range ds {
@@ -37,11 +42,13 @@ func newModuleGenerator(m llvm.Module, ds []ast.TypeDefinition) (*moduleGenerato
 
 func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 	for _, b := range bs {
-		g.globalVariables[b.Name()] = llvm.AddGlobal(
-			g.module,
-			g.typeGenerator.GenerateSizedClosure(b.Lambda()),
-			b.Name(),
-		)
+		t, err := g.typeGenerator.GenerateSizedClosure(b.Lambda())
+
+		if err != nil {
+			return err
+		}
+
+		g.globalVariables[b.Name()] = llvm.AddGlobal(g.module, t, b.Name())
 	}
 
 	for _, b := range bs {
@@ -73,21 +80,23 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 }
 
 func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, error) {
-	f := llir.AddFunction(
-		g.module,
-		names.ToEntry(n),
-		g.typeGenerator.GenerateLambdaEntryFunction(l),
-	)
+	t, err := g.typeGenerator.GenerateLambdaEntryFunction(l)
 
+	if err != nil {
+		return llvm.Value{}, err
+	}
+
+	f := llir.AddFunction(g.module, names.ToEntry(n), t)
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
 
-	v, err := newFunctionBodyGenerator(
-		b,
-		g.createLogicalEnvironment(f, b, l),
-		g.createLambda,
-		g.typeGenerator,
-	).Generate(l.Body())
+	vs, err := g.createLogicalEnvironment(f, b, l)
+
+	if err != nil {
+		return llvm.Value{}, err
+	}
+
+	v, err := newFunctionBodyGenerator(b, vs, g.createLambda, g.typeGenerator).Generate(l.Body())
 
 	if err != nil {
 		return llvm.Value{}, err
@@ -132,7 +141,7 @@ func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm
 	return f
 }
 
-func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, l ast.Lambda) map[string]llvm.Value {
+func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, l ast.Lambda) (map[string]llvm.Value, error) {
 	vs := make(map[string]llvm.Value, len(g.globalVariables))
 
 	for k, v := range g.globalVariables {
@@ -147,11 +156,13 @@ func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, 
 		vs[k] = v
 	}
 
-	e := b.CreateBitCast(
-		f.FirstParam(),
-		llir.PointerType(g.typeGenerator.GenerateEnvironment(l)),
-		"",
-	)
+	t, err := g.typeGenerator.GenerateEnvironment(l)
+
+	if err != nil {
+		return nil, err
+	}
+
+	e := b.CreateBitCast(f.FirstParam(), llir.PointerType(t), "")
 
 	for i, n := range l.FreeVariableNames() {
 		vs[n] = b.CreateLoad(b.CreateStructGEP(e, i, ""), "")
@@ -163,7 +174,7 @@ func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, 
 		vs[n] = v
 	}
 
-	return vs
+	return vs, nil
 }
 
 func (g moduleGenerator) optimize() {

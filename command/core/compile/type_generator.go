@@ -1,6 +1,8 @@
 package compile
 
 import (
+	"errors"
+
 	"github.com/ein-lang/ein/command/core/ast"
 	"github.com/ein-lang/ein/command/core/compile/llir"
 	"github.com/ein-lang/ein/command/core/types"
@@ -12,7 +14,7 @@ type typeGenerator struct {
 	module  llvm.Module
 }
 
-func newTypeGenerator(m llvm.Module, ds []ast.TypeDefinition) typeGenerator {
+func newTypeGenerator(m llvm.Module, ds []ast.TypeDefinition) (typeGenerator, error) {
 	g := typeGenerator{make(map[string]llvm.Type, len(ds)), m}
 
 	for _, d := range ds {
@@ -22,9 +24,11 @@ func newTypeGenerator(m llvm.Module, ds []ast.TypeDefinition) typeGenerator {
 	}
 
 	for _, d := range ds {
-		t := g.Generate(d.Type())
+		t, err := g.Generate(d.Type())
 
-		if _, ok := d.Type().(types.Algebraic); !ok {
+		if err != nil {
+			return typeGenerator{}, err
+		} else if _, ok := d.Type().(types.Algebraic); ok {
 			g.typeMap[d.Name()].StructSetBody(t.StructElementTypes(), t.IsStructPacked())
 			continue
 		}
@@ -32,10 +36,10 @@ func newTypeGenerator(m llvm.Module, ds []ast.TypeDefinition) typeGenerator {
 		g.typeMap[d.Name()] = t
 	}
 
-	return g
+	return g, nil
 }
 
-func (g typeGenerator) Generate(t types.Type) llvm.Type {
+func (g typeGenerator) Generate(t types.Type) (llvm.Type, error) {
 	switch t := t.(type) {
 	case types.Algebraic:
 		if len(t.Constructors()) == 1 {
@@ -45,7 +49,13 @@ func (g typeGenerator) Generate(t types.Type) llvm.Type {
 		n := 0
 
 		for _, c := range t.Constructors() {
-			if m := g.getSize(g.GenerateConstructorElements(c)); m > n {
+			t, err := g.GenerateConstructorElements(c)
+
+			if err != nil {
+				return llvm.Type{}, err
+			}
+
+			if m := g.getSize(t); m > n {
 				n = m
 			}
 		}
@@ -55,27 +65,50 @@ func (g typeGenerator) Generate(t types.Type) llvm.Type {
 				g.GenerateConstructorTag(),
 				llvm.ArrayType(llvm.Int64Type(), g.bytesToWords(n)),
 			},
-		)
+		), nil
 	case types.Boxed:
-		return llir.PointerType(
-			g.generateClosure(g.generateEntryFunction(nil, t.Content()), g.GenerateUnsizedPayload()),
-		)
+		tt, err := g.generateEntryFunction(nil, t.Content())
+
+		if err != nil {
+			return llvm.Type{}, err
+		}
+
+		return llir.PointerType(g.generateClosure(tt, g.GenerateUnsizedPayload())), nil
 	case types.Float64:
-		return llvm.DoubleType()
+		return llvm.DoubleType(), nil
 	case types.Function:
-		return llir.PointerType(
-			g.generateClosure(
-				g.generateEntryFunction(t.Arguments(), t.Result()),
-				g.GenerateUnsizedPayload(),
-			),
-		)
+		tt, err := g.generateEntryFunction(t.Arguments(), t.Result())
+
+		if err != nil {
+			return llvm.Type{}, err
+		}
+
+		return llir.PointerType(g.generateClosure(tt, g.GenerateUnsizedPayload())), nil
+	case types.Named:
+		if t, ok := g.typeMap[t.Name()]; ok {
+			return t, nil
+		}
+
+		return llvm.Type{}, errors.New("type " + t.Name() + " is undefined")
 	}
 
 	panic("unreachable")
 }
 
-func (g typeGenerator) GenerateSizedClosure(l ast.Lambda) llvm.Type {
-	return g.generateClosure(g.GenerateLambdaEntryFunction(l), g.generateSizedPayload(l))
+func (g typeGenerator) GenerateSizedClosure(l ast.Lambda) (llvm.Type, error) {
+	e, err := g.GenerateLambdaEntryFunction(l)
+
+	if err != nil {
+		return llvm.Type{}, err
+	}
+
+	p, err := g.generateSizedPayload(l)
+
+	if err != nil {
+		return llvm.Type{}, err
+	}
+
+	return g.generateClosure(e, p), nil
 }
 
 func (g typeGenerator) GenerateUnsizedClosure(t llvm.Type) llvm.Type {
@@ -86,7 +119,7 @@ func (g typeGenerator) generateClosure(f llvm.Type, p llvm.Type) llvm.Type {
 	return llir.StructType([]llvm.Type{llir.PointerType(f), p})
 }
 
-func (g typeGenerator) GenerateLambdaEntryFunction(l ast.Lambda) llvm.Type {
+func (g typeGenerator) GenerateLambdaEntryFunction(l ast.Lambda) (llvm.Type, error) {
 	r := l.ResultType()
 
 	if l.IsThunk() {
@@ -96,24 +129,44 @@ func (g typeGenerator) GenerateLambdaEntryFunction(l ast.Lambda) llvm.Type {
 	return g.generateEntryFunction(l.ArgumentTypes(), r)
 }
 
-func (g typeGenerator) generateEntryFunction(as []types.Type, r types.Type) llvm.Type {
+func (g typeGenerator) generateEntryFunction(as []types.Type, r types.Type) (llvm.Type, error) {
+	t, err := g.Generate(r)
+
+	if err != nil {
+		return llvm.Type{}, err
+	}
+
+	ts, err := g.generateMany(as)
+
+	if err != nil {
+		return llvm.Type{}, err
+	}
+
 	return llir.FunctionType(
-		g.Generate(r),
+		t,
 		append(
 			[]llvm.Type{llir.PointerType(g.GenerateUnsizedPayload())},
-			g.generateMany(as)...,
+			ts...,
 		),
-	)
+	), nil
 }
 
-func (g typeGenerator) generateSizedPayload(l ast.Lambda) llvm.Type {
-	n := g.getSize(g.GenerateEnvironment(l))
+func (g typeGenerator) generateSizedPayload(l ast.Lambda) (llvm.Type, error) {
+	t, err := g.GenerateEnvironment(l)
 
-	if m := g.getSize(g.Generate(types.Unbox(l.ResultType()))); l.IsUpdatable() && m > n {
+	if err != nil {
+		return llvm.Type{}, err
+	}
+
+	n := g.getSize(t)
+
+	if t, err := g.Generate(types.Unbox(l.ResultType())); err != nil {
+		return llvm.Type{}, err
+	} else if m := g.getSize(t); l.IsUpdatable() && m > n {
 		n = m
 	}
 
-	return g.generatePayload(n)
+	return g.generatePayload(n), nil
 }
 
 func (g typeGenerator) GenerateUnsizedPayload() llvm.Type {
@@ -124,18 +177,30 @@ func (g typeGenerator) generatePayload(n int) llvm.Type {
 	return llvm.ArrayType(llvm.Int8Type(), n)
 }
 
-func (g typeGenerator) GenerateEnvironment(l ast.Lambda) llvm.Type {
-	return llir.StructType(g.generateMany(l.FreeVariableTypes()))
+func (g typeGenerator) GenerateEnvironment(l ast.Lambda) (llvm.Type, error) {
+	ts, err := g.generateMany(l.FreeVariableTypes())
+
+	if err != nil {
+		return llvm.Type{}, err
+	}
+
+	return llir.StructType(ts), nil
 }
 
-func (g typeGenerator) generateMany(ts []types.Type) []llvm.Type {
+func (g typeGenerator) generateMany(ts []types.Type) ([]llvm.Type, error) {
 	tts := make([]llvm.Type, 0, len(ts))
 
 	for _, t := range ts {
-		tts = append(tts, g.Generate(t))
+		t, err := g.Generate(t)
+
+		if err != nil {
+			return nil, err
+		}
+
+		tts = append(tts, t)
 	}
 
-	return tts
+	return tts, nil
 }
 
 func (g typeGenerator) GenerateConstructorTag() llvm.Type {
@@ -146,25 +211,52 @@ func (g typeGenerator) GenerateConstructorTag() llvm.Type {
 	return llvm.Int64Type()
 }
 
-func (g typeGenerator) GenerateConstructorElements(c types.Constructor) llvm.Type {
-	return llir.StructType(g.generateMany(c.Elements()))
+func (g typeGenerator) GenerateConstructorElements(c types.Constructor) (llvm.Type, error) {
+	ts, err := g.generateMany(c.Elements())
+
+	if err != nil {
+		return llvm.Type{}, err
+	}
+
+	return llir.StructType(ts), nil
 }
 
 func (g typeGenerator) GenerateConstructorUnionifyFunction(
 	a types.Algebraic,
 	c types.Constructor,
-) llvm.Type {
-	return llir.FunctionType(g.Generate(a), g.generateMany(c.Elements()))
+) (llvm.Type, error) {
+	t, err := g.Generate(a)
+
+	if err != nil {
+		return llvm.Type{}, err
+	}
+
+	ts, err := g.generateMany(c.Elements())
+
+	if err != nil {
+		return llvm.Type{}, err
+	}
+
+	return llir.FunctionType(t, ts), nil
 }
 
 func (g typeGenerator) GenerateConstructorStructifyFunction(
 	a types.Algebraic,
 	c types.Constructor,
-) llvm.Type {
-	return llir.FunctionType(
-		g.GenerateConstructorElements(c),
-		[]llvm.Type{g.Generate(a)},
-	)
+) (llvm.Type, error) {
+	t, err := g.GenerateConstructorElements(c)
+
+	if err != nil {
+		return llvm.Type{}, err
+	}
+
+	tt, err := g.Generate(a)
+
+	if err != nil {
+		return llvm.Type{}, err
+	}
+
+	return llir.FunctionType(t, []llvm.Type{tt}), nil
 }
 
 func (g typeGenerator) getSize(t llvm.Type) int {

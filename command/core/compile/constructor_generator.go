@@ -40,12 +40,13 @@ func (g constructorGenerator) generateUnionifyFunction(
 	c types.Constructor,
 	i int,
 ) error {
-	f := llir.AddFunction(
-		g.module,
-		names.ToUnionify(c.Name()),
-		g.typeGenerator.GenerateConstructorUnionifyFunction(a, c),
-	)
+	t, err := g.typeGenerator.GenerateConstructorUnionifyFunction(a, c)
 
+	if err != nil {
+		return err
+	}
+
+	f := llir.AddFunction(g.module, names.ToUnionify(c.Name()), t)
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
 
@@ -59,11 +60,13 @@ func (g constructorGenerator) generateUnionifyFunction(
 			b.CreateStructGEP(p, 0, ""),
 		)
 
-		pp := b.CreateBitCast(
-			b.CreateStructGEP(p, 1, ""),
-			llir.PointerType(g.typeGenerator.GenerateConstructorElements(c)),
-			"",
-		)
+		t, err := g.typeGenerator.GenerateConstructorElements(c)
+
+		if err != nil {
+			return err
+		}
+
+		pp := b.CreateBitCast(b.CreateStructGEP(p, 1, ""), llir.PointerType(t), "")
 
 		for i, v := range f.Params() {
 			b.CreateStore(v, b.CreateStructGEP(pp, i, ""))
@@ -79,12 +82,13 @@ func (g constructorGenerator) generateStructifyFunction(
 	a types.Algebraic,
 	c types.Constructor,
 ) error {
-	f := llir.AddFunction(
-		g.module,
-		names.ToStructify(c.Name()),
-		g.typeGenerator.GenerateConstructorStructifyFunction(a, c),
-	)
+	t, err := g.typeGenerator.GenerateConstructorStructifyFunction(a, c)
 
+	if err != nil {
+		return err
+	}
+
+	f := llir.AddFunction(g.module, names.ToStructify(c.Name()), t)
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
 

@@ -9,6 +9,61 @@ import (
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
+func TestNewTypeGenerator(t *testing.T) {
+	_, err := newTypeGenerator(
+		llvm.NewModule("foo"),
+		[]ast.TypeDefinition{ast.NewTypeDefinition("foo", types.NewFloat64())},
+	)
+	assert.Nil(t, err)
+}
+
+func TestNewTypeGeneratorWithRecursiveTypes(t *testing.T) {
+	_, err := newTypeGenerator(
+		llvm.NewModule("foo"),
+		[]ast.TypeDefinition{
+			ast.NewTypeDefinition(
+				"foo",
+				types.NewAlgebraic(
+					[]types.Constructor{
+						types.NewConstructor(
+							"constructor",
+							[]types.Type{types.NewBoxed(types.NewNamed("foo"))},
+						),
+					},
+				),
+			),
+		},
+	)
+	assert.Nil(t, err)
+}
+
+func TestTypeGeneratorGenerateWithNamedTypes(t *testing.T) {
+	g, err := newTypeGenerator(
+		llvm.NewModule("foo"),
+		[]ast.TypeDefinition{
+			ast.NewTypeDefinition(
+				"foo",
+				types.NewAlgebraic(
+					[]types.Constructor{
+						types.NewConstructor("constructor", []types.Type{types.NewFloat64()}),
+					},
+				),
+			),
+		},
+	)
+	assert.Nil(t, err)
+
+	g.Generate(types.NewNamed("foo"))
+}
+
+func TestTypeGeneratorGenerateErrorWithUndefinedTypes(t *testing.T) {
+	g, err := newTypeGenerator(llvm.NewModule("foo"), nil)
+	assert.Nil(t, err)
+
+	_, err = g.Generate(types.NewNamed("foo"))
+	assert.Error(t, err)
+}
+
 func TestTypeGeneratorGenerateSizedPayload(t *testing.T) {
 	for _, c := range []struct {
 		lambda ast.Lambda
@@ -39,15 +94,20 @@ func TestTypeGeneratorGenerateSizedPayload(t *testing.T) {
 			size:   0,
 		},
 	} {
-		assert.Equal(
-			t,
-			c.size,
-			newTypeGenerator(llvm.NewModule("foo"), nil).generateSizedPayload(c.lambda).ArrayLength(),
-		)
+		g, err := newTypeGenerator(llvm.NewModule("foo"), nil)
+		assert.Nil(t, err)
+
+		tt, err := g.generateSizedPayload(c.lambda)
+		assert.Nil(t, err)
+
+		assert.Equal(t, c.size, tt.ArrayLength())
 	}
 }
 
 func TestTypeGeneratorBytesToWords(t *testing.T) {
+	g, err := newTypeGenerator(llvm.NewModule("foo"), nil)
+	assert.Nil(t, err)
+
 	for k, v := range map[int]int{
 		0:  0,
 		1:  1,
@@ -58,6 +118,6 @@ func TestTypeGeneratorBytesToWords(t *testing.T) {
 		16: 2,
 		17: 3,
 	} {
-		assert.Equal(t, v, newTypeGenerator(llvm.NewModule("foo"), nil).bytesToWords(k))
+		assert.Equal(t, v, g.bytesToWords(k))
 	}
 }
