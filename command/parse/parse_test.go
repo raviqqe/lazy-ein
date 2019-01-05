@@ -381,6 +381,8 @@ func TestStateType(t *testing.T) {
 		"Number -> Number",
 		"Number -> Number -> Number",
 		"(Number -> Number) -> Number",
+		"[Number]",
+		"[[Number]]",
 	} {
 		_, err := newState("", s).typ()()
 		assert.Nil(t, err)
