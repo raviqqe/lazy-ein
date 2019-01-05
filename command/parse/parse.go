@@ -20,6 +20,8 @@ const (
 	mapSign                     = "->"
 	openParenthesisSign         = "("
 	closeParenthesisSign        = ")"
+	openBracketSign             = "["
+	closeBracketSign            = "]"
 	additionOperator            = sign(ast.Add)
 	subtractionOperator         = sign(ast.Subtract)
 	multiplicationOperator      = sign(ast.Multiply)
@@ -359,6 +361,7 @@ func (s *state) typ() parcom.Parser {
 		func() parcom.Parser {
 			return s.Or(
 				s.functionType(),
+				s.listType(),
 				s.scalarType(),
 			)
 		},
@@ -377,6 +380,15 @@ func (s *state) scalarType() parcom.Parser {
 		s.token(s.Str("Number")),
 		func(_ interface{}, i *debug.Information) (interface{}, error) {
 			return types.NewNumber(i), nil
+		},
+	)
+}
+
+func (s *state) listType() parcom.Parser {
+	return s.withDebugInformation(
+		s.Wrap(s.sign(openBracketSign), s.typ(), s.sign(closeBracketSign)),
+		func(x interface{}, i *debug.Information) (interface{}, error) {
+			return types.NewList(x.(types.Type), i), nil
 		},
 	)
 }
