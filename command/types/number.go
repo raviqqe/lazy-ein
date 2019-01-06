@@ -35,8 +35,8 @@ func (n Number) DebugInformation() *debug.Information {
 }
 
 // ToCore returns a type in the core language.
-func (n Number) ToCore() (coretypes.Type, error) {
-	return coretypes.NewBoxed(coretypes.NewFloat64()), nil
+func (n Number) ToCore() coretypes.Type {
+	return coretypes.NewBoxed(coretypes.NewFloat64())
 }
 
 // VisitTypes visits types.
@@ -44,6 +44,6 @@ func (n Number) VisitTypes(f func(Type) error) error {
 	return f(n)
 }
 
-func (Number) coreName() (string, error) {
-	return "$Number", nil
+func (Number) coreName() string {
+	return "$Number"
 }

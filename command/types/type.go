@@ -11,6 +11,6 @@ type Type interface {
 	Unify(Type) ([]Equation, error)
 	SubstituteVariable(Variable, Type) Type
 	DebugInformation() *debug.Information
-	ToCore() (coretypes.Type, error)
-	coreName() (string, error)
+	ToCore() coretypes.Type
+	coreName() string
 }

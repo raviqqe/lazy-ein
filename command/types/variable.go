@@ -41,8 +41,8 @@ func (v Variable) DebugInformation() *debug.Information {
 }
 
 // ToCore returns a type in the core language.
-func (v Variable) ToCore() (coretypes.Type, error) {
-	return nil, newTypeInferenceError(v.debugInformation)
+func (v Variable) ToCore() coretypes.Type {
+	panic("unreachable")
 }
 
 // VisitTypes visits types.
@@ -50,6 +50,6 @@ func (v Variable) VisitTypes(f func(Type) error) error {
 	return f(v)
 }
 
-func (v Variable) coreName() (string, error) {
-	return "", newTypeInferenceError(v.debugInformation)
+func (v Variable) coreName() string {
+	panic("unreachable")
 }

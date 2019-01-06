@@ -9,9 +9,6 @@ import (
 )
 
 func TestListToTypeDefinition(t *testing.T) {
-	d, err := NewList(NewNumber(nil), nil).ToTypeDefinition()
-
-	assert.Nil(t, err)
 	assert.Equal(
 		t,
 		coreast.NewTypeDefinition(
@@ -29,6 +26,6 @@ func TestListToTypeDefinition(t *testing.T) {
 				},
 			),
 		),
-		d,
+		NewList(NewNumber(nil), nil).ToTypeDefinition(),
 	)
 }

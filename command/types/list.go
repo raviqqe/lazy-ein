@@ -44,14 +44,8 @@ func (l List) DebugInformation() *debug.Information {
 }
 
 // ToCore returns a type in the core language.
-func (l List) ToCore() (coretypes.Type, error) {
-	s, err := l.coreName()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return coretypes.NewNamed(s), nil
+func (l List) ToCore() coretypes.Type {
+	return coretypes.NewNamed(l.coreName())
 }
 
 // VisitTypes visits types.
@@ -64,42 +58,24 @@ func (l List) VisitTypes(f func(Type) error) error {
 }
 
 // ToTypeDefinition returns a type definition.
-func (l List) ToTypeDefinition() (coreast.TypeDefinition, error) {
-	t, err := l.element.ToCore()
-
-	if err != nil {
-		return coreast.TypeDefinition{}, err
-	}
-
-	s, err := l.coreName()
-
-	if err != nil {
-		return coreast.TypeDefinition{}, err
-	}
-
+func (l List) ToTypeDefinition() coreast.TypeDefinition {
 	return coreast.NewTypeDefinition(
-		s,
+		l.coreName(),
 		coretypes.NewAlgebraic(
 			[]coretypes.Constructor{
 				coretypes.NewConstructor(
 					"$Cons",
 					[]coretypes.Type{
-						t,
-						coretypes.NewBoxed(coretypes.NewNamed(s)),
+						l.element.ToCore(),
+						coretypes.NewBoxed(coretypes.NewNamed(l.coreName())),
 					},
 				),
 				coretypes.NewConstructor("$Nil", nil),
 			},
 		),
-	), nil
+	)
 }
 
-func (l List) coreName() (string, error) {
-	s, err := l.element.coreName()
-
-	if err != nil {
-		return "", err
-	}
-
-	return "$List." + s + ".$end", nil
+func (l List) coreName() string {
+	return "$List." + l.element.coreName() + ".$end"
 }

@@ -6,7 +6,3 @@ import "github.com/ein-lang/ein/command/debug"
 func NewTypeError(m string, i *debug.Information) error {
 	return debug.NewError("TypeError", m, i)
 }
-
-func newTypeInferenceError(i *debug.Information) error {
-	return debug.NewError("TypeInferenceError", "failed to infer a type", i)
-}
