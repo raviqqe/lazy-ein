@@ -100,3 +100,19 @@ func (f Function) ToCore() (coretypes.Type, error) {
 		f = ff
 	}
 }
+
+func (f Function) coreName() (string, error) {
+	a, err := f.argument.coreName()
+
+	if err != nil {
+		return "", err
+	}
+
+	r, err := f.result.coreName()
+
+	if err != nil {
+		return "", err
+	}
+
+	return "$Function." + a + "." + r + ".$end", nil
+}

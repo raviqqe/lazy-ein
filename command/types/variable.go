@@ -44,3 +44,7 @@ func (v Variable) DebugInformation() *debug.Information {
 func (v Variable) ToCore() (coretypes.Type, error) {
 	return nil, newTypeInferenceError(v.debugInformation)
 }
+
+func (v Variable) coreName() (string, error) {
+	return "", newTypeInferenceError(v.debugInformation)
+}

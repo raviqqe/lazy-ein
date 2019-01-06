@@ -59,3 +59,13 @@ func (u Unboxed) ToCore() (coretypes.Type, error) {
 
 	return coretypes.Unbox(t), nil
 }
+
+func (u Unboxed) coreName() (string, error) {
+	s, err := u.content.coreName()
+
+	if err != nil {
+		return "", err
+	}
+
+	return "$Unboxed." + s + ".$end", nil
+}

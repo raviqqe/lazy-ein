@@ -34,3 +34,7 @@ func (u Unknown) DebugInformation() *debug.Information {
 func (Unknown) ToCore() (coretypes.Type, error) {
 	panic("unreachable")
 }
+
+func (u Unknown) coreName() (string, error) {
+	return "", newTypeInferenceError(u.debugInformation)
+}

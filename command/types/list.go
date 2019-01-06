@@ -1,6 +1,7 @@
 package types
 
 import (
+	coreast "github.com/ein-lang/ein/command/core/ast"
 	coretypes "github.com/ein-lang/ein/command/core/types"
 	"github.com/ein-lang/ein/command/debug"
 )
@@ -44,6 +45,52 @@ func (l List) DebugInformation() *debug.Information {
 
 // ToCore returns a type in the core language.
 func (l List) ToCore() (coretypes.Type, error) {
-	// TODO: Move ToCore function to compile package.
-	panic("unreachable")
+	s, err := l.coreName()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return coretypes.NewNamed(s), nil
+}
+
+// ToTypeDefinition returns a type definition.
+func (l List) ToTypeDefinition() (coreast.TypeDefinition, error) {
+	t, err := l.element.ToCore()
+
+	if err != nil {
+		return coreast.TypeDefinition{}, err
+	}
+
+	s, err := l.coreName()
+
+	if err != nil {
+		return coreast.TypeDefinition{}, err
+	}
+
+	return coreast.NewTypeDefinition(
+		s,
+		coretypes.NewAlgebraic(
+			[]coretypes.Constructor{
+				coretypes.NewConstructor(
+					"$Cons",
+					[]coretypes.Type{
+						t,
+						coretypes.NewBoxed(coretypes.NewNamed(s)),
+					},
+				),
+				coretypes.NewConstructor("$Nil", nil),
+			},
+		),
+	), nil
+}
+
+func (l List) coreName() (string, error) {
+	s, err := l.element.coreName()
+
+	if err != nil {
+		return "", err
+	}
+
+	return "$List." + s + ".$end", nil
 }

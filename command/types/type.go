@@ -11,4 +11,5 @@ type Type interface {
 	SubstituteVariable(Variable, Type) Type
 	DebugInformation() *debug.Information
 	ToCore() (coretypes.Type, error)
+	coreName() (string, error)
 }

@@ -38,3 +38,7 @@ func (n Number) DebugInformation() *debug.Information {
 func (n Number) ToCore() (coretypes.Type, error) {
 	return coretypes.NewBoxed(coretypes.NewFloat64()), nil
 }
+
+func (Number) coreName() (string, error) {
+	return "$Number", nil
+}
