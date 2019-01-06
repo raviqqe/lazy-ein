@@ -16,6 +16,7 @@ type sign string
 
 const (
 	bindSign               sign = "="
+	commaSign                   = ","
 	typeDefinitionSign          = ":"
 	mapSign                     = "->"
 	openParenthesisSign         = "("
@@ -149,6 +150,7 @@ func (s *state) expressionWithOptions(b, a bool) parcom.Parser {
 		append(
 			ps,
 			s.numberLiteral(),
+			s.listLiteral(),
 			s.let(),
 			s.caseOf(),
 			s.variable(),
@@ -180,6 +182,37 @@ func (s *state) numberLiteral() parcom.Parser {
 				),
 			),
 		),
+	)
+}
+
+func (s *state) listLiteral() parcom.Parser {
+	return s.withDebugInformation(
+		s.Wrap(
+			s.sign(openBracketSign),
+			s.Or(
+				s.And(
+					s.expression(),
+					s.Many(s.Prefix(s.sign(commaSign), s.expression())),
+					s.Maybe(s.sign(commaSign)),
+				),
+				s.None(),
+			),
+			s.sign(closeBracketSign),
+		),
+		func(x interface{}, i *debug.Information) (interface{}, error) {
+			if x == nil {
+				return ast.NewList(types.NewUnknown(i), nil), nil
+			}
+
+			xs := x.([]interface{})
+			es := []ast.Expression{xs[0].(ast.Expression)}
+
+			for _, x := range xs[1].([]interface{}) {
+				es = append(es, x.(ast.Expression))
+			}
+
+			return ast.NewList(types.NewUnknown(i), es), nil
+		},
 	)
 }
 

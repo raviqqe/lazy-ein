@@ -146,6 +146,30 @@ func TestStateNumberLiteralError(t *testing.T) {
 	}
 }
 
+func TestStateListLiteral(t *testing.T) {
+	for _, s := range []string{
+		"[]",
+		"[42]",
+		"[42, 42]",
+		"[42, 42,]",
+		"[[42]]",
+	} {
+		_, err := newState("", s).listLiteral()()
+		assert.Nil(t, err)
+	}
+}
+
+func TestStateListLiteralError(t *testing.T) {
+	for _, s := range []string{
+		"[,]",
+		"[,42]",
+		"[42,,]",
+	} {
+		_, err := newState("", s).listLiteral()()
+		assert.Error(t, err)
+	}
+}
+
 func TestStateVariable(t *testing.T) {
 	_, err := newState("", "x").variable()()
 	assert.Nil(t, err)
