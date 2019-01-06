@@ -74,27 +74,15 @@ func (f Function) DebugInformation() *debug.Information {
 }
 
 // ToCore returns a type in the core language.
-func (f Function) ToCore() (coretypes.Type, error) {
+func (f Function) ToCore() coretypes.Type {
 	as := []coretypes.Type{}
 
 	for {
-		a, err := f.Argument().ToCore()
-
-		if err != nil {
-			return nil, err
-		}
-
-		as = append(as, a)
+		as = append(as, f.Argument().ToCore())
 		ff, ok := f.Result().(Function)
 
 		if !ok {
-			r, err := f.Result().ToCore()
-
-			if err != nil {
-				return nil, err
-			}
-
-			return coretypes.NewFunction(as, r), nil
+			return coretypes.NewFunction(as, f.Result().ToCore())
 		}
 
 		f = ff

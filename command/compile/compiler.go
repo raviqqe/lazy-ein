@@ -19,13 +19,7 @@ func newCompiler(m ast.Module) (compiler, error) {
 	gs := make(map[string]struct{}, len(m.Binds()))
 
 	for _, b := range m.Binds() {
-		t, err := types.Box(b.Type()).ToCore()
-
-		if err != nil {
-			return compiler{}, err
-		}
-
-		vs[b.Name()] = t
+		vs[b.Name()] = types.Box(b.Type()).ToCore()
 		gs[b.Name()] = struct{}{}
 	}
 
@@ -56,12 +50,7 @@ func (c compiler) Compile(m ast.Module) (coreast.Module, error) {
 }
 
 func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
-	t, err := b.Type().ToCore()
-
-	if err != nil {
-		return coreast.Bind{}, err
-	}
-
+	t := b.Type().ToCore()
 	c = c.addVariable(b.Name(), t)
 	l, ok := b.Expression().(ast.Lambda)
 
@@ -201,12 +190,7 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 			as = append(as, coreast.NewPrimitiveAlternative(c.compileUnboxedLiteral(a.Literal()), e))
 		}
 
-		t, err := e.Type().ToCore()
-
-		if err != nil {
-			return nil, err
-		}
-
+		t := e.Type().ToCore()
 		d, ok := e.DefaultAlternative()
 
 		if !ok {
@@ -239,13 +223,7 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 		bs := make([]coreast.Bind, 0, len(e.Binds()))
 
 		for _, b := range e.Binds() {
-			t, err := b.Type().ToCore()
-
-			if err != nil {
-				return nil, err
-			}
-
-			c = c.addVariable(b.Name(), t)
+			c = c.addVariable(b.Name(), b.Type().ToCore())
 		}
 
 		for _, b := range e.Binds() {

@@ -50,14 +50,8 @@ func (u Unboxed) DebugInformation() *debug.Information {
 }
 
 // ToCore returns a type in the core language.
-func (u Unboxed) ToCore() (coretypes.Type, error) {
-	t, err := u.content.ToCore()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return coretypes.Unbox(t), nil
+func (u Unboxed) ToCore() coretypes.Type {
+	return coretypes.Unbox(u.content.ToCore())
 }
 
 // VisitTypes visits types.
