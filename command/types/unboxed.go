@@ -60,6 +60,15 @@ func (u Unboxed) ToCore() (coretypes.Type, error) {
 	return coretypes.Unbox(t), nil
 }
 
+// VisitTypes visits types.
+func (u Unboxed) VisitTypes(f func(Type) error) error {
+	if err := f(u.content); err != nil {
+		return err
+	}
+
+	return f(u)
+}
+
 func (u Unboxed) coreName() (string, error) {
 	s, err := u.content.coreName()
 

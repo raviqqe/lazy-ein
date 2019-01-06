@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/types"
+
 // Lambda is a lambda.
 type Lambda struct {
 	arguments  []string
@@ -12,18 +14,23 @@ func NewLambda(as []string, e Expression) Lambda {
 }
 
 // Arguments returns arguments.
-func (b Lambda) Arguments() []string {
-	return b.arguments
+func (l Lambda) Arguments() []string {
+	return l.arguments
 }
 
 // Expression returns an expression.
-func (b Lambda) Expression() Expression {
-	return b.expression
+func (l Lambda) Expression() Expression {
+	return l.expression
 }
 
 // ConvertExpressions visits expressions.
-func (b Lambda) ConvertExpressions(f func(Expression) Expression) Node {
-	return f(NewLambda(b.arguments, b.expression.ConvertExpressions(f).(Expression)))
+func (l Lambda) ConvertExpressions(f func(Expression) Expression) Node {
+	return f(NewLambda(l.arguments, l.expression.ConvertExpressions(f).(Expression)))
+}
+
+// VisitTypes visits types.
+func (l Lambda) VisitTypes(f func(types.Type) error) error {
+	return l.expression.VisitTypes(f)
 }
 
 func (Lambda) isExpression() {}

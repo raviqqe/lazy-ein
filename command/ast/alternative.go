@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/types"
+
 // Alternative is an alternative.
 type Alternative struct {
 	literal    Literal
@@ -24,4 +26,13 @@ func (a Alternative) Expression() Expression {
 // ConvertExpressions visits expressions.
 func (a Alternative) ConvertExpressions(f func(Expression) Expression) Node {
 	return NewAlternative(a.literal, a.expression.ConvertExpressions(f).(Expression))
+}
+
+// VisitTypes visits types.
+func (a Alternative) VisitTypes(f func(types.Type) error) error {
+	if err := a.literal.VisitTypes(f); err != nil {
+		return err
+	}
+
+	return a.expression.VisitTypes(f)
 }

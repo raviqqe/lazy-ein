@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/types"
+
 // Application is a function application.
 type Application struct {
 	function  Expression
@@ -30,6 +32,21 @@ func (a Application) ConvertExpressions(f func(Expression) Expression) Node {
 	}
 
 	return f(NewApplication(a.function.ConvertExpressions(f).(Expression), as))
+}
+
+// VisitTypes visits types.
+func (a Application) VisitTypes(f func(types.Type) error) error {
+	if err := a.function.VisitTypes(f); err != nil {
+		return err
+	}
+
+	for _, a := range a.arguments {
+		if err := a.VisitTypes(f); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (Application) isExpression() {}

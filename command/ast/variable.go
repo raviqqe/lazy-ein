@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/types"
+
 // Variable is a variable.
 type Variable struct {
 	name string
@@ -18,6 +20,11 @@ func (v Variable) Name() string {
 // ConvertExpressions visits expressions.
 func (v Variable) ConvertExpressions(f func(Expression) Expression) Node {
 	return f(v)
+}
+
+// VisitTypes visits types.
+func (v Variable) VisitTypes(f func(types.Type) error) error {
+	return nil
 }
 
 func (Variable) isExpression() {}

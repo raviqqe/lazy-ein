@@ -39,6 +39,11 @@ func (n Number) ToCore() (coretypes.Type, error) {
 	return coretypes.NewBoxed(coretypes.NewFloat64()), nil
 }
 
+// VisitTypes visits types.
+func (n Number) VisitTypes(f func(Type) error) error {
+	return f(n)
+}
+
 func (Number) coreName() (string, error) {
 	return "$Number", nil
 }

@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/types"
+
 // Number is a number.
 type Number struct {
 	value float64
@@ -18,6 +20,11 @@ func (n Number) Value() float64 {
 // ConvertExpressions visits expressions.
 func (n Number) ConvertExpressions(f func(Expression) Expression) Node {
 	return f(n)
+}
+
+// VisitTypes visits types.
+func (n Number) VisitTypes(f func(types.Type) error) error {
+	return nil
 }
 
 func (Number) isExpression() {}

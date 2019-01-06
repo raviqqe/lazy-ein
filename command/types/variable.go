@@ -45,6 +45,11 @@ func (v Variable) ToCore() (coretypes.Type, error) {
 	return nil, newTypeInferenceError(v.debugInformation)
 }
 
+// VisitTypes visits types.
+func (v Variable) VisitTypes(f func(Type) error) error {
+	return f(v)
+}
+
 func (v Variable) coreName() (string, error) {
 	return "", newTypeInferenceError(v.debugInformation)
 }

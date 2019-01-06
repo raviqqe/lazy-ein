@@ -54,6 +54,15 @@ func (l List) ToCore() (coretypes.Type, error) {
 	return coretypes.NewNamed(s), nil
 }
 
+// VisitTypes visits types.
+func (l List) VisitTypes(f func(Type) error) error {
+	if err := f(l.element); err != nil {
+		return err
+	}
+
+	return f(l)
+}
+
 // ToTypeDefinition returns a type definition.
 func (l List) ToTypeDefinition() (coreast.TypeDefinition, error) {
 	t, err := l.element.ToCore()

@@ -7,6 +7,7 @@ import (
 
 // Type is a type.
 type Type interface {
+	TypeVisitor
 	Unify(Type) ([]Equation, error)
 	SubstituteVariable(Variable, Type) Type
 	DebugInformation() *debug.Information

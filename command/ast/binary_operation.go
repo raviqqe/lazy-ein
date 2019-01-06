@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/types"
+
 // BinaryOperation is a binary operation.
 type BinaryOperation struct {
 	operator BinaryOperator
@@ -12,29 +14,38 @@ func NewBinaryOperation(o BinaryOperator, l, r Expression) BinaryOperation {
 }
 
 // Operator returns a binary operator.
-func (t BinaryOperation) Operator() BinaryOperator {
-	return t.operator
+func (o BinaryOperation) Operator() BinaryOperator {
+	return o.operator
 }
 
 // LHS returns a left-hand side.
-func (t BinaryOperation) LHS() Expression {
-	return t.lhs
+func (o BinaryOperation) LHS() Expression {
+	return o.lhs
 }
 
 // RHS returns a right-hand side.
-func (t BinaryOperation) RHS() Expression {
-	return t.rhs
+func (o BinaryOperation) RHS() Expression {
+	return o.rhs
 }
 
 // ConvertExpressions visits expressions.
-func (t BinaryOperation) ConvertExpressions(f func(Expression) Expression) Node {
+func (o BinaryOperation) ConvertExpressions(f func(Expression) Expression) Node {
 	return f(
 		NewBinaryOperation(
-			t.operator,
-			t.lhs.ConvertExpressions(f).(Expression),
-			t.rhs.ConvertExpressions(f).(Expression),
+			o.operator,
+			o.lhs.ConvertExpressions(f).(Expression),
+			o.rhs.ConvertExpressions(f).(Expression),
 		),
 	)
+}
+
+// VisitTypes visits types.
+func (o BinaryOperation) VisitTypes(f func(types.Type) error) error {
+	if err := o.lhs.VisitTypes(f); err != nil {
+		return err
+	}
+
+	return o.rhs.VisitTypes(f)
 }
 
 func (BinaryOperation) isExpression() {}

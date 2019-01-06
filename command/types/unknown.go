@@ -35,6 +35,11 @@ func (Unknown) ToCore() (coretypes.Type, error) {
 	panic("unreachable")
 }
 
+// VisitTypes visits types.
+func (u Unknown) VisitTypes(f func(Type) error) error {
+	return f(u)
+}
+
 func (u Unknown) coreName() (string, error) {
 	return "", newTypeInferenceError(u.debugInformation)
 }
