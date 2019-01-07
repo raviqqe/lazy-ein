@@ -61,6 +61,8 @@ func (i inferrer) inferType(e ast.Expression) (types.Type, []types.Equation, err
 		return i.inferLambda(e)
 	case ast.Let:
 		return i.inferLet(e)
+	case ast.List:
+		return i.inferList(e)
 	case ast.Number:
 		return types.NewNumber(nil), nil, nil
 	case ast.Unboxed:
@@ -236,6 +238,35 @@ func (i inferrer) inferLet(l ast.Let) (types.Type, []types.Equation, error) {
 	return t, append(es, ees...), nil
 }
 
+func (i inferrer) inferList(l ast.List) (types.Type, []types.Equation, error) {
+	t := types.NewList(i.createTypeVariable(), l.Type().DebugInformation())
+	es, err := l.Type().Unify(t)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, e := range l.Elements() {
+		et, ees, err := i.inferType(e)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		es = append(es, ees...)
+
+		ees, err = t.Element().Unify(et)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		es = append(es, ees...)
+	}
+
+	return t, es, nil
+}
+
 func (i inferrer) inferUnboxed(u ast.Unboxed) (types.Type, []types.Equation, error) {
 	t, es, err := i.inferType(u.Content())
 
@@ -348,6 +379,8 @@ func (i inferrer) substituteVariablesInModule(m ast.Module, ss map[int]types.Typ
 			}
 
 			return ast.NewLet(bs, e.Expression())
+		case ast.List:
+			return ast.NewList(i.substituteVariable(e.Type(), ss), e.Elements())
 		}
 
 		return e
@@ -411,6 +444,8 @@ func (i inferrer) insertTypeVariables(m ast.Module) ast.Module {
 			}
 
 			return ast.NewLet(bs, e.Expression())
+		case ast.List:
+			return ast.NewList(i.createTypeVariable(), e.Elements())
 		}
 
 		return e
