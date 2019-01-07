@@ -19,7 +19,7 @@ func TestListToTypeDefinition(t *testing.T) {
 						"$Cons",
 						[]coretypes.Type{
 							coretypes.NewBoxed(coretypes.NewFloat64()),
-							coretypes.NewBoxed(coretypes.NewNamed("$List.$Number.$end")),
+							coretypes.NewBoxed(coretypes.NewReference("$List.$Number.$end")),
 						},
 					),
 					coretypes.NewConstructor("$Nil", nil),

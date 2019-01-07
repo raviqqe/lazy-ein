@@ -84,7 +84,7 @@ func (g typeGenerator) Generate(t types.Type) (llvm.Type, error) {
 		}
 
 		return llir.PointerType(g.generateClosure(tt, g.GenerateUnsizedPayload())), nil
-	case types.Named:
+	case types.Reference:
 		if t, ok := g.typeMap[t.Name()]; ok {
 			return t, nil
 		}

@@ -27,7 +27,7 @@ func TestNewTypeGeneratorWithRecursiveTypes(t *testing.T) {
 					[]types.Constructor{
 						types.NewConstructor(
 							"constructor",
-							[]types.Type{types.NewBoxed(types.NewNamed("foo"))},
+							[]types.Type{types.NewBoxed(types.NewReference("foo"))},
 						),
 					},
 				),
@@ -53,14 +53,14 @@ func TestTypeGeneratorGenerateWithNamedTypes(t *testing.T) {
 	)
 	assert.Nil(t, err)
 
-	g.Generate(types.NewNamed("foo"))
+	g.Generate(types.NewReference("foo"))
 }
 
 func TestTypeGeneratorGenerateErrorWithUndefinedTypes(t *testing.T) {
 	g, err := newTypeGenerator(llvm.NewModule("foo"), nil)
 	assert.Nil(t, err)
 
-	_, err = g.Generate(types.NewNamed("foo"))
+	_, err = g.Generate(types.NewReference("foo"))
 	assert.Error(t, err)
 }
 
