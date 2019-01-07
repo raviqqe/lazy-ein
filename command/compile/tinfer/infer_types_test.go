@@ -221,6 +221,35 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 				ast.NewNumber(42),
 			),
 		},
+		// List literals
+		{
+			ast.NewLet(
+				[]ast.Bind{
+					ast.NewBind(
+						"x",
+						types.NewUnknown(nil),
+						ast.NewList(
+							types.NewUnknown(nil),
+							[]ast.Expression{ast.NewNumber(42)},
+						),
+					),
+				},
+				ast.NewNumber(42),
+			),
+			ast.NewLet(
+				[]ast.Bind{
+					ast.NewBind(
+						"x",
+						types.NewList(types.NewNumber(nil), nil),
+						ast.NewList(
+							types.NewList(types.NewNumber(nil), nil),
+							[]ast.Expression{ast.NewNumber(42)},
+						),
+					),
+				},
+				ast.NewNumber(42),
+			),
+		},
 	} {
 		m, err := tinfer.InferTypes(
 			ast.NewModule("", []ast.Bind{ast.NewBind("bar", types.NewNumber(nil), ls[0])}),

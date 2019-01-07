@@ -206,6 +206,33 @@ func (i inferrer) inferType(e ast.Expression) (types.Type, []types.Equation, err
 		}
 
 		return t, append(es, ees...), nil
+	case ast.List:
+		t := types.NewList(i.createTypeVariable(), e.Type().DebugInformation())
+		es, err := e.Type().Unify(t)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		for _, e := range e.Elements() {
+			et, ees, err := i.inferType(e)
+
+			if err != nil {
+				return nil, nil, err
+			}
+
+			es = append(es, ees...)
+
+			ees, err = t.Element().Unify(et)
+
+			if err != nil {
+				return nil, nil, err
+			}
+
+			es = append(es, ees...)
+		}
+
+		return t, es, nil
 	case ast.Number:
 		return types.NewNumber(nil), nil, nil
 	case ast.Unboxed:
@@ -321,6 +348,8 @@ func (i inferrer) substituteVariablesInModule(m ast.Module, ss map[int]types.Typ
 			}
 
 			return ast.NewLet(bs, e.Expression())
+		case ast.List:
+			return ast.NewList(i.substituteVariable(e.Type(), ss), e.Elements())
 		}
 
 		return e
@@ -384,6 +413,8 @@ func (i inferrer) insertTypeVariables(m ast.Module) ast.Module {
 			}
 
 			return ast.NewLet(bs, e.Expression())
+		case ast.List:
+			return ast.NewList(i.createTypeVariable(), e.Elements())
 		}
 
 		return e
