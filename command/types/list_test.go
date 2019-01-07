@@ -16,13 +16,13 @@ func TestListToTypeDefinition(t *testing.T) {
 			coretypes.NewAlgebraic(
 				[]coretypes.Constructor{
 					coretypes.NewConstructor(
-						"$Cons",
+						"$Cons.$Number.$end",
 						[]coretypes.Type{
 							coretypes.NewBoxed(coretypes.NewFloat64()),
 							coretypes.NewBoxed(coretypes.NewReference("$List.$Number.$end")),
 						},
 					),
-					coretypes.NewConstructor("$Nil", nil),
+					coretypes.NewConstructor("$Nil.$Number.$end", nil),
 				},
 			),
 		),

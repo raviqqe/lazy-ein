@@ -48,13 +48,13 @@ func (l List) ToCore() coretypes.Type {
 	return coretypes.NewAlgebraic(
 		[]coretypes.Constructor{
 			coretypes.NewConstructor(
-				"$Cons",
+				l.ConsConstructorName(),
 				[]coretypes.Type{
 					l.element.ToCore(),
 					coretypes.NewBoxed(coretypes.NewReference(l.coreName())),
 				},
 			),
-			coretypes.NewConstructor("$Nil", nil),
+			coretypes.NewConstructor(l.NilConstructorName(), nil),
 		},
 	)
 }
@@ -75,4 +75,14 @@ func (l List) ToTypeDefinition() coreast.TypeDefinition {
 
 func (l List) coreName() string {
 	return "$List." + l.element.coreName() + ".$end"
+}
+
+// ConsConstructorName returns a constructor name of cons.
+func (l List) ConsConstructorName() string {
+	return "$Cons." + l.element.coreName() + ".$end"
+}
+
+// NilConstructorName returns a constructor name of nil.
+func (l List) NilConstructorName() string {
+	return "$Nil." + l.element.coreName() + ".$end"
 }
