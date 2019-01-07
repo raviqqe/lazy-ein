@@ -45,17 +45,19 @@ func (l List) DebugInformation() *debug.Information {
 
 // ToCore returns a type in the core language.
 func (l List) ToCore() coretypes.Type {
-	return coretypes.NewAlgebraic(
-		[]coretypes.Constructor{
-			coretypes.NewConstructor(
-				l.ConsConstructorName(),
-				[]coretypes.Type{
-					l.element.ToCore(),
-					coretypes.NewBoxed(coretypes.NewReference(l.coreName())),
-				},
-			),
-			coretypes.NewConstructor(l.NilConstructorName(), nil),
-		},
+	return coretypes.NewBoxed(
+		coretypes.NewAlgebraic(
+			[]coretypes.Constructor{
+				coretypes.NewConstructor(
+					l.ConsConstructorName(),
+					[]coretypes.Type{
+						l.element.ToCore(),
+						coretypes.NewBoxed(coretypes.NewReference(l.coreName())),
+					},
+				),
+				coretypes.NewConstructor(l.NilConstructorName(), nil),
+			},
+		),
 	)
 }
 
@@ -70,7 +72,7 @@ func (l List) VisitTypes(f func(Type) error) error {
 
 // ToTypeDefinition returns a type definition.
 func (l List) ToTypeDefinition() coreast.TypeDefinition {
-	return coreast.NewTypeDefinition(l.coreName(), l.ToCore())
+	return coreast.NewTypeDefinition(l.coreName(), coretypes.Unbox(l.ToCore()))
 }
 
 func (l List) coreName() string {
