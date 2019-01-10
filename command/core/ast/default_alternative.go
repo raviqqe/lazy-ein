@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/core/types"
+
 // DefaultAlternative is a default alternative.
 type DefaultAlternative struct {
 	variable   string
@@ -19,4 +21,9 @@ func (a DefaultAlternative) Variable() string {
 // Expression is an expression.
 func (a DefaultAlternative) Expression() Expression {
 	return a.expression
+}
+
+// ConvertTypes converts types.
+func (a DefaultAlternative) ConvertTypes(f func(types.Type) types.Type) DefaultAlternative {
+	return DefaultAlternative{a.variable, a.expression.ConvertTypes(f)}
 }

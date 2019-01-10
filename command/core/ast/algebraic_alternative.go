@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/core/types"
+
 // AlgebraicAlternative is an algebraic alternative.
 type AlgebraicAlternative struct {
 	constructorName string
@@ -25,4 +27,9 @@ func (a AlgebraicAlternative) ElementNames() []string {
 // Expression is an expression.
 func (a AlgebraicAlternative) Expression() Expression {
 	return a.expression
+}
+
+// ConvertTypes converts types.
+func (a AlgebraicAlternative) ConvertTypes(f func(types.Type) types.Type) AlgebraicAlternative {
+	return AlgebraicAlternative{a.constructorName, a.elementNames, a.expression.ConvertTypes(f)}
 }

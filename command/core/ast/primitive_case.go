@@ -22,3 +22,14 @@ func NewPrimitiveCaseWithoutDefault(e Expression, t types.Type, as []PrimitiveAl
 func (c PrimitiveCase) Alternatives() []PrimitiveAlternative {
 	return c.alternatives
 }
+
+// ConvertTypes converts types.
+func (c PrimitiveCase) ConvertTypes(f func(types.Type) types.Type) Expression {
+	as := make([]PrimitiveAlternative, 0, len(c.alternatives))
+
+	for _, a := range c.alternatives {
+		as = append(as, a.ConvertTypes(f))
+	}
+
+	return PrimitiveCase{c.abstractCase.ConvertTypes(f), as}
+}

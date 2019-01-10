@@ -14,11 +14,16 @@ func NewArgument(n string, t types.Type) Argument {
 }
 
 // Name returns a name.
-func (v Argument) Name() string {
-	return v.name
+func (a Argument) Name() string {
+	return a.name
 }
 
 // Type returns a type.
-func (v Argument) Type() types.Type {
-	return v.typ
+func (a Argument) Type() types.Type {
+	return a.typ
+}
+
+// ConvertTypes converts types.
+func (a Argument) ConvertTypes(f func(types.Type) types.Type) Argument {
+	return Argument{a.name, a.typ.ConvertTypes(f)}
 }

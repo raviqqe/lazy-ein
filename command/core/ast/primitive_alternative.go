@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/core/types"
+
 // PrimitiveAlternative is a primitive alternative.
 type PrimitiveAlternative struct {
 	literal    Literal
@@ -19,4 +21,9 @@ func (a PrimitiveAlternative) Literal() Literal {
 // Expression is an expression.
 func (a PrimitiveAlternative) Expression() Expression {
 	return a.expression
+}
+
+// ConvertTypes converts types.
+func (a PrimitiveAlternative) ConvertTypes(f func(types.Type) types.Type) PrimitiveAlternative {
+	return PrimitiveAlternative{a.literal, a.expression.ConvertTypes(f)}
 }

@@ -21,6 +21,11 @@ func (b Boxed) Content() Type {
 	return b.content
 }
 
+// ConvertTypes converts types.
+func (b Boxed) ConvertTypes(f func(Type) Type) Type {
+	return f(Boxed{b.content.ConvertTypes(f)})
+}
+
 func (b Boxed) String() string {
 	return fmt.Sprintf("Boxed(%v)", b.content)
 }

@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/core/types"
+
 // FunctionApplication is a function application.
 type FunctionApplication struct {
 	function  Variable
@@ -19,6 +21,11 @@ func (a FunctionApplication) Function() Variable {
 // Arguments returns arguments.
 func (a FunctionApplication) Arguments() []Atom {
 	return a.arguments
+}
+
+// ConvertTypes converts types.
+func (a FunctionApplication) ConvertTypes(func(types.Type) types.Type) Expression {
+	return a
 }
 
 func (a FunctionApplication) isExpression() {}

@@ -1,18 +1,25 @@
 package ast
 
+import "github.com/ein-lang/ein/command/core/types"
+
 // Float64 is a float64 literal.
 type Float64 struct {
 	value float64
 }
 
 // NewFloat64 creates a float64 number.
-func NewFloat64(n float64) Float64 {
-	return Float64{n}
+func NewFloat64(f float64) Float64 {
+	return Float64{f}
 }
 
 // Value returns a value.
-func (n Float64) Value() float64 {
-	return n.value
+func (f Float64) Value() float64 {
+	return f.value
+}
+
+// ConvertTypes converts types.
+func (f Float64) ConvertTypes(func(types.Type) types.Type) Expression {
+	return f
 }
 
 func (Float64) isAtom()       {}

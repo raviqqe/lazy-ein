@@ -1,8 +1,6 @@
 package ast
 
-import (
-	"github.com/ein-lang/ein/command/core/types"
-)
+import "github.com/ein-lang/ein/command/core/types"
 
 type abstractCase struct {
 	expression         Expression
@@ -28,6 +26,14 @@ func (c abstractCase) DefaultAlternative() (DefaultAlternative, bool) {
 	}
 
 	return c.defaultAlternative, true
+}
+
+func (c abstractCase) ConvertTypes(f func(types.Type) types.Type) abstractCase {
+	return abstractCase{
+		c.expression.ConvertTypes(f),
+		c.expressionType.ConvertTypes(f),
+		c.defaultAlternative.ConvertTypes(f),
+	}
 }
 
 func (abstractCase) isExpression() {}

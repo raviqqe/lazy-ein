@@ -17,6 +17,17 @@ func (a Algebraic) Constructors() []Constructor {
 	return a.constructors
 }
 
+// ConvertTypes converts types.
+func (a Algebraic) ConvertTypes(f func(Type) Type) Type {
+	cs := make([]Constructor, 0, len(a.constructors))
+
+	for _, c := range a.constructors {
+		cs = append(cs, c.ConvertTypes(f))
+	}
+
+	return f(Algebraic{cs})
+}
+
 func (a Algebraic) String() string {
 	s := a.constructors[0].String()
 

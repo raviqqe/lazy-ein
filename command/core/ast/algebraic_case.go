@@ -22,3 +22,14 @@ func NewAlgebraicCaseWithoutDefault(e Expression, t types.Type, as []AlgebraicAl
 func (c AlgebraicCase) Alternatives() []AlgebraicAlternative {
 	return c.alternatives
 }
+
+// ConvertTypes converts types.
+func (c AlgebraicCase) ConvertTypes(f func(types.Type) types.Type) Expression {
+	as := make([]AlgebraicAlternative, 0, len(c.alternatives))
+
+	for _, a := range c.alternatives {
+		as = append(as, a.ConvertTypes(f))
+	}
+
+	return AlgebraicCase{c.abstractCase.ConvertTypes(f), as}
+}

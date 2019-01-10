@@ -8,6 +8,11 @@ func NewFloat64() Float64 {
 	return Float64{}
 }
 
+// ConvertTypes converts types.
+func (f Float64) ConvertTypes(ff func(Type) Type) Type {
+	return ff(f)
+}
+
 func (Float64) String() string {
 	return "Float64"
 }

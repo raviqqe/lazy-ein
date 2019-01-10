@@ -4,16 +4,16 @@ import "github.com/ein-lang/ein/command/core/types"
 
 // Lambda is a lambda form.
 type Lambda struct {
+	freeVariables []Argument
+	updatable     bool
 	arguments     []Argument
 	body          Expression
 	resultType    types.Type
-	freeVariables []Argument
-	updatable     bool
 }
 
 // NewLambda creates a lambda form.
 func NewLambda(vs []Argument, u bool, as []Argument, e Expression, t types.Type) Lambda {
-	return Lambda{as, e, t, vs, u}
+	return Lambda{vs, u, as, e, t}
 }
 
 // Arguments returns arguments.
@@ -59,6 +59,23 @@ func (l Lambda) IsUpdatable() bool {
 // IsThunk returns true if the lambda form is a thunk, or false otherwise.
 func (l Lambda) IsThunk() bool {
 	return len(l.arguments) == 0
+}
+
+// ConvertTypes converts types.
+func (l Lambda) ConvertTypes(f func(types.Type) types.Type) Lambda {
+	vs := make([]Argument, 0, len(l.freeVariables))
+
+	for _, v := range l.freeVariables {
+		vs = append(vs, v.ConvertTypes(f))
+	}
+
+	as := make([]Argument, 0, len(l.arguments))
+
+	for _, a := range l.arguments {
+		as = append(as, a.ConvertTypes(f))
+	}
+
+	return Lambda{vs, l.updatable, as, l.body.ConvertTypes(f), l.resultType.ConvertTypes(f)}
 }
 
 func argumentsToNames(as []Argument) []string {

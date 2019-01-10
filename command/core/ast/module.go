@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/core/types"
+
 // Module is a module.
 type Module struct {
 	name            string
@@ -25,4 +27,15 @@ func (m Module) TypeDefinitions() []TypeDefinition {
 // Binds returns binds.
 func (m Module) Binds() []Bind {
 	return m.binds
+}
+
+// ConvertTypes converts types.
+func (m Module) ConvertTypes(f func(types.Type) types.Type) Module {
+	bs := make([]Bind, 0, len(m.binds))
+
+	for _, b := range m.binds {
+		bs = append(bs, b.ConvertTypes(f))
+	}
+
+	return Module{m.name, m.typeDefinitions, bs}
 }

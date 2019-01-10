@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/core/types"
+
 // ConstructorApplication is a constructor application.
 type ConstructorApplication struct {
 	name      string
@@ -12,13 +14,18 @@ func NewConstructorApplication(n string, as []Atom) ConstructorApplication {
 }
 
 // Name returns a name.
-func (c ConstructorApplication) Name() string {
-	return c.name
+func (a ConstructorApplication) Name() string {
+	return a.name
 }
 
 // Arguments returns arguments.
-func (c ConstructorApplication) Arguments() []Atom {
-	return c.arguments
+func (a ConstructorApplication) Arguments() []Atom {
+	return a.arguments
+}
+
+// ConvertTypes converts types.
+func (a ConstructorApplication) ConvertTypes(func(types.Type) types.Type) Expression {
+	return a
 }
 
 func (ConstructorApplication) isExpression() {}

@@ -23,6 +23,17 @@ func (c Constructor) Elements() []Type {
 	return c.elements
 }
 
+// ConvertTypes converts types.
+func (c Constructor) ConvertTypes(f func(Type) Type) Constructor {
+	es := make([]Type, 0, len(c.elements))
+
+	for _, e := range c.elements {
+		es = append(es, e.ConvertTypes(f))
+	}
+
+	return Constructor{c.name, es}
+}
+
 func (c Constructor) String() string {
 	if len(c.elements) == 0 {
 		return fmt.Sprintf("Constructor(%v)", c.name)

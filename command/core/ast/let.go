@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/core/types"
+
 // Let is a let expression.
 type Let struct {
 	binds      []Bind
@@ -19,6 +21,17 @@ func (l Let) Binds() []Bind {
 // Expression returns an expression.
 func (l Let) Expression() Expression {
 	return l.expression
+}
+
+// ConvertTypes converts types.
+func (l Let) ConvertTypes(f func(types.Type) types.Type) Expression {
+	bs := make([]Bind, 0, len(l.binds))
+
+	for _, b := range l.binds {
+		bs = append(bs, b.ConvertTypes(f))
+	}
+
+	return Let{bs, l.expression.ConvertTypes(f)}
 }
 
 func (Let) isExpression() {}

@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/core/types"
+
 // PrimitiveOperator is a primitive operator.
 type PrimitiveOperator string
 
@@ -33,6 +35,11 @@ func (o PrimitiveOperation) PrimitiveOperator() PrimitiveOperator {
 // Arguments returns arguments.
 func (o PrimitiveOperation) Arguments() []Atom {
 	return o.arguments
+}
+
+// ConvertTypes converts types.
+func (o PrimitiveOperation) ConvertTypes(func(types.Type) types.Type) Expression {
+	return o
 }
 
 func (o PrimitiveOperation) isExpression() {}

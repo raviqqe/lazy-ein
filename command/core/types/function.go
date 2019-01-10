@@ -23,6 +23,17 @@ func (f Function) Result() Type {
 	return f.result
 }
 
+// ConvertTypes converts types.
+func (f Function) ConvertTypes(ff func(Type) Type) Type {
+	as := make([]Type, 0, len(f.arguments))
+
+	for _, a := range f.arguments {
+		as = append(as, a.ConvertTypes(ff))
+	}
+
+	return ff(Function{as, f.result.ConvertTypes(ff)})
+}
+
 func (f Function) String() string {
 	s := f.arguments[0].String()
 
