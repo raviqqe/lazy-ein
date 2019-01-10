@@ -1,5 +1,7 @@
 package types
 
+import "fmt"
+
 // Constructor is a constructor.
 type Constructor struct {
 	name     string
@@ -19,4 +21,18 @@ func (c Constructor) Name() string {
 // Elements returns element types.
 func (c Constructor) Elements() []Type {
 	return c.elements
+}
+
+func (c Constructor) String() string {
+	if len(c.elements) == 0 {
+		return fmt.Sprintf("Constructor(%v)", c.name)
+	}
+
+	s := c.elements[0].String()
+
+	for _, e := range c.elements[1:] {
+		s += "," + e.String()
+	}
+
+	return fmt.Sprintf("Constructor(%v,[%v])", c.name, s)
 }

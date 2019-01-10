@@ -8,4 +8,8 @@ func NewFloat64() Float64 {
 	return Float64{}
 }
 
+func (Float64) String() string {
+	return "Float64"
+}
+
 func (Float64) isType() {}

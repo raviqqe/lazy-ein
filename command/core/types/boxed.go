@@ -1,5 +1,7 @@
 package types
 
+import "fmt"
+
 // Boxed is a boxed type.
 type Boxed struct {
 	content Type
@@ -17,6 +19,10 @@ func NewBoxed(t Type) Boxed {
 // Content returns a content type.
 func (b Boxed) Content() Type {
 	return b.content
+}
+
+func (b Boxed) String() string {
+	return fmt.Sprintf("Boxed(%v)", b.content)
 }
 
 func (Boxed) isType() {}
