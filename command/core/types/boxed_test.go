@@ -12,6 +12,7 @@ func TestNewBoxed(t *testing.T) {
 
 func TestNewBoxedPanic(t *testing.T) {
 	assert.Panics(t, func() { NewBoxed(NewBoxed(NewFloat64())) })
+	assert.Panics(t, func() { NewBoxed(NewBoxed(NewFunction([]Type{NewFloat64()}, NewFloat64()))) })
 }
 
 func TestBoxedString(t *testing.T) {

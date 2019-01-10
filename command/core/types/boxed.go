@@ -11,6 +11,8 @@ type Boxed struct {
 func NewBoxed(t Type) Boxed {
 	if _, ok := t.(Boxed); ok {
 		panic("cannot box boxed types")
+	} else if _, ok := t.(Function); ok {
+		panic("cannot box function types")
 	}
 
 	return Boxed{t}
