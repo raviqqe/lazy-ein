@@ -6,6 +6,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestNewFunctionPanic(t *testing.T) {
+	assert.Panics(
+		t,
+		func() {
+			NewFunction([]Type{NewFloat64()}, NewFunction([]Type{NewFloat64()}, NewFloat64()))
+		},
+	)
+}
+
 func TestFunctionString(t *testing.T) {
 	assert.Equal(
 		t,

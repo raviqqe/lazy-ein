@@ -10,6 +10,10 @@ type Function struct {
 
 // NewFunction creates a function type.
 func NewFunction(as []Type, r Type) Function {
+	if _, ok := r.(Function); ok {
+		panic("cannot use function types as result types")
+	}
+
 	return Function{as, r}
 }
 
