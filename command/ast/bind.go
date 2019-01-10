@@ -37,3 +37,12 @@ func (b Bind) Expression() Expression {
 func (b Bind) ConvertExpressions(f func(Expression) Expression) Node {
 	return NewBind(b.name, b.typ, b.expression.ConvertExpressions(f).(Expression))
 }
+
+// VisitTypes visits types.
+func (b Bind) VisitTypes(f func(types.Type) error) error {
+	if err := b.typ.VisitTypes(f); err != nil {
+		return err
+	}
+
+	return b.expression.VisitTypes(f)
+}

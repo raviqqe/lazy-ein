@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/ein-lang/ein/command/types"
+
 // Module is a module.
 type Module struct {
 	name  string
@@ -30,4 +32,15 @@ func (m Module) ConvertExpressions(f func(Expression) Expression) Node {
 	}
 
 	return NewModule(m.name, bs)
+}
+
+// VisitTypes visits types.
+func (m Module) VisitTypes(f func(types.Type) error) error {
+	for _, b := range m.binds {
+		if err := b.VisitTypes(f); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

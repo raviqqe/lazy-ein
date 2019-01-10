@@ -100,3 +100,14 @@ func (f Function) ToCore() (coretypes.Type, error) {
 		f = ff
 	}
 }
+
+// VisitTypes visits types.
+func (f Function) VisitTypes(ff func(Type) error) error {
+	if err := ff(f.argument); err != nil {
+		return err
+	} else if err := ff(f.result); err != nil {
+		return err
+	}
+
+	return ff(f)
+}

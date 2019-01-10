@@ -34,3 +34,8 @@ func (u Unknown) DebugInformation() *debug.Information {
 func (Unknown) ToCore() (coretypes.Type, error) {
 	panic("unreachable")
 }
+
+// VisitTypes visits types.
+func (u Unknown) VisitTypes(f func(Type) error) error {
+	return f(u)
+}

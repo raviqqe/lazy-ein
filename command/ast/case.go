@@ -61,4 +61,25 @@ func (c Case) ConvertExpressions(f func(Expression) Expression) Node {
 	return f(Case{c.expression.ConvertExpressions(f).(Expression), c.typ, as, d})
 }
 
+// VisitTypes visits types.
+func (c Case) VisitTypes(f func(types.Type) error) error {
+	if err := c.expression.VisitTypes(f); err != nil {
+		return err
+	} else if err := c.typ.VisitTypes(f); err != nil {
+		return err
+	}
+
+	for _, a := range c.alternatives {
+		if err := a.VisitTypes(f); err != nil {
+			return err
+		}
+	}
+
+	if d, ok := c.DefaultAlternative(); ok {
+		return d.VisitTypes(f)
+	}
+
+	return nil
+}
+
 func (Case) isExpression() {}
