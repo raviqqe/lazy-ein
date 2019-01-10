@@ -46,7 +46,7 @@ func (c compiler) Compile(m ast.Module) (coreast.Module, error) {
 		)
 	}
 
-	return coreast.NewModule(m.Name(), nil, bs), nil
+	return coreast.NewModule(m.Name(), bs), nil
 }
 
 func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {

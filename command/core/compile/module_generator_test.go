@@ -11,30 +11,42 @@ import (
 )
 
 func TestNewModuleGenerator(t *testing.T) {
-	newModuleGenerator(llvm.NewModule("foo"), nil)
+	newModuleGenerator(llvm.NewModule("foo"), ast.NewModule("foo", nil))
 }
 
-func TestNewModuleGeneratorWithTypeDefinitions(t *testing.T) {
-	for _, d := range []ast.TypeDefinition{
-		ast.NewTypeDefinition(
+func TestNewModuleGeneratorWithAlgebraicTypes(t *testing.T) {
+	for _, b := range []ast.Bind{
+		ast.NewBind(
 			"foo",
-			types.NewAlgebraic(
-				[]types.Constructor{
-					types.NewConstructor("constructor0", []types.Type{types.NewFloat64()}),
-				},
+			ast.NewLambda(
+				nil,
+				true,
+				nil,
+				ast.NewConstructorApplication("constructor0", []ast.Atom{ast.NewFloat64(42)}),
+				types.NewAlgebraic(
+					[]types.Constructor{
+						types.NewConstructor("constructor0", []types.Type{types.NewFloat64()}),
+					},
+				),
 			),
 		),
-		ast.NewTypeDefinition(
+		ast.NewBind(
 			"foo",
-			types.NewAlgebraic(
-				[]types.Constructor{
-					types.NewConstructor("constructor0", []types.Type{types.NewFloat64()}),
-					types.NewConstructor("constructor1", []types.Type{types.NewFloat64(), types.NewFloat64()}),
-				},
+			ast.NewLambda(
+				nil,
+				true,
+				nil,
+				ast.NewConstructorApplication("constructor0", []ast.Atom{ast.NewFloat64(42)}),
+				types.NewAlgebraic(
+					[]types.Constructor{
+						types.NewConstructor("constructor0", []types.Type{types.NewFloat64()}),
+						types.NewConstructor("constructor1", []types.Type{types.NewFloat64(), types.NewFloat64()}),
+					},
+				),
 			),
 		),
 	} {
-		newModuleGenerator(llvm.NewModule("foo"), []ast.TypeDefinition{d})
+		newModuleGenerator(llvm.NewModule("foo"), ast.NewModule("foo", []ast.Bind{b}))
 	}
 }
 
@@ -400,18 +412,15 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 			),
 		},
 	} {
-		g, err := newModuleGenerator(llvm.NewModule("foo"), nil)
+		g, err := newModuleGenerator(llvm.NewModule("foo"), ast.NewModule("foo", bs))
 		assert.Nil(t, err)
 		assert.Nil(t, g.Generate(bs))
 	}
 }
 
 func TestModuleGeneratorGenerateWithGlobalFunctionsReturningBoxedValues(t *testing.T) {
-	m := llvm.NewModule("foo")
-	g, err := newModuleGenerator(m, nil)
-	assert.Nil(t, err)
-
-	err = g.Generate(
+	m := ast.NewModule(
+		"foo",
 		[]ast.Bind{
 			ast.NewBind(
 				"foo",
@@ -425,23 +434,24 @@ func TestModuleGeneratorGenerateWithGlobalFunctionsReturningBoxedValues(t *testi
 			),
 		},
 	)
+	mm := llvm.NewModule(m.Name())
 
+	g, err := newModuleGenerator(mm, m)
+	assert.Nil(t, err)
+
+	err = g.Generate(m.Binds())
 	assert.Nil(t, err)
 
 	assert.Equal(
 		t,
 		llvm.PointerTypeKind,
-		m.NamedFunction(names.ToEntry("foo")).Type().ElementType().ReturnType().TypeKind(),
+		mm.NamedFunction(names.ToEntry("foo")).Type().ElementType().ReturnType().TypeKind(),
 	)
 }
 
 func TestModuleGeneratorGenerateWithLocalFunctionsReturningBoxedValues(t *testing.T) {
-	m := llvm.NewModule("foo")
-
-	g, err := newModuleGenerator(m, nil)
-	assert.Nil(t, err)
-
-	err = g.Generate(
+	m := ast.NewModule(
+		"foo",
 		[]ast.Bind{
 			ast.NewBind(
 				"foo",
@@ -469,13 +479,18 @@ func TestModuleGeneratorGenerateWithLocalFunctionsReturningBoxedValues(t *testin
 			),
 		},
 	)
+	mm := llvm.NewModule(m.Name())
 
+	g, err := newModuleGenerator(mm, m)
+	assert.Nil(t, err)
+
+	err = g.Generate(m.Binds())
 	assert.Nil(t, err)
 
 	assert.Equal(
 		t,
 		llvm.PointerTypeKind,
-		m.NamedFunction(
+		mm.NamedFunction(
 			names.ToEntry(names.NewNameGenerator(names.ToEntry("foo")).Generate("bar")),
 		).Type().ElementType().ReturnType().TypeKind(),
 	)
@@ -488,9 +503,6 @@ func TestModuleGeneratorGenerateWithAlgebraicTypes(t *testing.T) {
 
 	m := ast.NewModule(
 		"foo",
-		[]ast.TypeDefinition{
-			ast.NewTypeDefinition("foo", tt),
-		},
 		[]ast.Bind{
 			ast.NewBind(
 				"foo",
@@ -505,7 +517,7 @@ func TestModuleGeneratorGenerateWithAlgebraicTypes(t *testing.T) {
 		},
 	)
 
-	g, err := newModuleGenerator(llvm.NewModule(m.Name()), m.TypeDefinitions())
+	g, err := newModuleGenerator(llvm.NewModule(m.Name()), m)
 	assert.Nil(t, err)
 	assert.Nil(t, g.Generate(m.Binds()))
 }
@@ -520,7 +532,6 @@ func TestModuleGeneratorGenerateWithAlgebraicTypesOfMultipleConstructors(t *test
 
 	m := ast.NewModule(
 		"foo",
-		[]ast.TypeDefinition{ast.NewTypeDefinition("foo", tt)},
 		[]ast.Bind{
 			ast.NewBind(
 				"foo",
@@ -538,7 +549,7 @@ func TestModuleGeneratorGenerateWithAlgebraicTypesOfMultipleConstructors(t *test
 		},
 	)
 
-	g, err := newModuleGenerator(llvm.NewModule(m.Name()), m.TypeDefinitions())
+	g, err := newModuleGenerator(llvm.NewModule(m.Name()), m)
 	assert.Nil(t, err)
 	assert.Nil(t, g.Generate(m.Binds()))
 }
@@ -554,58 +565,42 @@ func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
 		},
 	)
 
-	for _, c := range []struct {
-		typeDefinitions []ast.TypeDefinition
-		caseExpression  ast.Case
-	}{
-		{
-			[]ast.TypeDefinition{ast.NewTypeDefinition("foo", tt0)},
-			ast.NewAlgebraicCaseWithoutDefault(
-				ast.NewConstructorApplication("constructor", []ast.Atom{ast.NewFloat64(42)}),
-				tt0,
-				[]ast.AlgebraicAlternative{
-					ast.NewAlgebraicAlternative(
-						"constructor",
-						[]string{"y"},
-						ast.NewFunctionApplication(ast.NewVariable("y"), nil),
-					),
-				},
-			),
-		},
-		{
-			[]ast.TypeDefinition{ast.NewTypeDefinition("foo", tt1)},
-			ast.NewAlgebraicCase(
-				ast.NewConstructorApplication("constructor1", []ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)}),
-				tt1,
-				[]ast.AlgebraicAlternative{
-					ast.NewAlgebraicAlternative(
-						"constructor1",
-						[]string{"x", "y"},
-						ast.NewFunctionApplication(ast.NewVariable("y"), nil),
-					),
-				},
-				ast.NewDefaultAlternative("x", ast.NewFloat64(42)),
-			),
-		},
+	for _, c := range []ast.Case{
+		ast.NewAlgebraicCaseWithoutDefault(
+			ast.NewConstructorApplication("constructor", []ast.Atom{ast.NewFloat64(42)}),
+			tt0,
+			[]ast.AlgebraicAlternative{
+				ast.NewAlgebraicAlternative(
+					"constructor",
+					[]string{"y"},
+					ast.NewFunctionApplication(ast.NewVariable("y"), nil),
+				),
+			},
+		),
+		ast.NewAlgebraicCase(
+			ast.NewConstructorApplication("constructor1", []ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)}),
+			tt1,
+			[]ast.AlgebraicAlternative{
+				ast.NewAlgebraicAlternative(
+					"constructor1",
+					[]string{"x", "y"},
+					ast.NewFunctionApplication(ast.NewVariable("y"), nil),
+				),
+			},
+			ast.NewDefaultAlternative("x", ast.NewFloat64(42)),
+		),
 	} {
 		m := ast.NewModule(
 			"foo",
-			c.typeDefinitions,
 			[]ast.Bind{
 				ast.NewBind(
 					"foo",
-					ast.NewLambda(
-						nil,
-						true,
-						nil,
-						c.caseExpression,
-						types.NewFloat64(),
-					),
+					ast.NewLambda(nil, true, nil, c, types.NewFloat64()),
 				),
 			},
 		)
 
-		g, err := newModuleGenerator(llvm.NewModule(m.Name()), m.TypeDefinitions())
+		g, err := newModuleGenerator(llvm.NewModule(m.Name()), m)
 		assert.Nil(t, err)
 		assert.Nil(t, g.Generate(m.Binds()))
 	}

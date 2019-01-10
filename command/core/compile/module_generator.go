@@ -20,12 +20,12 @@ type moduleGenerator struct {
 	typeGenerator   typeGenerator
 }
 
-func newModuleGenerator(m llvm.Module, ds []ast.TypeDefinition) (*moduleGenerator, error) {
-	tg := newTypeGenerator(m, ds)
+func newModuleGenerator(m llvm.Module, mm ast.Module) (*moduleGenerator, error) {
+	tg := newTypeGenerator(m)
 	cg := newConstructorGenerator(m, tg)
 
-	for _, d := range ds {
-		if t, ok := d.Type().(types.Algebraic); ok {
+	for _, t := range mm.Types() {
+		if t, ok := t.(types.Algebraic); ok {
 			if err := cg.Generate(t); err != nil {
 				return nil, err
 			}

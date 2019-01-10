@@ -131,7 +131,7 @@ func TestCompileToCoreWithEmptySource(t *testing.T) {
 	m, err := compileToCore(ast.NewModule("", []ast.Bind{}))
 	assert.Nil(t, err)
 
-	assert.Equal(t, coreast.NewModule("", nil, []coreast.Bind{}), m)
+	assert.Equal(t, coreast.NewModule("", []coreast.Bind{}), m)
 }
 
 func TestCompileToCoreWithVariableBinds(t *testing.T) {
@@ -147,7 +147,6 @@ func TestCompileToCoreWithVariableBinds(t *testing.T) {
 		t,
 		coreast.NewModule(
 			"",
-			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
 					"x",
@@ -186,7 +185,6 @@ func TestCompileToCoreWithFunctionBinds(t *testing.T) {
 		t,
 		coreast.NewModule(
 			"foo",
-			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
 					"$literal-0",
@@ -233,7 +231,6 @@ func TestCompileToCoreWithLetExpressions(t *testing.T) {
 		t,
 		coreast.NewModule(
 			"foo",
-			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
 					"$literal-0",
@@ -294,7 +291,6 @@ func TestCompileToCoreWithLetExpressionsAndFreeVariables(t *testing.T) {
 		t,
 		coreast.NewModule(
 			"foo",
-			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
 					"f",
@@ -362,7 +358,6 @@ func TestCompileToCoreWithNestedLetExpressionsInLambdaExpressions(t *testing.T) 
 		t,
 		coreast.NewModule(
 			"foo",
-			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
 					"f",
@@ -436,7 +431,6 @@ func TestCompileToCoreWithBinaryOperations(t *testing.T) {
 		t,
 		coreast.NewModule(
 			"foo",
-			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
 					"$literal-0",

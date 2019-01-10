@@ -29,11 +29,13 @@ func (c abstractCase) DefaultAlternative() (DefaultAlternative, bool) {
 }
 
 func (c abstractCase) ConvertTypes(f func(types.Type) types.Type) abstractCase {
-	return abstractCase{
-		c.expression.ConvertTypes(f),
-		c.expressionType.ConvertTypes(f),
-		c.defaultAlternative.ConvertTypes(f),
+	d, ok := c.DefaultAlternative()
+
+	if ok {
+		d = c.defaultAlternative.ConvertTypes(f)
 	}
+
+	return abstractCase{c.expression.ConvertTypes(f), c.expressionType.ConvertTypes(f), d}
 }
 
 func (abstractCase) isExpression() {}
