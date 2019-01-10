@@ -12,4 +12,7 @@ func (Float64) String() string {
 	return "Float64"
 }
 
-func (Float64) isType() {}
+func (Float64) equal(t Type) bool {
+	_, ok := t.(Float64)
+	return ok
+}

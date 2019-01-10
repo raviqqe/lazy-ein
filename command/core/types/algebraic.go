@@ -27,4 +27,20 @@ func (a Algebraic) String() string {
 	return fmt.Sprintf("Algebraic([%v])", s)
 }
 
-func (Algebraic) isType() {}
+func (a Algebraic) equal(t Type) bool {
+	aa, ok := t.(Algebraic)
+
+	if !ok {
+		return false
+	} else if len(a.constructors) != len(aa.constructors) {
+		return false
+	}
+
+	for i, c := range a.constructors {
+		if !c.equal(aa.constructors[i]) {
+			return false
+		}
+	}
+
+	return true
+}

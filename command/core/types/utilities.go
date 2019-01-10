@@ -8,3 +8,8 @@ func Unbox(t Type) Type {
 
 	return t
 }
+
+// Equal checks type equality.
+func Equal(t, tt Type) bool {
+	return t.equal(tt)
+}

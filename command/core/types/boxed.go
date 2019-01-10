@@ -25,4 +25,12 @@ func (b Boxed) String() string {
 	return fmt.Sprintf("Boxed(%v)", b.content)
 }
 
-func (Boxed) isType() {}
+func (b Boxed) equal(t Type) bool {
+	bb, ok := t.(Boxed)
+
+	if !ok {
+		return false
+	}
+
+	return b.content.equal(bb.content)
+}

@@ -33,4 +33,20 @@ func (f Function) String() string {
 	return fmt.Sprintf("Function([%v],%v)", s, f.result)
 }
 
-func (Function) isType() {}
+func (f Function) equal(t Type) bool {
+	ff, ok := t.(Function)
+
+	if !ok {
+		return false
+	} else if len(f.arguments) != len(ff.arguments) {
+		return false
+	}
+
+	for i, a := range f.arguments {
+		if !a.equal(ff.arguments[i]) {
+			return false
+		}
+	}
+
+	return f.result.equal(ff.result)
+}

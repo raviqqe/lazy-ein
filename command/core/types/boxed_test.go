@@ -17,3 +17,14 @@ func TestNewBoxedPanic(t *testing.T) {
 func TestBoxedString(t *testing.T) {
 	assert.Equal(t, "Boxed(Float64)", NewBoxed(NewFloat64()).String())
 }
+
+func TestBoxedEqual(t *testing.T) {
+	assert.True(t, NewBoxed(NewFloat64()).equal(NewBoxed(NewFloat64())))
+	assert.False(t, NewBoxed(NewFloat64()).equal(NewFloat64()))
+	assert.False(
+		t,
+		NewBoxed(NewFloat64()).equal(
+			NewBoxed(NewAlgebraic([]Constructor{NewConstructor("Nil", nil)})),
+		),
+	)
+}

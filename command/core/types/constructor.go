@@ -36,3 +36,17 @@ func (c Constructor) String() string {
 
 	return fmt.Sprintf("Constructor(%v,[%v])", c.name, s)
 }
+
+func (c Constructor) equal(cc Constructor) bool {
+	if c.name != cc.name || len(c.elements) != len(cc.elements) {
+		return false
+	}
+
+	for i, e := range c.elements {
+		if !e.equal(cc.elements[i]) {
+			return false
+		}
+	}
+
+	return true
+}
