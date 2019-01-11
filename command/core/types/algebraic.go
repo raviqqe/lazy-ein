@@ -35,7 +35,7 @@ func (a Algebraic) String() string {
 		s += "," + c.String()
 	}
 
-	return fmt.Sprintf("Algebraic([%v])", s)
+	return fmt.Sprintf("Algebraic(%v)", s)
 }
 
 func (a Algebraic) equal(t Type) bool {

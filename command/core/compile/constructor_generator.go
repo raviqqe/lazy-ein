@@ -1,6 +1,7 @@
 package compile
 
 import (
+	"github.com/ein-lang/ein/command/core/ast"
 	"github.com/ein-lang/ein/command/core/compile/llir"
 	"github.com/ein-lang/ein/command/core/compile/names"
 	"github.com/ein-lang/ein/command/core/types"
@@ -20,48 +21,44 @@ func newConstructorGenerator(
 }
 
 func (g constructorGenerator) Generate(a types.Algebraic) error {
-	for i, c := range a.Constructors() {
-		if err := g.generateUnionifyFunction(a, c, i); err != nil {
+	for i := range a.Constructors() {
+		if err := g.generateUnionifyFunction(ast.NewConstructor(a, i)); err != nil {
 			return err
 		}
 
-		if err := g.generateStructifyFunction(a, c); err != nil {
+		if err := g.generateStructifyFunction(ast.NewConstructor(a, i)); err != nil {
 			return err
 		}
 
-		g.GenerateTag(c, i)
+		g.GenerateTag(ast.NewConstructor(a, i))
 	}
 
 	return nil
 }
 
-func (g constructorGenerator) generateUnionifyFunction(
-	a types.Algebraic,
-	c types.Constructor,
-	i int,
-) error {
+func (g constructorGenerator) generateUnionifyFunction(c ast.Constructor) error {
 	f := llir.AddFunction(
 		g.module,
-		names.ToUnionify(c.Name()),
-		g.typeGenerator.GenerateConstructorUnionifyFunction(a, c),
+		names.ToUnionify(c.ID()),
+		g.typeGenerator.GenerateConstructorUnionifyFunction(c.AlgebraicType(), c.ConstructorType()),
 	)
 
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
 
-	if len(a.Constructors()) == 1 {
+	if len(c.AlgebraicType().Constructors()) == 1 {
 		b.CreateAggregateRet(f.Params())
 	} else {
 		p := b.CreateAlloca(f.Type().ElementType().ReturnType(), "")
 
 		b.CreateStore(
-			llvm.ConstInt(g.typeGenerator.GenerateConstructorTag(), uint64(i), false),
+			llvm.ConstInt(g.typeGenerator.GenerateConstructorTag(), uint64(c.Index()), false),
 			b.CreateStructGEP(p, 0, ""),
 		)
 
 		pp := b.CreateBitCast(
 			b.CreateStructGEP(p, 1, ""),
-			llir.PointerType(g.typeGenerator.GenerateConstructorElements(c)),
+			llir.PointerType(g.typeGenerator.GenerateConstructorElements(c.ConstructorType())),
 			"",
 		)
 
@@ -76,19 +73,21 @@ func (g constructorGenerator) generateUnionifyFunction(
 }
 
 func (g constructorGenerator) generateStructifyFunction(
-	a types.Algebraic,
-	c types.Constructor,
+	c ast.Constructor,
 ) error {
 	f := llir.AddFunction(
 		g.module,
-		names.ToStructify(c.Name()),
-		g.typeGenerator.GenerateConstructorStructifyFunction(a, c),
+		names.ToStructify(c.ID()),
+		g.typeGenerator.GenerateConstructorStructifyFunction(
+			c.AlgebraicType(),
+			c.ConstructorType(),
+		),
 	)
 
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
 
-	if len(a.Constructors()) == 1 {
+	if len(c.AlgebraicType().Constructors()) == 1 {
 		b.CreateRet(f.FirstParam())
 	} else {
 		p := b.CreateAlloca(f.FirstParam().Type(), "")
@@ -117,10 +116,10 @@ func (g constructorGenerator) generateStructifyFunction(
 	return llvm.VerifyFunction(f, llvm.AbortProcessAction)
 }
 
-func (g constructorGenerator) GenerateTag(c types.Constructor, i int) {
+func (g constructorGenerator) GenerateTag(c ast.Constructor) {
 	t := g.typeGenerator.GenerateConstructorTag()
-	v := llvm.AddGlobal(g.module, t, names.ToTag(c.Name()))
-	v.SetInitializer(llvm.ConstInt(t, uint64(i), false))
+	v := llvm.AddGlobal(g.module, t, names.ToTag(c.ID()))
+	v.SetInitializer(llvm.ConstInt(t, uint64(c.Index()), false))
 	v.SetGlobalConstant(true)
 	v.SetUnnamedAddr(true)
 }

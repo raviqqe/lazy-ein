@@ -4,18 +4,12 @@ import "fmt"
 
 // Constructor is a constructor.
 type Constructor struct {
-	name     string
 	elements []Type
 }
 
 // NewConstructor creates a constructor.
-func NewConstructor(n string, es []Type) Constructor {
-	return Constructor{n, es}
-}
-
-// Name returns a name.
-func (c Constructor) Name() string {
-	return c.name
+func NewConstructor(es []Type) Constructor {
+	return Constructor{es}
 }
 
 // Elements returns element types.
@@ -31,12 +25,12 @@ func (c Constructor) ConvertTypes(f func(Type) Type) Constructor {
 		es = append(es, e.ConvertTypes(f))
 	}
 
-	return Constructor{c.name, es}
+	return Constructor{es}
 }
 
 func (c Constructor) String() string {
 	if len(c.elements) == 0 {
-		return fmt.Sprintf("Constructor(%v)", c.name)
+		return "Constructor"
 	}
 
 	s := c.elements[0].String()
@@ -45,11 +39,11 @@ func (c Constructor) String() string {
 		s += "," + e.String()
 	}
 
-	return fmt.Sprintf("Constructor(%v,[%v])", c.name, s)
+	return fmt.Sprintf("Constructor(%v)", s)
 }
 
 func (c Constructor) equal(cc Constructor) bool {
-	if c.name != cc.name || len(c.elements) != len(cc.elements) {
+	if len(c.elements) != len(cc.elements) {
 		return false
 	}
 

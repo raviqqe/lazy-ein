@@ -25,7 +25,7 @@ func TestBoxedEqual(t *testing.T) {
 	assert.False(
 		t,
 		NewBoxed(NewFloat64()).equal(
-			NewBoxed(NewAlgebraic([]Constructor{NewConstructor("Nil", nil)})),
+			NewBoxed(NewAlgebraic([]Constructor{NewConstructor(nil)})),
 		),
 	)
 }

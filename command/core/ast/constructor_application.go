@@ -4,18 +4,18 @@ import "github.com/ein-lang/ein/command/core/types"
 
 // ConstructorApplication is a constructor application.
 type ConstructorApplication struct {
-	name      string
-	arguments []Atom
+	constructor Constructor
+	arguments   []Atom
 }
 
 // NewConstructorApplication creates a constructor application.
-func NewConstructorApplication(n string, as []Atom) ConstructorApplication {
-	return ConstructorApplication{n, as}
+func NewConstructorApplication(c Constructor, as []Atom) ConstructorApplication {
+	return ConstructorApplication{c, as}
 }
 
-// Name returns a name.
-func (a ConstructorApplication) Name() string {
-	return a.name
+// Constructor returns a constructor.
+func (a ConstructorApplication) Constructor() Constructor {
+	return a.constructor
 }
 
 // Arguments returns arguments.

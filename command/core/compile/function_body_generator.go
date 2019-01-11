@@ -121,12 +121,12 @@ func (g *functionBodyGenerator) generateAlgebraicCase(c ast.AlgebraicCase) (llvm
 
 	for i, a := range c.Alternatives() {
 		b := llvm.AddBasicBlock(g.function(), fmt.Sprintf("case.%v", i))
-		s.AddCase(g.module().NamedGlobal(names.ToTag(a.ConstructorName())).Initializer(), b)
+		s.AddCase(g.module().NamedGlobal(names.ToTag(a.Constructor().ID())).Initializer(), b)
 		g.builder.SetInsertPointAtEnd(b)
 
 		es := llir.CreateCall(
 			g.builder,
-			g.module().NamedFunction(names.ToStructify(a.ConstructorName())),
+			g.module().NamedFunction(names.ToStructify(a.Constructor().ID())),
 			[]llvm.Value{e},
 		)
 
@@ -232,7 +232,11 @@ func (g *functionBodyGenerator) generateConstructor(c ast.ConstructorApplication
 		return llvm.Value{}, err
 	}
 
-	return llir.CreateCall(g.builder, g.module().NamedFunction(names.ToUnionify(c.Name())), vs), nil
+	return llir.CreateCall(
+		g.builder,
+		g.module().NamedFunction(names.ToUnionify(c.Constructor().ID())),
+		vs,
+	), nil
 }
 
 func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
