@@ -16,6 +16,15 @@ func NewLambda(vs []Argument, u bool, as []Argument, e Expression, t types.Type)
 	return Lambda{vs, u, as, e, t}
 }
 
+// Type returns a type.
+func (l Lambda) Type() types.Type {
+	if len(l.arguments) == 0 {
+		return types.NewBoxed(types.Unbox(l.resultType))
+	}
+
+	return types.NewFunction(l.ArgumentTypes(), l.resultType)
+}
+
 // Arguments returns arguments.
 func (l Lambda) Arguments() []Argument {
 	return l.arguments
