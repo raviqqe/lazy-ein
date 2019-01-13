@@ -5,7 +5,7 @@ import "github.com/ein-lang/ein/command/core/types"
 // Case is a case expression.
 type Case interface {
 	Expression
-	Expression() Expression
+	Argument() Expression
 	Type() types.Type
 	DefaultAlternative() (DefaultAlternative, bool)
 }

@@ -47,7 +47,7 @@ func (c typeChecker) checkLambda(l ast.Lambda) error {
 func (c typeChecker) checkExpression(e ast.Expression) (types.Type, error) {
 	switch e := e.(type) {
 	case ast.AlgebraicCase:
-		if t, err := c.checkExpression(e.Expression()); err != nil {
+		if t, err := c.checkExpression(e.Argument()); err != nil {
 			return nil, err
 		} else if err := c.checkTypes(t, e.Type()); err != nil {
 			return nil, err
@@ -147,7 +147,7 @@ func (c typeChecker) checkExpression(e ast.Expression) (types.Type, error) {
 
 		return c.checkExpression(e.Expression())
 	case ast.PrimitiveCase:
-		if t, err := c.checkExpression(e.Expression()); err != nil {
+		if t, err := c.checkExpression(e.Argument()); err != nil {
 			return nil, err
 		} else if err := c.checkTypes(t, e.Type()); err != nil {
 			return nil, err

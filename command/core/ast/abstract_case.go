@@ -3,8 +3,8 @@ package ast
 import "github.com/ein-lang/ein/command/core/types"
 
 type abstractCase struct {
-	expression         Expression
-	expressionType     types.Type
+	argument           Expression
+	argumentType       types.Type
 	defaultAlternative DefaultAlternative
 }
 
@@ -12,12 +12,12 @@ func newAbstractCase(e Expression, t types.Type, a DefaultAlternative) abstractC
 	return abstractCase{e, t, a}
 }
 
-func (c abstractCase) Expression() Expression {
-	return c.expression
+func (c abstractCase) Argument() Expression {
+	return c.argument
 }
 
 func (c abstractCase) Type() types.Type {
-	return c.expressionType
+	return c.argumentType
 }
 
 func (c abstractCase) DefaultAlternative() (DefaultAlternative, bool) {
@@ -35,7 +35,7 @@ func (c abstractCase) ConvertTypes(f func(types.Type) types.Type) abstractCase {
 		d = c.defaultAlternative.ConvertTypes(f)
 	}
 
-	return abstractCase{c.expression.ConvertTypes(f), c.expressionType.ConvertTypes(f), d}
+	return abstractCase{c.argument.ConvertTypes(f), c.argumentType.ConvertTypes(f), d}
 }
 
 func (abstractCase) isExpression() {}
