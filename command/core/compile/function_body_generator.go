@@ -153,7 +153,7 @@ func (g *functionBodyGenerator) generateAlgebraicCase(c ast.AlgebraicCase) (llvm
 }
 
 func (g *functionBodyGenerator) generateFloatCase(c ast.PrimitiveCase) (llvm.Value, error) {
-	v, err := g.generateCaseArgument(c)
+	v, err := g.generateExpression(c.Argument())
 
 	if err != nil {
 		return llvm.Value{}, nil

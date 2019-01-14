@@ -5,17 +5,23 @@ import "github.com/ein-lang/ein/command/core/types"
 // PrimitiveCase is a primitive case expression.
 type PrimitiveCase struct {
 	abstractCase
+	typ          types.Primitive
 	alternatives []PrimitiveAlternative
 }
 
 // NewPrimitiveCase creates a primitive case expression.
-func NewPrimitiveCase(e Expression, t types.Type, as []PrimitiveAlternative, a DefaultAlternative) PrimitiveCase {
-	return PrimitiveCase{newAbstractCase(e, t, a), as}
+func NewPrimitiveCase(e Expression, t types.Primitive, as []PrimitiveAlternative, a DefaultAlternative) PrimitiveCase {
+	return PrimitiveCase{newAbstractCase(e, a), t, as}
 }
 
 // NewPrimitiveCaseWithoutDefault creates a primitive case expression.
-func NewPrimitiveCaseWithoutDefault(e Expression, t types.Type, as []PrimitiveAlternative) PrimitiveCase {
-	return PrimitiveCase{newAbstractCase(e, t, DefaultAlternative{}), as}
+func NewPrimitiveCaseWithoutDefault(e Expression, t types.Primitive, as []PrimitiveAlternative) PrimitiveCase {
+	return PrimitiveCase{newAbstractCase(e, DefaultAlternative{}), t, as}
+}
+
+// Type is a type.
+func (c PrimitiveCase) Type() types.Type {
+	return c.typ
 }
 
 // Alternatives returns alternatives.
@@ -31,5 +37,9 @@ func (c PrimitiveCase) ConvertTypes(f func(types.Type) types.Type) Expression {
 		as = append(as, a.ConvertTypes(f))
 	}
 
-	return PrimitiveCase{c.abstractCase.ConvertTypes(f), as}
+	return PrimitiveCase{
+		c.abstractCase.ConvertTypes(f),
+		c.typ.ConvertTypes(f).(types.Primitive),
+		as,
+	}
 }

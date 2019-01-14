@@ -4,20 +4,15 @@ import "github.com/ein-lang/ein/command/core/types"
 
 type abstractCase struct {
 	argument           Expression
-	argumentType       types.Type
 	defaultAlternative DefaultAlternative
 }
 
-func newAbstractCase(e Expression, t types.Type, a DefaultAlternative) abstractCase {
-	return abstractCase{e, t, a}
+func newAbstractCase(e Expression, a DefaultAlternative) abstractCase {
+	return abstractCase{e, a}
 }
 
 func (c abstractCase) Argument() Expression {
 	return c.argument
-}
-
-func (c abstractCase) Type() types.Type {
-	return c.argumentType
 }
 
 func (c abstractCase) DefaultAlternative() (DefaultAlternative, bool) {
@@ -35,7 +30,7 @@ func (c abstractCase) ConvertTypes(f func(types.Type) types.Type) abstractCase {
 		d = c.defaultAlternative.ConvertTypes(f)
 	}
 
-	return abstractCase{c.argument.ConvertTypes(f), c.argumentType.ConvertTypes(f), d}
+	return abstractCase{c.argument.ConvertTypes(f), d}
 }
 
 func (abstractCase) isExpression() {}

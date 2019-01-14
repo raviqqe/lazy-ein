@@ -21,3 +21,5 @@ func (Float64) equal(t Type) bool {
 	_, ok := t.(Float64)
 	return ok
 }
+
+func (Float64) isPrimitive() {}
