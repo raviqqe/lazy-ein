@@ -15,6 +15,8 @@ func TestValidate(t *testing.T) {
 }
 
 func TestValidateError(t *testing.T) {
+	tt := types.NewAlgebraic([]types.Constructor{types.NewConstructor(nil)})
+
 	assert.Equal(
 		t,
 		errors.New("globals must not have free variables"),
@@ -24,12 +26,11 @@ func TestValidateError(t *testing.T) {
 				[]ast.Bind{
 					ast.NewBind(
 						"x",
-						ast.NewLambda(
-							[]ast.Argument{ast.NewArgument("x", types.NewBoxed(types.NewFloat64()))},
+						ast.NewVariableLambda(
+							[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 							true,
-							nil,
-							ast.NewFunctionApplication(ast.NewVariable("x"), nil),
-							types.NewBoxed(types.NewFloat64()),
+							ast.NewConstructorApplication(ast.NewConstructor(tt, 0), nil),
+							tt,
 						),
 					),
 				},

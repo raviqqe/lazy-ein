@@ -7,25 +7,26 @@ import (
 )
 
 func TestNewBoxed(t *testing.T) {
-	NewBoxed(NewFloat64())
-}
-
-func TestNewBoxedPanic(t *testing.T) {
-	assert.Panics(t, func() { NewBoxed(NewBoxed(NewFloat64())) })
-	assert.Panics(t, func() { NewBoxed(NewBoxed(NewFunction([]Type{NewFloat64()}, NewFloat64()))) })
+	NewBoxed(NewAlgebraic([]Constructor{NewConstructor([]Type{NewFloat64()})}))
 }
 
 func TestBoxedString(t *testing.T) {
-	assert.Equal(t, "Boxed(Float64)", NewBoxed(NewFloat64()).String())
+	assert.Equal(
+		t,
+		"Boxed(Algebraic(Constructor(Float64)))",
+		NewBoxed(NewAlgebraic([]Constructor{NewConstructor([]Type{NewFloat64()})})).String(),
+	)
 }
 
 func TestBoxedEqual(t *testing.T) {
-	assert.True(t, NewBoxed(NewFloat64()).equal(NewBoxed(NewFloat64())))
-	assert.False(t, NewBoxed(NewFloat64()).equal(NewFloat64()))
+	a := NewAlgebraic([]Constructor{NewConstructor([]Type{NewFloat64()})})
+
+	assert.True(t, NewBoxed(a).equal(NewBoxed(a)))
+	assert.False(t, NewBoxed(a).equal(a))
 	assert.False(
 		t,
-		NewBoxed(NewFloat64()).equal(
-			NewBoxed(NewAlgebraic([]Constructor{NewConstructor(nil)})),
+		NewBoxed(a).equal(
+			NewBoxed(NewAlgebraic([]Constructor{NewConstructor(nil), NewConstructor(nil)})),
 		),
 	)
 }

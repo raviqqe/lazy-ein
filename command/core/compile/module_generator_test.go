@@ -30,10 +30,9 @@ func TestNewModuleGeneratorWithAlgebraicTypes(t *testing.T) {
 	for _, b := range []ast.Bind{
 		ast.NewBind(
 			"foo",
-			ast.NewLambda(
+			ast.NewVariableLambda(
 				nil,
 				true,
-				nil,
 				ast.NewConstructorApplication(
 					ast.NewConstructor(tt0, 0),
 					[]ast.Atom{ast.NewFloat64(42)},
@@ -43,10 +42,9 @@ func TestNewModuleGeneratorWithAlgebraicTypes(t *testing.T) {
 		),
 		ast.NewBind(
 			"foo",
-			ast.NewLambda(
+			ast.NewVariableLambda(
 				nil,
 				true,
-				nil,
 				ast.NewConstructorApplication(
 					ast.NewConstructor(tt1, 0),
 					[]ast.Atom{ast.NewFloat64(42)},
@@ -60,20 +58,30 @@ func TestNewModuleGeneratorWithAlgebraicTypes(t *testing.T) {
 }
 
 func TestModuleGeneratorGenerate(t *testing.T) {
+	a0 := types.NewAlgebraic([]types.Constructor{types.NewConstructor(nil)})
+	a1 := types.NewAlgebraic(
+		[]types.Constructor{types.NewConstructor([]types.Type{types.NewFloat64()})},
+	)
+	l0 := ast.NewVariableLambda(
+		nil,
+		true,
+		ast.NewConstructorApplication(ast.NewConstructor(a0, 0), nil),
+		a0,
+	)
+
 	for _, bs := range [][]ast.Bind{
 		// No bind statements
 		nil,
 		// Global variables
 		{
-			ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
+			ast.NewBind("x", l0),
 		},
 		// Functions returning unboxed values
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					false,
 					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
 					types.NewFloat64(),
@@ -83,23 +91,21 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 		// Functions returning boxed values
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					false,
-					[]ast.Argument{ast.NewArgument("x", types.NewBoxed(types.NewFloat64()))},
+					[]ast.Argument{ast.NewArgument("x", types.NewBoxed(a0))},
 					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
-					types.NewBoxed(types.NewFloat64()),
+					types.NewBoxed(a0),
 				),
 			),
 		},
 		// Function applications
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					false,
 					[]ast.Argument{
 						ast.NewArgument(
 							"x",
@@ -114,10 +120,9 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 		// Function applications with passed arguments
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					false,
 					[]ast.Argument{
 						ast.NewArgument(
 							"f",
@@ -135,40 +140,37 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 		},
 		// Global variables referencing others
 		{
-			ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
+			ast.NewBind("x", l0),
 			ast.NewBind(
-				"bar",
-				ast.NewLambda(
+				"y",
+				ast.NewVariableLambda(
 					nil,
 					true,
-					nil,
-					ast.NewFunctionApplication(ast.NewVariable("foo"), nil),
-					types.NewBoxed(types.NewFloat64()),
+					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
+					types.NewBoxed(a0),
 				),
 			),
 		},
 		// Functions referencing global variables
 		{
-			ast.NewBind("foo", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
+			ast.NewBind("x", l0),
 			ast.NewBind(
-				"bar",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					false,
-					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
-					ast.NewFunctionApplication(ast.NewVariable("foo"), nil),
-					types.NewBoxed(types.NewFloat64()),
+					[]ast.Argument{ast.NewArgument("y", types.NewFloat64())},
+					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
+					types.NewBoxed(a0),
 				),
 			),
 		},
 		// Primitive operations
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewPrimitiveOperation(
 						ast.AddFloat64,
 						[]ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)},
@@ -180,45 +182,44 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 		// Let expressions
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					false,
 					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewLet(
 						[]ast.Bind{
 							ast.NewBind(
 								"y",
-								ast.NewLambda(
+								ast.NewVariableLambda(
 									[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 									true,
-									nil,
-									ast.NewFunctionApplication(ast.NewVariable("x"), nil),
-									types.NewFloat64(),
+									ast.NewConstructorApplication(
+										ast.NewConstructor(a1, 0),
+										[]ast.Atom{ast.NewVariable("x")},
+									),
+									a1,
 								),
 							),
 						},
 						ast.NewFunctionApplication(ast.NewVariable("y"), nil),
 					),
-					types.NewBoxed(types.NewFloat64()),
+					types.NewBoxed(a1),
 				),
 			),
 		},
 		// Let expressions of functions with free variables
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					false,
 					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewLet(
 						[]ast.Bind{
 							ast.NewBind(
-								"bar",
-								ast.NewLambda(
+								"g",
+								ast.NewFunctionLambda(
 									[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
-									false,
 									[]ast.Argument{ast.NewArgument("y", types.NewFloat64())},
 									ast.NewPrimitiveOperation(
 										ast.AddFloat64,
@@ -229,7 +230,7 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 							),
 						},
 						ast.NewFunctionApplication(
-							ast.NewVariable("bar"),
+							ast.NewVariable("g"),
 							[]ast.Atom{ast.NewFloat64(42)},
 						),
 					),
@@ -240,85 +241,81 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 		// Let expressions referencing other bound names
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					false,
 					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewLet(
 						[]ast.Bind{
 							ast.NewBind(
 								"y",
-								ast.NewLambda(
+								ast.NewVariableLambda(
 									[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 									true,
-									nil,
-									ast.NewFunctionApplication(ast.NewVariable("x"), nil),
-									types.NewFloat64(),
+									ast.NewConstructorApplication(
+										ast.NewConstructor(a1, 0),
+										[]ast.Atom{ast.NewVariable("x")},
+									),
+									a1,
 								),
 							),
 							ast.NewBind(
 								"z",
-								ast.NewLambda(
-									[]ast.Argument{ast.NewArgument("y", types.NewBoxed(types.NewFloat64()))},
+								ast.NewVariableLambda(
+									[]ast.Argument{ast.NewArgument("y", types.NewBoxed(a1))},
 									true,
-									nil,
 									ast.NewFunctionApplication(ast.NewVariable("y"), nil),
-									types.NewBoxed(types.NewFloat64()),
+									types.NewBoxed(a1),
 								),
 							),
 						},
 						ast.NewFunctionApplication(ast.NewVariable("z"), nil),
 					),
-					types.NewBoxed(types.NewFloat64()),
+					types.NewBoxed(a1),
 				),
 			),
 		},
 		// Recursive global variables
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"x",
+				ast.NewVariableLambda(
 					nil,
 					true,
-					nil,
-					ast.NewFunctionApplication(ast.NewVariable("foo"), nil),
-					types.NewBoxed(types.NewFloat64()),
+					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
+					types.NewBoxed(a0),
 				),
 			),
 		},
 		// Mutually recursive global variables
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"x",
+				ast.NewVariableLambda(
 					nil,
 					true,
-					nil,
-					ast.NewFunctionApplication(ast.NewVariable("bar"), nil),
-					types.NewBoxed(types.NewFloat64()),
+					ast.NewFunctionApplication(ast.NewVariable("y"), nil),
+					types.NewBoxed(a0),
 				),
 			),
 			ast.NewBind(
-				"bar",
-				ast.NewLambda(
+				"y",
+				ast.NewVariableLambda(
 					nil,
 					true,
-					nil,
-					ast.NewFunctionApplication(ast.NewVariable("foo"), nil),
-					types.NewBoxed(types.NewFloat64()),
+					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
+					types.NewBoxed(a0),
 				),
 			),
 		},
 		// Recursive functions
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					false,
 					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
-					ast.NewFunctionApplication(ast.NewVariable("foo"), []ast.Atom{ast.NewVariable("x")}),
+					ast.NewFunctionApplication(ast.NewVariable("f"), []ast.Atom{ast.NewVariable("x")}),
 					types.NewFloat64(),
 				),
 			),
@@ -326,25 +323,23 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 		// Recursive let expressions
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("_", types.NewBoxed(a0))},
 					ast.NewLet(
 						[]ast.Bind{
 							ast.NewBind(
-								"bar",
-								ast.NewLambda(
+								"g",
+								ast.NewFunctionLambda(
 									[]ast.Argument{
 										ast.NewArgument(
-											"bar",
+											"g",
 											types.NewFunction([]types.Type{types.NewFloat64()}, types.NewFloat64())),
 									},
-									false,
 									[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 									ast.NewFunctionApplication(
-										ast.NewVariable("bar"),
+										ast.NewVariable("g"),
 										[]ast.Atom{ast.NewVariable("x")},
 									),
 									types.NewFloat64(),
@@ -352,7 +347,7 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 							),
 						},
 						ast.NewFunctionApplication(
-							ast.NewVariable("bar"),
+							ast.NewVariable("g"),
 							[]ast.Atom{ast.NewFloat64(42)},
 						),
 					),
@@ -363,11 +358,10 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 		// Primitive case expressions
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("_", types.NewBoxed(a0))},
 					ast.NewPrimitiveCase(
 						ast.NewFloat64(42),
 						types.NewFloat64(),
@@ -384,18 +378,17 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 		// Case expressions unboxing arguments
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					false,
-					[]ast.Argument{ast.NewArgument("x", types.NewBoxed(types.NewFloat64()))},
-					ast.NewPrimitiveCase(
+					[]ast.Argument{ast.NewArgument("x", types.NewBoxed(a0))},
+					ast.NewAlgebraicCase(
 						ast.NewFunctionApplication(ast.NewVariable("x"), nil),
-						types.NewBoxed(types.NewFloat64()),
-						[]ast.PrimitiveAlternative{
-							ast.NewPrimitiveAlternative(ast.NewFloat64(42), ast.NewFloat64(0)),
+						types.NewBoxed(a0),
+						[]ast.AlgebraicAlternative{
+							ast.NewAlgebraicAlternative(ast.NewConstructor(a0, 0), nil, ast.NewFloat64(42)),
 						},
-						ast.NewDefaultAlternative("x", ast.NewFunctionApplication(ast.NewVariable("x"), nil)),
+						ast.NewDefaultAlternative("x", ast.NewFloat64(42)),
 					),
 					types.NewFloat64(),
 				),
@@ -404,11 +397,10 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 		// Primitive case expressions without default cases
 		{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("_", types.NewFloat64())},
 					ast.NewPrimitiveCaseWithoutDefault(
 						ast.NewFloat64(42),
 						types.NewFloat64(),
@@ -428,17 +420,18 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 }
 
 func TestModuleGeneratorGenerateWithGlobalFunctionsReturningBoxedValues(t *testing.T) {
+	a := types.NewAlgebraic([]types.Constructor{types.NewConstructor(nil)})
+
 	m := ast.NewModule(
 		"foo",
 		[]ast.Bind{
 			ast.NewBind(
-				"foo",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					false,
-					[]ast.Argument{ast.NewArgument("x", types.NewBoxed(types.NewFloat64()))},
+					[]ast.Argument{ast.NewArgument("x", types.NewBoxed(a))},
 					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
-					types.NewBoxed(types.NewFloat64()),
+					types.NewBoxed(a),
 				),
 			),
 		},
@@ -454,36 +447,36 @@ func TestModuleGeneratorGenerateWithGlobalFunctionsReturningBoxedValues(t *testi
 	assert.Equal(
 		t,
 		llvm.PointerTypeKind,
-		mm.NamedFunction(names.ToEntry("foo")).Type().ElementType().ReturnType().TypeKind(),
+		mm.NamedFunction(names.ToEntry("f")).Type().ElementType().ReturnType().TypeKind(),
 	)
 }
 
 func TestModuleGeneratorGenerateWithLocalFunctionsReturningBoxedValues(t *testing.T) {
+	a := types.NewAlgebraic([]types.Constructor{types.NewConstructor(nil)})
+
 	m := ast.NewModule(
 		"foo",
 		[]ast.Bind{
 			ast.NewBind(
 				"foo",
-				ast.NewLambda(
+				ast.NewFunctionLambda(
 					nil,
-					false,
-					[]ast.Argument{ast.NewArgument("x", types.NewBoxed(types.NewFloat64()))},
+					[]ast.Argument{ast.NewArgument("x", types.NewBoxed(a))},
 					ast.NewLet(
 						[]ast.Bind{
 							ast.NewBind(
 								"bar",
-								ast.NewLambda(
+								ast.NewFunctionLambda(
 									nil,
-									false,
-									[]ast.Argument{ast.NewArgument("y", types.NewBoxed(types.NewFloat64()))},
+									[]ast.Argument{ast.NewArgument("y", types.NewBoxed(a))},
 									ast.NewFunctionApplication(ast.NewVariable("y"), nil),
-									types.NewBoxed(types.NewFloat64()),
+									types.NewBoxed(a),
 								),
 							),
 						},
 						ast.NewFunctionApplication(ast.NewVariable("bar"), []ast.Atom{ast.NewVariable("x")}),
 					),
-					types.NewBoxed(types.NewFloat64()),
+					types.NewBoxed(a),
 				),
 			),
 		},
@@ -515,10 +508,9 @@ func TestModuleGeneratorGenerateWithAlgebraicTypes(t *testing.T) {
 		[]ast.Bind{
 			ast.NewBind(
 				"foo",
-				ast.NewLambda(
+				ast.NewVariableLambda(
 					nil,
 					true,
-					nil,
 					ast.NewConstructorApplication(
 						ast.NewConstructor(tt, 0),
 						[]ast.Atom{ast.NewFloat64(42)},
@@ -547,10 +539,9 @@ func TestModuleGeneratorGenerateWithAlgebraicTypesOfMultipleConstructors(t *test
 		[]ast.Bind{
 			ast.NewBind(
 				"foo",
-				ast.NewLambda(
+				ast.NewVariableLambda(
 					nil,
 					true,
-					nil,
 					ast.NewConstructorApplication(
 						ast.NewConstructor(tt, 1),
 						[]ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)},
@@ -607,11 +598,16 @@ func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
 		),
 	} {
 		m := ast.NewModule(
-			"foo",
+			"f",
 			[]ast.Bind{
 				ast.NewBind(
 					"foo",
-					ast.NewLambda(nil, true, nil, c, types.NewFloat64()),
+					ast.NewFunctionLambda(
+						nil,
+						[]ast.Argument{ast.NewArgument("_", types.NewFloat64())},
+						c,
+						types.NewFloat64(),
+					),
 				),
 			},
 		)

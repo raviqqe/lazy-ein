@@ -16,41 +16,37 @@ var algebraicType = types.NewAlgebraic(
 	},
 )
 
+var algebraicLambda = ast.NewVariableLambda(
+	nil,
+	true,
+	ast.NewConstructorApplication(ast.NewConstructor(algebraicType, 1), nil),
+	algebraicType,
+)
+
 func TestCheckTypes(t *testing.T) {
 	for _, bs := range [][]ast.Bind{
 		// Empty modules
 		nil,
 		// Global variables
 		{
-			ast.NewBind(
-				"x",
-				ast.NewLambda(
-					nil,
-					true,
-					nil,
-					ast.NewFloat64(42),
-					types.NewFloat64(),
-				),
-			),
+			ast.NewBind("x", algebraicLambda),
 		},
 		// Function applications
 		{
 			ast.NewBind(
 				"f",
-				ast.NewLambda(
+				ast.NewFunctionLambda(
 					nil,
-					false,
 					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
 					types.NewFloat64(),
 				),
 			),
 			ast.NewBind(
-				"y",
-				ast.NewLambda(
+				"g",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewFunctionApplication(ast.NewVariable("f"), []ast.Atom{ast.NewFloat64(42)}),
 					types.NewFloat64(),
 				),
@@ -60,10 +56,9 @@ func TestCheckTypes(t *testing.T) {
 		{
 			ast.NewBind(
 				"x",
-				ast.NewLambda(
+				ast.NewVariableLambda(
 					nil,
 					true,
-					nil,
 					ast.NewConstructorApplication(
 						ast.NewConstructor(algebraicType, 0),
 						[]ast.Atom{ast.NewFloat64(42)},
@@ -76,31 +71,24 @@ func TestCheckTypes(t *testing.T) {
 		{
 			ast.NewBind(
 				"x",
-				ast.NewLambda(
+				ast.NewVariableLambda(
 					nil,
 					true,
-					nil,
 					ast.NewLet(
-						[]ast.Bind{
-							ast.NewBind(
-								"a",
-								ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64()),
-							),
-						},
+						[]ast.Bind{ast.NewBind("a", algebraicLambda)},
 						ast.NewFunctionApplication(ast.NewVariable("a"), nil),
 					),
-					types.NewBoxed(types.NewFloat64()),
+					types.NewBoxed(algebraicType),
 				),
 			),
 		},
 		// Primitive operations
 		{
 			ast.NewBind(
-				"x",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewPrimitiveOperation(
 						ast.AddFloat64,
 						[]ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)},
@@ -112,11 +100,10 @@ func TestCheckTypes(t *testing.T) {
 		// Primitive case expressions
 		{
 			ast.NewBind(
-				"x",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewPrimitiveCase(
 						ast.NewFloat64(42),
 						types.NewFloat64(),
@@ -137,10 +124,9 @@ func TestCheckTypes(t *testing.T) {
 		{
 			ast.NewBind(
 				"x",
-				ast.NewLambda(
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewPrimitiveCase(
 						ast.NewFloat64(42),
 						types.NewFloat64(),
@@ -157,11 +143,10 @@ func TestCheckTypes(t *testing.T) {
 		// Primitive case expressions without default alternatives
 		{
 			ast.NewBind(
-				"x",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewPrimitiveCaseWithoutDefault(
 						ast.NewFloat64(42),
 						types.NewFloat64(),
@@ -173,34 +158,13 @@ func TestCheckTypes(t *testing.T) {
 				),
 			),
 		},
-		// Primitive case expressions with boxed arguments
-		{
-			ast.NewBind("a", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
-			ast.NewBind(
-				"x",
-				ast.NewLambda(
-					nil,
-					true,
-					nil,
-					ast.NewPrimitiveCaseWithoutDefault(
-						ast.NewFunctionApplication(ast.NewVariable("a"), nil),
-						types.NewBoxed(types.NewFloat64()),
-						[]ast.PrimitiveAlternative{
-							ast.NewPrimitiveAlternative(ast.NewFloat64(42), ast.NewFloat64(42)),
-						},
-					),
-					types.NewFloat64(),
-				),
-			),
-		},
 		// Algebraic case expressions
 		{
 			ast.NewBind(
-				"x",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewAlgebraicCaseWithoutDefault(
 						ast.NewConstructorApplication(ast.NewConstructor(algebraicType, 1), nil),
 						algebraicType,
@@ -223,22 +187,12 @@ func TestCheckTypes(t *testing.T) {
 		},
 		// Algebraic case expressions with boxed arguments
 		{
+			ast.NewBind("a", algebraicLambda),
 			ast.NewBind(
-				"a",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
-					ast.NewConstructorApplication(ast.NewConstructor(algebraicType, 1), nil),
-					algebraicType,
-				),
-			),
-			ast.NewBind(
-				"x",
-				ast.NewLambda(
-					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewAlgebraicCaseWithoutDefault(
 						ast.NewFunctionApplication(ast.NewVariable("a"), nil),
 						types.NewBoxed(algebraicType),
@@ -257,11 +211,10 @@ func TestCheckTypes(t *testing.T) {
 		// Algebraic case expressions with default alternatives
 		{
 			ast.NewBind(
-				"x",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewAlgebraicCase(
 						ast.NewConstructorApplication(ast.NewConstructor(algebraicType, 1), nil),
 						algebraicType,
@@ -281,11 +234,10 @@ func TestCheckTypes(t *testing.T) {
 		// Algebraic case expressions composed only of default alternatives
 		{
 			ast.NewBind(
-				"x",
-				ast.NewLambda(
+				"f",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewAlgebraicCase(
 						ast.NewConstructorApplication(ast.NewConstructor(algebraicType, 1), nil),
 						algebraicType,
@@ -307,12 +259,11 @@ func TestCheckTypesError(t *testing.T) {
 		{
 			ast.NewBind(
 				"x",
-				ast.NewLambda(
+				ast.NewVariableLambda(
 					nil,
 					true,
-					nil,
 					ast.NewFloat64(42),
-					types.NewBoxed(types.NewFloat64()),
+					algebraicType,
 				),
 			),
 		},
@@ -320,26 +271,24 @@ func TestCheckTypesError(t *testing.T) {
 		{
 			ast.NewBind(
 				"x",
-				ast.NewLambda(
+				ast.NewVariableLambda(
 					nil,
 					true,
-					nil,
 					ast.NewFunctionApplication(ast.NewVariable("y"), nil),
-					types.NewBoxed(types.NewFloat64()),
+					types.NewBoxed(algebraicType),
 				),
 			),
 		},
 		// Non-function calls
 		{
-			ast.NewBind("f", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
+			ast.NewBind("f", algebraicLambda),
 			ast.NewBind(
-				"y",
-				ast.NewLambda(
+				"g",
+				ast.NewVariableLambda(
 					nil,
 					true,
-					nil,
 					ast.NewFunctionApplication(ast.NewVariable("f"), []ast.Atom{ast.NewFloat64(42)}),
-					types.NewFloat64(),
+					algebraicType,
 				),
 			),
 		},
@@ -347,21 +296,19 @@ func TestCheckTypesError(t *testing.T) {
 		{
 			ast.NewBind(
 				"f",
-				ast.NewLambda(
+				ast.NewFunctionLambda(
 					nil,
-					false,
 					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
 					types.NewFloat64(),
 				),
 			),
-			ast.NewBind("a", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
+			ast.NewBind("a", algebraicLambda),
 			ast.NewBind(
-				"y",
-				ast.NewLambda(
+				"g",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewFunctionApplication(ast.NewVariable("f"), []ast.Atom{ast.NewVariable("a")}),
 					types.NewFloat64(),
 				),
@@ -371,20 +318,18 @@ func TestCheckTypesError(t *testing.T) {
 		{
 			ast.NewBind(
 				"f",
-				ast.NewLambda(
+				ast.NewFunctionLambda(
 					nil,
-					false,
 					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
 					types.NewFloat64(),
 				),
 			),
 			ast.NewBind(
-				"y",
-				ast.NewLambda(
+				"x",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewFunctionApplication(
 						ast.NewVariable("f"),
 						[]ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)},
@@ -395,13 +340,12 @@ func TestCheckTypesError(t *testing.T) {
 		},
 		// Wrong constructor argument types
 		{
-			ast.NewBind("a", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
+			ast.NewBind("a", algebraicLambda),
 			ast.NewBind(
 				"x",
-				ast.NewLambda(
+				ast.NewVariableLambda(
 					nil,
 					true,
-					nil,
 					ast.NewConstructorApplication(
 						ast.NewConstructor(algebraicType, 0),
 						[]ast.Atom{ast.NewVariable("a")},
@@ -414,10 +358,9 @@ func TestCheckTypesError(t *testing.T) {
 		{
 			ast.NewBind(
 				"x",
-				ast.NewLambda(
+				ast.NewVariableLambda(
 					nil,
 					true,
-					nil,
 					ast.NewConstructorApplication(ast.NewConstructor(algebraicType, 0), nil),
 					algebraicType,
 				),
@@ -425,13 +368,12 @@ func TestCheckTypesError(t *testing.T) {
 		},
 		// Wrong primitive operation argument types
 		{
-			ast.NewBind("a", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
+			ast.NewBind("a", algebraicLambda),
 			ast.NewBind(
-				"x",
-				ast.NewLambda(
+				"_",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("_", types.NewFloat64())},
 					ast.NewPrimitiveOperation(
 						ast.AddFloat64,
 						[]ast.Atom{ast.NewFloat64(42), ast.NewVariable("a")},
@@ -442,13 +384,12 @@ func TestCheckTypesError(t *testing.T) {
 		},
 		// Inconsistent alternative expression types in primitive cases
 		{
-			ast.NewBind("a", ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64())),
+			ast.NewBind("a", algebraicLambda),
 			ast.NewBind(
-				"x",
-				ast.NewLambda(
+				"_",
+				ast.NewFunctionLambda(
 					nil,
-					true,
-					nil,
+					[]ast.Argument{ast.NewArgument("_", types.NewFloat64())},
 					ast.NewPrimitiveCaseWithoutDefault(
 						ast.NewFloat64(42),
 						types.NewFloat64(),

@@ -55,7 +55,7 @@ func (c typeChecker) checkExpression(e ast.Expression) (types.Type, error) {
 			return c.checkDefaultAlternative(d, e.Type())
 		}
 
-		t, err := c.checkExpression(e.Alternatives()[0].Expression())
+		t, err := c.checkAlgebraicAlternative(e.Alternatives()[0])
 
 		if err != nil {
 			return nil, err
@@ -68,11 +68,7 @@ func (c typeChecker) checkExpression(e ast.Expression) (types.Type, error) {
 				return nil, err
 			}
 
-			tt, err := c.addConstructorElements(a.Constructor(), a.ElementNames()).checkExpression(
-				a.Expression(),
-			)
-
-			if err != nil {
+			if tt, err := c.checkAlgebraicAlternative(a); err != nil {
 				return nil, err
 			} else if err := c.checkTypes(t, tt); err != nil {
 				return nil, err
@@ -195,6 +191,12 @@ func (c typeChecker) checkExpression(e ast.Expression) (types.Type, error) {
 	}
 
 	panic("unreachable")
+}
+
+func (c typeChecker) checkAlgebraicAlternative(a ast.AlgebraicAlternative) (types.Type, error) {
+	return c.addConstructorElements(a.Constructor(), a.ElementNames()).checkExpression(
+		a.Expression(),
+	)
 }
 
 func (c typeChecker) checkDefaultAlternative(d ast.DefaultAlternative, t types.Type) (types.Type, error) {

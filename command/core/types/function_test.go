@@ -29,7 +29,13 @@ func TestFunctionEqual(t *testing.T) {
 
 	for _, as := range [][2]Type{
 		{a, NewFloat64()},
-		{a, NewFunction([]Type{NewBoxed(NewFloat64())}, NewFloat64())},
+		{
+			a,
+			NewFunction(
+				[]Type{NewAlgebraic([]Constructor{NewConstructor([]Type{NewFloat64()})})},
+				NewFloat64(),
+			),
+		},
 		{a, NewFunction([]Type{NewFloat64(), NewFloat64()}, NewFloat64())},
 	} {
 		assert.False(t, as[0].equal(as[1]))

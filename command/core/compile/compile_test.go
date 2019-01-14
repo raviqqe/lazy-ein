@@ -14,6 +14,7 @@ import (
 )
 
 var payloadOffset = reflect.PtrTo(reflect.TypeOf(42)).Size()
+var algebraicType = types.NewAlgebraic([]types.Constructor{types.NewConstructor(nil)})
 
 func TestCompile(t *testing.T) {
 	m, err := compile.Compile(
@@ -22,7 +23,12 @@ func TestCompile(t *testing.T) {
 			[]ast.Bind{
 				ast.NewBind(
 					"foo",
-					ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64()),
+					ast.NewVariableLambda(
+						nil,
+						true,
+						ast.NewConstructorApplication(ast.NewConstructor(algebraicType, 0), nil),
+						algebraicType,
+					),
 				),
 			},
 		),
@@ -33,15 +39,25 @@ func TestCompile(t *testing.T) {
 }
 
 func TestGlobalThunkForce(t *testing.T) {
-	const functionName = "foo"
+	a := types.NewAlgebraic(
+		[]types.Constructor{types.NewConstructor([]types.Type{types.NewFloat64()})},
+	)
 
 	m, err := compile.Compile(
 		ast.NewModule(
-			"foo",
+			"",
 			[]ast.Bind{
 				ast.NewBind(
-					functionName,
-					ast.NewLambda(nil, true, nil, ast.NewFloat64(42), types.NewFloat64()),
+					"x",
+					ast.NewVariableLambda(
+						nil,
+						true,
+						ast.NewConstructorApplication(
+							ast.NewConstructor(a, 0),
+							[]ast.Atom{ast.NewFloat64(42)},
+						),
+						a,
+					),
 				),
 			},
 		),
@@ -51,24 +67,27 @@ func TestGlobalThunkForce(t *testing.T) {
 	e, err := llvm.NewExecutionEngine(m)
 	assert.Nil(t, err)
 
-	g := e.PointerToGlobal(m.NamedGlobal(functionName))
+	g := e.PointerToGlobal(m.NamedGlobal("x"))
 	p := unsafe.Pointer(uintptr(g) + payloadOffset)
 
 	assert.NotEqual(t, 42.0, *(*float64)(unsafe.Pointer(uintptr(g) + payloadOffset)))
 
-	assert.Equal(t, 42.0, e.RunFunction(
-		e.FindFunction(names.ToEntry(functionName)),
+	// TODO: Check return values in some way.
+	e.RunFunction(
+		e.FindFunction(names.ToEntry("x")),
 		[]llvm.GenericValue{
 			llvm.NewGenericValueFromPointer(p),
 		},
-	).Float(llvm.DoubleType()))
+	)
 
 	assert.Equal(t, 42.0, *(*float64)(unsafe.Pointer(uintptr(g) + payloadOffset)))
 
-	assert.Equal(t, 42.0, e.RunFunction(
-		e.FindFunction(names.ToNormalFormEntry(functionName)),
+	e.RunFunction(
+		e.FindFunction(names.ToNormalFormEntry("x")),
 		[]llvm.GenericValue{
 			llvm.NewGenericValueFromPointer(p),
 		},
-	).Float(llvm.DoubleType()))
+	)
+
+	assert.Equal(t, 42.0, *(*float64)(unsafe.Pointer(uintptr(g) + payloadOffset)))
 }

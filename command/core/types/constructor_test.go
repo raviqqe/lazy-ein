@@ -30,7 +30,7 @@ func TestConstructorEqual(t *testing.T) {
 		},
 		{
 			NewConstructor([]Type{NewFloat64()}),
-			NewConstructor([]Type{NewBoxed(NewFloat64())}),
+			NewConstructor([]Type{NewFunction([]Type{NewFloat64()}, NewFloat64())}),
 		},
 	} {
 		assert.False(t, cs[0].equal(cs[1]))

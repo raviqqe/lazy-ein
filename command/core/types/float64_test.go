@@ -8,5 +8,5 @@ import (
 
 func TestFloat64Equal(t *testing.T) {
 	assert.True(t, NewFloat64().equal(NewFloat64()))
-	assert.False(t, NewFloat64().equal(NewBoxed(NewFloat64())))
+	assert.False(t, NewFloat64().equal(NewFunction([]Type{NewFloat64()}, NewFloat64())))
 }

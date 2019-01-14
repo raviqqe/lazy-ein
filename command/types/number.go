@@ -1,6 +1,7 @@
 package types
 
 import (
+	coreast "github.com/ein-lang/ein/command/core/ast"
 	coretypes "github.com/ein-lang/ein/command/core/types"
 	"github.com/ein-lang/ein/command/debug"
 )
@@ -36,7 +37,18 @@ func (n Number) DebugInformation() *debug.Information {
 
 // ToCore returns a type in the core language.
 func (n Number) ToCore() coretypes.Type {
-	return coretypes.NewBoxed(coretypes.NewFloat64())
+	return coretypes.NewBoxed(
+		coretypes.NewAlgebraic(
+			[]coretypes.Constructor{
+				coretypes.NewConstructor([]coretypes.Type{coretypes.NewFloat64()}),
+			},
+		),
+	)
+}
+
+// CoreConstructor returns a constructor in the core language.
+func (n Number) CoreConstructor() coreast.Constructor {
+	return coreast.NewConstructor(coretypes.Unbox(n.ToCore()).(coretypes.Algebraic), 0)
 }
 
 // VisitTypes visits types.

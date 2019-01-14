@@ -4,32 +4,26 @@ import "fmt"
 
 // Boxed is a boxed type.
 type Boxed struct {
-	content Type
+	algebraic Algebraic
 }
 
 // NewBoxed creates a boxed type.
-func NewBoxed(t Type) Boxed {
-	if _, ok := t.(Boxed); ok {
-		panic("cannot box boxed types")
-	} else if _, ok := t.(Function); ok {
-		panic("cannot box function types")
-	}
-
+func NewBoxed(t Algebraic) Boxed {
 	return Boxed{t}
 }
 
-// Content returns a content type.
-func (b Boxed) Content() Type {
-	return b.content
+// Content returns a algebraic type.
+func (b Boxed) Content() Algebraic {
+	return b.algebraic
 }
 
 // ConvertTypes converts types.
 func (b Boxed) ConvertTypes(f func(Type) Type) Type {
-	return f(Boxed{b.content.ConvertTypes(f)})
+	return f(Boxed{b.algebraic.ConvertTypes(f).(Algebraic)})
 }
 
 func (b Boxed) String() string {
-	return fmt.Sprintf("Boxed(%v)", b.content)
+	return fmt.Sprintf("Boxed(%v)", b.algebraic)
 }
 
 func (b Boxed) equal(t Type) bool {
@@ -39,5 +33,7 @@ func (b Boxed) equal(t Type) bool {
 		return false
 	}
 
-	return b.content.equal(bb.content)
+	return b.algebraic.equal(bb.algebraic)
 }
+
+func (Boxed) isBoxable() {}

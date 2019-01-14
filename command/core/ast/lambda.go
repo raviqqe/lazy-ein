@@ -11,15 +11,24 @@ type Lambda struct {
 	resultType    types.Type
 }
 
-// NewLambda creates a lambda form.
-func NewLambda(vs []Argument, u bool, as []Argument, e Expression, t types.Type) Lambda {
-	return Lambda{vs, u, as, e, t}
+// NewVariableLambda creates a lambda form.
+func NewVariableLambda(vs []Argument, u bool, e Expression, t types.Boxable) Lambda {
+	return Lambda{vs, u, nil, e, t}
+}
+
+// NewFunctionLambda creates a lambda form.
+func NewFunctionLambda(vs []Argument, as []Argument, e Expression, t types.Type) Lambda {
+	if len(as) == 0 {
+		panic("no argument for function lambda")
+	}
+
+	return Lambda{vs, false, as, e, t}
 }
 
 // Type returns a type.
 func (l Lambda) Type() types.Type {
 	if len(l.arguments) == 0 {
-		return types.NewBoxed(types.Unbox(l.resultType))
+		return types.Box(l.resultType)
 	}
 
 	return types.NewFunction(l.ArgumentTypes(), l.resultType)
@@ -68,6 +77,11 @@ func (l Lambda) IsUpdatable() bool {
 // IsThunk returns true if the lambda form is a thunk, or false otherwise.
 func (l Lambda) IsThunk() bool {
 	return len(l.arguments) == 0
+}
+
+// ClearFreeVariables clears free variables.
+func (l Lambda) ClearFreeVariables() Lambda {
+	return Lambda{nil, l.updatable, l.arguments, l.body, l.resultType}
 }
 
 // ConvertTypes converts types.

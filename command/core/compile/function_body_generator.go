@@ -111,7 +111,7 @@ func (g *functionBodyGenerator) generateAlgebraicCase(c ast.AlgebraicCase) (llvm
 
 	i := llvm.ConstInt(g.typeGenerator.GenerateConstructorTag(), 0, false)
 
-	if len(c.Type().(types.Algebraic).Constructors()) != 1 {
+	if len(types.Unbox(c.Type()).(types.Algebraic).Constructors()) != 1 {
 		i = g.builder.CreateExtractValue(e, 0, "")
 	}
 
