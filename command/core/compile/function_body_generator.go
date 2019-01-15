@@ -190,7 +190,12 @@ func (g *functionBodyGenerator) generateFloatCase(c ast.PrimitiveCase) (llvm.Val
 	return p.Generate(g.builder), nil
 }
 
-func (g *functionBodyGenerator) generateDefaultAlternative(c ast.Case, v llvm.Value, b llvm.BasicBlock, p *phiGenerator) error {
+func (g *functionBodyGenerator) generateDefaultAlternative(
+	c ast.Case,
+	v llvm.Value,
+	b llvm.BasicBlock,
+	p *phiGenerator,
+) error {
 	g.builder.SetInsertPointAtEnd(b)
 
 	a, ok := c.DefaultAlternative()
