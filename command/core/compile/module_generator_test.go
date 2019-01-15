@@ -15,16 +15,10 @@ func TestNewModuleGenerator(t *testing.T) {
 }
 
 func TestNewModuleGeneratorWithAlgebraicTypes(t *testing.T) {
-	tt0 := types.NewAlgebraic(
-		[]types.Constructor{
-			types.NewConstructor([]types.Type{types.NewFloat64()}),
-		},
-	)
+	tt0 := types.NewAlgebraic(types.NewConstructor(types.NewFloat64()))
 	tt1 := types.NewAlgebraic(
-		[]types.Constructor{
-			types.NewConstructor([]types.Type{types.NewFloat64()}),
-			types.NewConstructor([]types.Type{types.NewFloat64(), types.NewFloat64()}),
-		},
+		types.NewConstructor(types.NewFloat64()),
+		types.NewConstructor(types.NewFloat64(), types.NewFloat64()),
 	)
 
 	for _, b := range []ast.Bind{
@@ -58,10 +52,8 @@ func TestNewModuleGeneratorWithAlgebraicTypes(t *testing.T) {
 }
 
 func TestModuleGeneratorGenerate(t *testing.T) {
-	a0 := types.NewAlgebraic([]types.Constructor{types.NewConstructor(nil)})
-	a1 := types.NewAlgebraic(
-		[]types.Constructor{types.NewConstructor([]types.Type{types.NewFloat64()})},
-	)
+	a0 := types.NewAlgebraic(types.NewConstructor())
+	a1 := types.NewAlgebraic(types.NewConstructor(types.NewFloat64()))
 	l0 := ast.NewVariableLambda(
 		nil,
 		true,
@@ -419,7 +411,7 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 }
 
 func TestModuleGeneratorGenerateWithGlobalFunctionsReturningBoxedValues(t *testing.T) {
-	a := types.NewAlgebraic([]types.Constructor{types.NewConstructor(nil)})
+	a := types.NewAlgebraic(types.NewConstructor())
 
 	m := ast.NewModule(
 		"foo",
@@ -451,7 +443,7 @@ func TestModuleGeneratorGenerateWithGlobalFunctionsReturningBoxedValues(t *testi
 }
 
 func TestModuleGeneratorGenerateWithLocalFunctionsReturningBoxedValues(t *testing.T) {
-	a := types.NewAlgebraic([]types.Constructor{types.NewConstructor(nil)})
+	a := types.NewAlgebraic(types.NewConstructor())
 
 	m := ast.NewModule(
 		"foo",
@@ -498,9 +490,7 @@ func TestModuleGeneratorGenerateWithLocalFunctionsReturningBoxedValues(t *testin
 }
 
 func TestModuleGeneratorGenerateWithAlgebraicTypes(t *testing.T) {
-	tt := types.NewAlgebraic(
-		[]types.Constructor{types.NewConstructor([]types.Type{types.NewFloat64()})},
-	)
+	tt := types.NewAlgebraic(types.NewConstructor(types.NewFloat64()))
 
 	m := ast.NewModule(
 		"foo",
@@ -527,10 +517,8 @@ func TestModuleGeneratorGenerateWithAlgebraicTypes(t *testing.T) {
 
 func TestModuleGeneratorGenerateWithAlgebraicTypesOfMultipleConstructors(t *testing.T) {
 	tt := types.NewAlgebraic(
-		[]types.Constructor{
-			types.NewConstructor([]types.Type{types.NewFloat64()}),
-			types.NewConstructor([]types.Type{types.NewFloat64(), types.NewFloat64()}),
-		},
+		types.NewConstructor(types.NewFloat64()),
+		types.NewConstructor(types.NewFloat64(), types.NewFloat64()),
 	)
 
 	m := ast.NewModule(
@@ -557,14 +545,10 @@ func TestModuleGeneratorGenerateWithAlgebraicTypesOfMultipleConstructors(t *test
 }
 
 func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
-	tt0 := types.NewAlgebraic(
-		[]types.Constructor{types.NewConstructor([]types.Type{types.NewFloat64()})},
-	)
+	tt0 := types.NewAlgebraic(types.NewConstructor(types.NewFloat64()))
 	tt1 := types.NewAlgebraic(
-		[]types.Constructor{
-			types.NewConstructor([]types.Type{types.NewFloat64()}),
-			types.NewConstructor([]types.Type{types.NewFloat64(), types.NewFloat64()}),
-		},
+		types.NewConstructor(types.NewFloat64()),
+		types.NewConstructor(types.NewFloat64(), types.NewFloat64()),
 	)
 
 	for _, c := range []ast.Case{

@@ -14,7 +14,7 @@ import (
 )
 
 var payloadOffset = reflect.PtrTo(reflect.TypeOf(42)).Size()
-var algebraicType = types.NewAlgebraic([]types.Constructor{types.NewConstructor(nil)})
+var algebraicType = types.NewAlgebraic(types.NewConstructor())
 
 func TestCompile(t *testing.T) {
 	m, err := compile.Compile(
@@ -39,9 +39,7 @@ func TestCompile(t *testing.T) {
 }
 
 func TestGlobalThunkForce(t *testing.T) {
-	a := types.NewAlgebraic(
-		[]types.Constructor{types.NewConstructor([]types.Type{types.NewFloat64()})},
-	)
+	a := types.NewAlgebraic(types.NewConstructor(types.NewFloat64()))
 
 	m, err := compile.Compile(
 		ast.NewModule(

@@ -38,11 +38,7 @@ func (n Number) DebugInformation() *debug.Information {
 // ToCore returns a type in the core language.
 func (n Number) ToCore() coretypes.Type {
 	return coretypes.NewBoxed(
-		coretypes.NewAlgebraic(
-			[]coretypes.Constructor{
-				coretypes.NewConstructor([]coretypes.Type{coretypes.NewFloat64()}),
-			},
-		),
+		coretypes.NewAlgebraic(coretypes.NewConstructor(coretypes.NewFloat64())),
 	)
 }
 

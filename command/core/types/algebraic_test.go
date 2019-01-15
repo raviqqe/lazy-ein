@@ -10,19 +10,17 @@ func TestAlgebraicString(t *testing.T) {
 	assert.Equal(
 		t,
 		"Algebraic(Constructor,Constructor)",
-		NewAlgebraic(
-			[]Constructor{NewConstructor(nil), NewConstructor(nil)},
-		).String(),
+		NewAlgebraic(NewConstructor(), NewConstructor()).String(),
 	)
 }
 
 func TestAlgebraicEqual(t *testing.T) {
-	a := NewAlgebraic([]Constructor{NewConstructor(nil)})
+	a := NewAlgebraic(NewConstructor())
 	assert.True(t, a.equal(a))
 
 	for _, as := range [][2]Type{
 		{a, NewFloat64()},
-		{a, NewAlgebraic([]Constructor{NewConstructor(nil), NewConstructor(nil)})},
+		{a, NewAlgebraic(NewConstructor(), NewConstructor())},
 	} {
 		assert.False(t, as[0].equal(as[1]))
 	}

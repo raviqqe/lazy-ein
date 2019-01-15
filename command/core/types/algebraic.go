@@ -8,8 +8,8 @@ type Algebraic struct {
 }
 
 // NewAlgebraic creates an algebraic type.
-func NewAlgebraic(cs []Constructor) Algebraic {
-	return Algebraic{cs}
+func NewAlgebraic(c Constructor, cs ...Constructor) Algebraic {
+	return Algebraic{append([]Constructor{c}, cs...)}
 }
 
 // Constructors returns constructors.

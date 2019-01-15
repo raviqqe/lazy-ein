@@ -10,10 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var numberAlgebraic = coretypes.NewAlgebraic(
-	[]coretypes.Constructor{coretypes.NewConstructor([]coretypes.Type{coretypes.NewFloat64()})},
-)
-
+var numberAlgebraic = coretypes.NewAlgebraic(coretypes.NewConstructor(coretypes.NewFloat64()))
 var numberConstructor = coreast.NewConstructor(numberAlgebraic, 0)
 
 func TestCompileWithEmptySource(t *testing.T) {

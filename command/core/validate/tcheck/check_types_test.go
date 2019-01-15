@@ -10,10 +10,8 @@ import (
 )
 
 var algebraicType = types.NewAlgebraic(
-	[]types.Constructor{
-		types.NewConstructor([]types.Type{types.NewFloat64()}),
-		types.NewConstructor(nil),
-	},
+	types.NewConstructor(types.NewFloat64()),
+	types.NewConstructor(),
 )
 
 var algebraicLambda = ast.NewVariableLambda(

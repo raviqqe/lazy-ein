@@ -8,8 +8,8 @@ type Constructor struct {
 }
 
 // NewConstructor creates a constructor.
-func NewConstructor(es []Type) Constructor {
-	return Constructor{es}
+func NewConstructor(ts ...Type) Constructor {
+	return Constructor{ts}
 }
 
 // Elements returns element types.

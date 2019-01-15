@@ -10,9 +10,7 @@ import (
 )
 
 func TestTypeGeneratorGenerateSizedPayload(t *testing.T) {
-	a := types.NewAlgebraic(
-		[]types.Constructor{types.NewConstructor([]types.Type{types.NewFloat64()})},
-	)
+	a := types.NewAlgebraic(types.NewConstructor(types.NewFloat64()))
 
 	for _, c := range []struct {
 		lambda ast.Lambda

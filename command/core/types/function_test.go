@@ -31,10 +31,7 @@ func TestFunctionEqual(t *testing.T) {
 		{a, NewFloat64()},
 		{
 			a,
-			NewFunction(
-				[]Type{NewAlgebraic([]Constructor{NewConstructor([]Type{NewFloat64()})})},
-				NewFloat64(),
-			),
+			NewFunction([]Type{NewAlgebraic(NewConstructor(NewFloat64()))}, NewFloat64()),
 		},
 		{a, NewFunction([]Type{NewFloat64(), NewFloat64()}, NewFloat64())},
 	} {

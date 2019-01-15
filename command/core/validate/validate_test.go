@@ -15,7 +15,7 @@ func TestValidate(t *testing.T) {
 }
 
 func TestValidateError(t *testing.T) {
-	tt := types.NewAlgebraic([]types.Constructor{types.NewConstructor(nil)})
+	tt := types.NewAlgebraic(types.NewConstructor())
 
 	assert.Equal(
 		t,
