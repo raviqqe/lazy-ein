@@ -50,183 +50,210 @@ func (i inferrer) Infer(m ast.Module) (ast.Module, error) {
 }
 
 func (i inferrer) inferType(e ast.Expression) (types.Type, []types.Equation, error) {
-	es := []types.Equation{}
-
 	switch e := e.(type) {
 	case ast.Application:
-		ee := ast.Expression(ast.NewApplication(e.Function(), e.Arguments()[:len(e.Arguments())-1]))
-
-		if len(e.Arguments()) == 1 {
-			ee = e.Function()
-		}
-
-		t, es, err := i.inferType(ee)
-
-		if err != nil {
-			return nil, nil, err
-		}
-
-		f, ok := t.(types.Function)
-
-		if !ok {
-			f = types.NewFunction(i.createTypeVariable(), i.createTypeVariable(), nil)
-			ees, err := t.Unify(f)
-
-			if err != nil {
-				return nil, nil, err
-			}
-
-			es = append(es, ees...)
-		}
-
-		a, ees, err := i.inferType(e.Arguments()[len(e.Arguments())-1])
-
-		if err != nil {
-			return nil, nil, err
-		}
-
-		es = append(es, ees...)
-
-		ees, err = f.Argument().Unify(a)
-
-		if err != nil {
-			return nil, nil, err
-		}
-
-		return f.Result(), append(es, ees...), nil
+		return i.inferApplication(e)
 	case ast.BinaryOperation:
-		es := []types.Equation{}
-
-		for _, e := range []ast.Expression{e.LHS(), e.RHS()} {
-			l, ees, err := i.inferType(e)
-
-			if err != nil {
-				return nil, nil, err
-			}
-
-			es = append(append(es, ees...), types.NewEquation(l, types.NewNumber(nil)))
-		}
-
-		return types.NewNumber(nil), es, nil
+		return i.inferBinaryOperation(e)
 	case ast.Case:
-		t, es, err := i.inferType(e.Expression())
-
-		if err != nil {
-			return nil, nil, err
-		}
-
-		ees, err := e.Type().Unify(t)
-
-		if err != nil {
-			return nil, nil, err
-		}
-
-		es = append(es, ees...)
-
-		ts := make([]types.Type, 0, len(e.Alternatives())+1)
-
-		for _, a := range e.Alternatives() {
-			t, ees, err := i.inferType(a.Expression())
-
-			if err != nil {
-				return nil, nil, err
-			}
-
-			ts = append(ts, t)
-			es = append(es, ees...)
-		}
-
-		if d, ok := e.DefaultAlternative(); ok {
-			t, ees, err := i.addVariables(map[string]types.Type{d.Variable(): e.Type()}).inferType(
-				d.Expression(),
-			)
-
-			if err != nil {
-				return nil, nil, err
-			}
-
-			ts = append(ts, t)
-			es = append(es, ees...)
-		}
-
-		for _, t := range ts[1:] {
-			ees, err := ts[0].Unify(t)
-
-			if err != nil {
-				return nil, nil, err
-			}
-
-			es = append(es, ees...)
-		}
-
-		return ts[0], es, nil
+		return i.inferCase(e)
 	case ast.Lambda:
-		as := make(map[string]types.Type, len(e.Arguments()))
-
-		for _, s := range e.Arguments() {
-			as[s] = i.createTypeVariable()
-		}
-
-		t, es, err := i.addVariables(as).inferType(e.Expression())
-
-		if err != nil {
-			return nil, nil, err
-		}
-
-		for i := len(as) - 1; i >= 0; i-- {
-			t = types.NewFunction(as[e.Arguments()[i]], t, nil)
-		}
-
-		return t, es, nil
+		return i.inferLambda(e)
 	case ast.Let:
-		i = i.addVariablesFromBinds(e.Binds())
-
-		for _, b := range e.Binds() {
-			t, ees, err := i.inferType(b.Expression())
-
-			if err != nil {
-				return nil, nil, err
-			}
-
-			es = append(es, ees...)
-
-			ees, err = b.Type().Unify(t)
-
-			if err != nil {
-				return nil, nil, err
-			}
-
-			es = append(es, ees...)
-		}
-
-		t, ees, err := i.inferType(e.Expression())
-
-		if err != nil {
-			return nil, nil, err
-		}
-
-		return t, append(es, ees...), nil
+		return i.inferLet(e)
 	case ast.Number:
 		return types.NewNumber(nil), nil, nil
 	case ast.Unboxed:
-		t, es, err := i.inferType(e.Content())
+		return i.inferUnboxed(e)
+	case ast.Variable:
+		return i.inferVariable(e)
+	}
+
+	panic("unreachable")
+}
+
+func (i inferrer) inferApplication(a ast.Application) (types.Type, []types.Equation, error) {
+	e := ast.Expression(ast.NewApplication(a.Function(), a.Arguments()[:len(a.Arguments())-1]))
+
+	if len(a.Arguments()) == 1 {
+		e = a.Function()
+	}
+
+	t, es, err := i.inferType(e)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	f, ok := t.(types.Function)
+
+	if !ok {
+		f = types.NewFunction(i.createTypeVariable(), i.createTypeVariable(), nil)
+		ees, err := t.Unify(f)
 
 		if err != nil {
 			return nil, nil, err
 		}
 
-		return types.NewUnboxed(t, nil), es, nil
-	case ast.Variable:
-		t, ok := i.variables[e.Name()]
-
-		if !ok {
-			return nil, nil, fmt.Errorf("variable '%s' not found", e.Name())
-		}
-
-		return t, nil, nil
+		es = append(es, ees...)
 	}
 
-	panic("unreachable")
+	arg, ees, err := i.inferType(a.Arguments()[len(a.Arguments())-1])
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	es = append(es, ees...)
+
+	ees, err = f.Argument().Unify(arg)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return f.Result(), append(es, ees...), nil
+}
+
+func (i inferrer) inferBinaryOperation(o ast.BinaryOperation) (types.Type, []types.Equation, error) {
+	es := []types.Equation{}
+
+	for _, e := range []ast.Expression{o.LHS(), o.RHS()} {
+		l, ees, err := i.inferType(e)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		es = append(append(es, ees...), types.NewEquation(l, types.NewNumber(nil)))
+	}
+
+	return types.NewNumber(nil), es, nil
+}
+
+func (i inferrer) inferCase(c ast.Case) (types.Type, []types.Equation, error) {
+	t, es, err := i.inferType(c.Expression())
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	ees, err := c.Type().Unify(t)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	es = append(es, ees...)
+
+	ts := make([]types.Type, 0, len(c.Alternatives())+1)
+
+	for _, a := range c.Alternatives() {
+		t, ees, err := i.inferType(a.Expression())
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		ts = append(ts, t)
+		es = append(es, ees...)
+	}
+
+	if d, ok := c.DefaultAlternative(); ok {
+		t, ees, err := i.addVariables(map[string]types.Type{d.Variable(): c.Type()}).inferType(
+			d.Expression(),
+		)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		ts = append(ts, t)
+		es = append(es, ees...)
+	}
+
+	for _, t := range ts[1:] {
+		ees, err := ts[0].Unify(t)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		es = append(es, ees...)
+	}
+
+	return ts[0], es, nil
+}
+
+func (i inferrer) inferLambda(l ast.Lambda) (types.Type, []types.Equation, error) {
+	as := make(map[string]types.Type, len(l.Arguments()))
+
+	for _, s := range l.Arguments() {
+		as[s] = i.createTypeVariable()
+	}
+
+	t, es, err := i.addVariables(as).inferType(l.Expression())
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for i := len(as) - 1; i >= 0; i-- {
+		t = types.NewFunction(as[l.Arguments()[i]], t, nil)
+	}
+
+	return t, es, nil
+}
+
+func (i inferrer) inferLet(l ast.Let) (types.Type, []types.Equation, error) {
+	es := []types.Equation{}
+	i = i.addVariablesFromBinds(l.Binds())
+
+	for _, b := range l.Binds() {
+		t, ees, err := i.inferType(b.Expression())
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		es = append(es, ees...)
+
+		ees, err = b.Type().Unify(t)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		es = append(es, ees...)
+	}
+
+	t, ees, err := i.inferType(l.Expression())
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return t, append(es, ees...), nil
+}
+
+func (i inferrer) inferUnboxed(u ast.Unboxed) (types.Type, []types.Equation, error) {
+	t, es, err := i.inferType(u.Content())
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return types.NewUnboxed(t, nil), es, nil
+}
+
+func (i inferrer) inferVariable(v ast.Variable) (types.Type, []types.Equation, error) {
+	t, ok := i.variables[v.Name()]
+
+	if !ok {
+		return nil, nil, fmt.Errorf("variable '%s' not found", v.Name())
+	}
+
+	return t, nil, nil
 }
 
 func (i inferrer) createSubstitutions(es []types.Equation) (map[int]types.Type, error) {
