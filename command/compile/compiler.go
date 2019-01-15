@@ -98,170 +98,192 @@ func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
 func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error) {
 	switch e := e.(type) {
 	case ast.Application:
-		as := make([]coreast.Atom, 0, len(e.Arguments()))
-
-		for _, a := range e.Arguments() {
-			as = append(as, coreast.NewVariable(a.(ast.Variable).Name()))
-		}
-
-		return coreast.NewFunctionApplication(
-			coreast.NewVariable(e.Function().(ast.Variable).Name()),
-			as,
-		), nil
+		return c.compileApplication(e)
 	case ast.BinaryOperation:
-		l, err := c.compileExpression(e.LHS())
+		return c.compileBinaryOperation(e)
+	case ast.Case:
+		return c.compileCase(e)
+	case ast.Let:
+		return c.compileLet(e)
+	case ast.Unboxed:
+		return c.compileUnboxed(e)
+	case ast.Variable:
+		return coreast.NewFunctionApplication(coreast.NewVariable(e.Name()), nil), nil
+	}
 
-		if err != nil {
-			return nil, err
-		}
+	panic("unreahable")
+}
 
-		r, err := c.compileExpression(e.RHS())
+func (c compiler) compileApplication(a ast.Application) (coreast.Expression, error) {
+	as := make([]coreast.Atom, 0, len(a.Arguments()))
 
-		if err != nil {
-			return nil, err
-		}
+	for _, a := range a.Arguments() {
+		as = append(as, coreast.NewVariable(a.(ast.Variable).Name()))
+	}
 
-		x := l.(coreast.FunctionApplication).Function().Name()
-		y := r.(coreast.FunctionApplication).Function().Name()
+	return coreast.NewFunctionApplication(
+		coreast.NewVariable(a.Function().(ast.Variable).Name()),
+		as,
+	), nil
+}
 
-		vs, err := c.compileFreeVariables(e)
+func (c compiler) compileBinaryOperation(o ast.BinaryOperation) (coreast.Expression, error) {
+	l, err := c.compileExpression(o.LHS())
 
-		if err != nil {
-			return nil, err
-		}
+	if err != nil {
+		return nil, err
+	}
 
-		return coreast.NewLet(
-			[]coreast.Bind{
-				coreast.NewBind(
-					"$boxedResult",
-					coreast.NewVariableLambda(
-						vs,
-						true,
+	r, err := c.compileExpression(o.RHS())
+
+	if err != nil {
+		return nil, err
+	}
+
+	x := l.(coreast.FunctionApplication).Function().Name()
+	y := r.(coreast.FunctionApplication).Function().Name()
+
+	vs, err := c.compileFreeVariables(o)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return coreast.NewLet(
+		[]coreast.Bind{
+			coreast.NewBind(
+				"$boxedResult",
+				coreast.NewVariableLambda(
+					vs,
+					true,
+					c.bindNumberPrimitive(
+						coreast.NewFunctionApplication(coreast.NewVariable(x), nil),
+						"$lhs",
 						c.bindNumberPrimitive(
-							coreast.NewFunctionApplication(coreast.NewVariable(x), nil),
-							"$lhs",
-							c.bindNumberPrimitive(
-								coreast.NewFunctionApplication(coreast.NewVariable(y), nil),
-								"$rhs",
-								coreast.NewPrimitiveCase(
-									coreast.NewPrimitiveOperation(
-										binaryOperatorToPrimitive(e.Operator()),
-										[]coreast.Atom{
-											coreast.NewVariable("$lhs"),
-											coreast.NewVariable("$rhs"),
-										},
-									),
-									coretypes.NewFloat64(),
-									nil,
-									coreast.NewDefaultAlternative(
-										"$result",
-										coreast.NewConstructorApplication(
-											types.NewNumber(nil).CoreConstructor(),
-											[]coreast.Atom{coreast.NewVariable("$result")},
-										),
+							coreast.NewFunctionApplication(coreast.NewVariable(y), nil),
+							"$rhs",
+							coreast.NewPrimitiveCase(
+								coreast.NewPrimitiveOperation(
+									binaryOperatorToPrimitive(o.Operator()),
+									[]coreast.Atom{
+										coreast.NewVariable("$lhs"),
+										coreast.NewVariable("$rhs"),
+									},
+								),
+								coretypes.NewFloat64(),
+								nil,
+								coreast.NewDefaultAlternative(
+									"$result",
+									coreast.NewConstructorApplication(
+										types.NewNumber(nil).CoreConstructor(),
+										[]coreast.Atom{coreast.NewVariable("$result")},
 									),
 								),
 							),
 						),
-						coretypes.Unbox(types.NewNumber(nil).ToCore()).(coretypes.Algebraic),
 					),
+					coretypes.Unbox(types.NewNumber(nil).ToCore()).(coretypes.Algebraic),
 				),
-			},
-			coreast.NewFunctionApplication(coreast.NewVariable("$boxedResult"), nil),
-		), nil
-	case ast.Case:
-		ee, err := c.compileExpression(e.Expression())
-
-		if err != nil {
-			return nil, err
-		}
-
-		as := make([]coreast.PrimitiveAlternative, 0, len(e.Alternatives()))
-
-		for _, a := range e.Alternatives() {
-			e, err := c.compileExpression(a.Expression())
-
-			if err != nil {
-				return nil, err
-			}
-
-			as = append(as, coreast.NewPrimitiveAlternative(c.compileUnboxedLiteral(a.Literal()), e))
-		}
-
-		d, ok := e.DefaultAlternative()
-
-		if !ok {
-			return coreast.NewPrimitiveCaseWithoutDefault(
-				c.extractNumberPrimitive(ee),
-				coretypes.NewFloat64(),
-				as,
-			), nil
-		}
-
-		c = c.addVariable(d.Variable(), e.Type().ToCore())
-		de, err := c.compileExpression(d.Expression())
-
-		if err != nil {
-			return nil, err
-		}
-
-		vs, err := c.compileFreeVariables(e.Expression())
-
-		if err != nil {
-			return nil, err
-		}
-
-		return coreast.NewLet(
-			[]coreast.Bind{
-				coreast.NewBind(
-					d.Variable(),
-					coreast.NewVariableLambda(vs, true, ee, e.Type().ToCore().(coretypes.Boxable)),
-				),
-			},
-			coreast.NewPrimitiveCase(
-				c.extractNumberPrimitive(
-					coreast.NewFunctionApplication(coreast.NewVariable(d.Variable()), nil),
-				),
-				coretypes.NewFloat64(),
-				as,
-				coreast.NewDefaultAlternative("", de),
 			),
-		), nil
-	case ast.Let:
-		bs := make([]coreast.Bind, 0, len(e.Binds()))
+		},
+		coreast.NewFunctionApplication(coreast.NewVariable("$boxedResult"), nil),
+	), nil
+}
 
-		for _, b := range e.Binds() {
-			c = c.addVariable(b.Name(), b.Type().ToCore())
-		}
+func (c compiler) compileCase(cc ast.Case) (coreast.Expression, error) {
+	arg, err := c.compileExpression(cc.Expression())
 
-		for _, b := range e.Binds() {
-			b, err := c.compileBind(b)
+	if err != nil {
+		return nil, err
+	}
 
-			if err != nil {
-				return nil, err
-			}
+	as := make([]coreast.PrimitiveAlternative, 0, len(cc.Alternatives()))
 
-			bs = append(bs, b)
-		}
-
-		ee, err := c.compileExpression(e.Expression())
+	for _, a := range cc.Alternatives() {
+		e, err := c.compileExpression(a.Expression())
 
 		if err != nil {
 			return nil, err
 		}
 
-		return coreast.NewLet(bs, ee), nil
-	case ast.Unboxed:
-		// TODO: Handle other literals.
-		switch e := e.Content().(type) {
-		case ast.Number:
-			return coreast.NewConstructorApplication(
-				types.NewNumber(nil).CoreConstructor(),
-				[]coreast.Atom{coreast.NewFloat64(e.Value())},
-			), nil
+		as = append(as, coreast.NewPrimitiveAlternative(c.compileUnboxedLiteral(a.Literal()), e))
+	}
+
+	d, ok := cc.DefaultAlternative()
+
+	if !ok {
+		return coreast.NewPrimitiveCaseWithoutDefault(
+			c.extractNumberPrimitive(arg),
+			coretypes.NewFloat64(),
+			as,
+		), nil
+	}
+
+	c = c.addVariable(d.Variable(), cc.Type().ToCore())
+	de, err := c.compileExpression(d.Expression())
+
+	if err != nil {
+		return nil, err
+	}
+
+	vs, err := c.compileFreeVariables(cc.Expression())
+
+	if err != nil {
+		return nil, err
+	}
+
+	return coreast.NewLet(
+		[]coreast.Bind{
+			coreast.NewBind(
+				d.Variable(),
+				coreast.NewVariableLambda(vs, true, arg, cc.Type().ToCore().(coretypes.Boxable)),
+			),
+		},
+		coreast.NewPrimitiveCase(
+			c.extractNumberPrimitive(
+				coreast.NewFunctionApplication(coreast.NewVariable(d.Variable()), nil),
+			),
+			coretypes.NewFloat64(),
+			as,
+			coreast.NewDefaultAlternative("", de),
+		),
+	), nil
+}
+
+func (c compiler) compileLet(l ast.Let) (coreast.Expression, error) {
+	bs := make([]coreast.Bind, 0, len(l.Binds()))
+
+	for _, b := range l.Binds() {
+		c = c.addVariable(b.Name(), b.Type().ToCore())
+	}
+
+	for _, b := range l.Binds() {
+		b, err := c.compileBind(b)
+
+		if err != nil {
+			return nil, err
 		}
-	case ast.Variable:
-		return coreast.NewFunctionApplication(coreast.NewVariable(e.Name()), nil), nil
+
+		bs = append(bs, b)
+	}
+
+	ee, err := c.compileExpression(l.Expression())
+
+	if err != nil {
+		return nil, err
+	}
+
+	return coreast.NewLet(bs, ee), nil
+}
+
+func (c compiler) compileUnboxed(u ast.Unboxed) (coreast.Expression, error) {
+	// TODO: Handle other literals.
+	switch l := u.Content().(type) {
+	case ast.Number:
+		return coreast.NewConstructorApplication(
+			types.NewNumber(nil).CoreConstructor(),
+			[]coreast.Atom{coreast.NewFloat64(l.Value())},
+		), nil
 	}
 
 	panic("unreahable")
