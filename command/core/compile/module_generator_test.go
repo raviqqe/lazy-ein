@@ -384,7 +384,6 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 					[]ast.Argument{ast.NewArgument("x", types.NewBoxed(a0))},
 					ast.NewAlgebraicCase(
 						ast.NewFunctionApplication(ast.NewVariable("x"), nil),
-						types.NewBoxed(a0),
 						[]ast.AlgebraicAlternative{
 							ast.NewAlgebraicAlternative(ast.NewConstructor(a0, 0), nil, ast.NewFloat64(42)),
 						},
@@ -570,11 +569,23 @@ func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
 
 	for _, c := range []ast.Case{
 		ast.NewAlgebraicCaseWithoutDefault(
-			ast.NewConstructorApplication(
-				ast.NewConstructor(tt0, 0),
-				[]ast.Atom{ast.NewFloat64(42)},
+			ast.NewLet(
+				[]ast.Bind{
+					ast.NewBind(
+						"x",
+						ast.NewVariableLambda(
+							nil,
+							true,
+							ast.NewConstructorApplication(
+								ast.NewConstructor(tt0, 0),
+								[]ast.Atom{ast.NewFloat64(42)},
+							),
+							tt0,
+						),
+					),
+				},
+				ast.NewFunctionApplication(ast.NewVariable("x"), nil),
 			),
-			tt0,
 			[]ast.AlgebraicAlternative{
 				ast.NewAlgebraicAlternative(
 					ast.NewConstructor(tt0, 0),
@@ -584,9 +595,23 @@ func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
 			},
 		),
 		ast.NewAlgebraicCase(
-			ast.NewConstructorApplication(
-				ast.NewConstructor(tt1, 1), []ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)}),
-			tt1,
+			ast.NewLet(
+				[]ast.Bind{
+					ast.NewBind(
+						"x",
+						ast.NewVariableLambda(
+							nil,
+							true,
+							ast.NewConstructorApplication(
+								ast.NewConstructor(tt1, 1),
+								[]ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)},
+							),
+							tt1,
+						),
+					),
+				},
+				ast.NewFunctionApplication(ast.NewVariable("x"), nil),
+			),
 			[]ast.AlgebraicAlternative{
 				ast.NewAlgebraicAlternative(
 					ast.NewConstructor(tt1, 1),

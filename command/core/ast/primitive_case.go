@@ -20,7 +20,7 @@ func NewPrimitiveCaseWithoutDefault(e Expression, t types.Primitive, as []Primit
 }
 
 // Type is a type.
-func (c PrimitiveCase) Type() types.Type {
+func (c PrimitiveCase) Type() types.Primitive {
 	return c.typ
 }
 

@@ -47,30 +47,29 @@ func (c typeChecker) checkLambda(l ast.Lambda) error {
 func (c typeChecker) checkExpression(e ast.Expression) (types.Type, error) {
 	switch e := e.(type) {
 	case ast.AlgebraicCase:
-		if t, err := c.checkExpression(e.Argument()); err != nil {
+		t, err := c.checkExpression(e.Argument())
+
+		if err != nil {
 			return nil, err
-		} else if err := c.checkTypes(t, e.Type()); err != nil {
-			return nil, err
-		} else if d, ok := e.DefaultAlternative(); ok && len(e.Alternatives()) == 0 {
-			return c.checkDefaultAlternative(d, e.Type())
+		} else if len(e.Alternatives()) == 0 {
+			d, _ := e.DefaultAlternative()
+			return c.checkDefaultAlternative(d, t)
 		}
 
-		t, err := c.checkAlgebraicAlternative(e.Alternatives()[0])
+		tt, err := c.checkAlgebraicAlternative(e.Alternatives()[0])
 
 		if err != nil {
 			return nil, err
 		}
 
 		for _, a := range e.Alternatives()[1:] {
-			err := c.checkTypes(a.Constructor().AlgebraicType(), types.Unbox(e.Type()))
-
-			if err != nil {
+			if err := c.checkTypes(a.Constructor().AlgebraicType(), types.Unbox(t)); err != nil {
 				return nil, err
 			}
 
-			if tt, err := c.checkAlgebraicAlternative(a); err != nil {
+			if ttt, err := c.checkAlgebraicAlternative(a); err != nil {
 				return nil, err
-			} else if err := c.checkTypes(t, tt); err != nil {
+			} else if err := c.checkTypes(ttt, tt); err != nil {
 				return nil, err
 			}
 		}
@@ -78,10 +77,10 @@ func (c typeChecker) checkExpression(e ast.Expression) (types.Type, error) {
 		d, ok := e.DefaultAlternative()
 
 		if !ok {
-			return t, nil
+			return tt, nil
 		}
 
-		return c.checkDefaultAlternative(d, e.Type())
+		return c.checkDefaultAlternative(d, t)
 	case ast.Atom:
 		return c.inferAtomType(e)
 	case ast.ConstructorApplication:

@@ -7,7 +7,6 @@ import (
 	"github.com/ein-lang/ein/command/core/ast"
 	"github.com/ein-lang/ein/command/core/compile/llir"
 	"github.com/ein-lang/ein/command/core/compile/names"
-	"github.com/ein-lang/ein/command/core/types"
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
@@ -103,21 +102,22 @@ func (g *functionBodyGenerator) generateCase(c ast.Case) (llvm.Value, error) {
 }
 
 func (g *functionBodyGenerator) generateAlgebraicCase(c ast.AlgebraicCase) (llvm.Value, error) {
-	e, err := g.generateCaseArgument(c)
+	arg, err := g.generateExpression(c.Argument())
 
 	if err != nil {
 		return llvm.Value{}, err
 	}
 
-	i := llvm.ConstInt(g.typeGenerator.GenerateConstructorTag(), 0, false)
+	arg = forceThunk(g.builder, arg, g.typeGenerator)
+	tag := llvm.ConstInt(g.typeGenerator.GenerateConstructorTag(), 0, false)
 
-	if len(types.Unbox(c.Type()).(types.Algebraic).Constructors()) != 1 {
-		i = g.builder.CreateExtractValue(e, 0, "")
+	if len(c.Alternatives()) != 0 && len(c.Alternatives()[0].Constructor().AlgebraicType().Constructors()) != 1 {
+		tag = g.builder.CreateExtractValue(arg, 0, "")
 	}
 
 	p := newPhiGenerator(llvm.AddBasicBlock(g.function(), "phi"))
 	d := llvm.AddBasicBlock(g.function(), "default")
-	s := g.builder.CreateSwitch(i, d, len(c.Alternatives()))
+	s := g.builder.CreateSwitch(tag, d, len(c.Alternatives()))
 
 	for i, a := range c.Alternatives() {
 		b := llvm.AddBasicBlock(g.function(), fmt.Sprintf("case.%v", i))
@@ -127,7 +127,7 @@ func (g *functionBodyGenerator) generateAlgebraicCase(c ast.AlgebraicCase) (llvm
 		es := llir.CreateCall(
 			g.builder,
 			g.module().NamedFunction(names.ToStructify(a.Constructor().ID())),
-			[]llvm.Value{e},
+			[]llvm.Value{arg},
 		)
 
 		vs := make(map[string]llvm.Value, len(a.ElementNames()))
@@ -145,7 +145,7 @@ func (g *functionBodyGenerator) generateAlgebraicCase(c ast.AlgebraicCase) (llvm
 		p.CreateBr(g.builder, v)
 	}
 
-	if err = g.generateDefaultAlternative(c, e, d, p); err != nil {
+	if err = g.generateDefaultAlternative(c, arg, d, p); err != nil {
 		return llvm.Value{}, err
 	}
 
@@ -188,18 +188,6 @@ func (g *functionBodyGenerator) generateFloatCase(c ast.PrimitiveCase) (llvm.Val
 	}
 
 	return p.Generate(g.builder), nil
-}
-
-func (g *functionBodyGenerator) generateCaseArgument(c ast.Case) (llvm.Value, error) {
-	v, err := g.generateExpression(c.Argument())
-
-	if err != nil {
-		return llvm.Value{}, err
-	} else if _, ok := c.Type().(types.Boxed); ok {
-		return forceThunk(g.builder, v, g.typeGenerator), nil
-	}
-
-	return v, nil
 }
 
 func (g *functionBodyGenerator) generateDefaultAlternative(c ast.Case, v llvm.Value, b llvm.BasicBlock, p *phiGenerator) error {

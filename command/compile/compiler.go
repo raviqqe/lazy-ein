@@ -291,7 +291,6 @@ func (compiler) bindNumberPrimitive(
 ) coreast.Expression {
 	return coreast.NewAlgebraicCaseWithoutDefault(
 		e,
-		types.NewNumber(nil).ToCore(),
 		[]coreast.AlgebraicAlternative{
 			coreast.NewAlgebraicAlternative(
 				types.NewNumber(nil).CoreConstructor(),

@@ -167,7 +167,6 @@ func TestCheckTypes(t *testing.T) {
 					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewAlgebraicCaseWithoutDefault(
 						ast.NewConstructorApplication(ast.NewConstructor(algebraicType, 1), nil),
-						algebraicType,
 						[]ast.AlgebraicAlternative{
 							ast.NewAlgebraicAlternative(
 								ast.NewConstructor(algebraicType, 1),
@@ -195,7 +194,6 @@ func TestCheckTypes(t *testing.T) {
 					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewAlgebraicCaseWithoutDefault(
 						ast.NewFunctionApplication(ast.NewVariable("a"), nil),
-						types.NewBoxed(algebraicType),
 						[]ast.AlgebraicAlternative{
 							ast.NewAlgebraicAlternative(
 								ast.NewConstructor(algebraicType, 1),
@@ -217,7 +215,6 @@ func TestCheckTypes(t *testing.T) {
 					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewAlgebraicCase(
 						ast.NewConstructorApplication(ast.NewConstructor(algebraicType, 1), nil),
-						algebraicType,
 						[]ast.AlgebraicAlternative{
 							ast.NewAlgebraicAlternative(
 								ast.NewConstructor(algebraicType, 1),
@@ -240,7 +237,6 @@ func TestCheckTypes(t *testing.T) {
 					[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
 					ast.NewAlgebraicCase(
 						ast.NewConstructorApplication(ast.NewConstructor(algebraicType, 1), nil),
-						algebraicType,
 						nil,
 						ast.NewDefaultAlternative("y", ast.NewFloat64(42)),
 					),

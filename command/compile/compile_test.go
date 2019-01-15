@@ -477,7 +477,6 @@ func TestCompileToCoreWithBinaryOperations(t *testing.T) {
 												coreast.NewVariable("$literal-0"),
 												nil,
 											),
-											coretypes.NewBoxed(numberAlgebraic),
 											[]coreast.AlgebraicAlternative{
 												coreast.NewAlgebraicAlternative(
 													numberConstructor,
@@ -487,7 +486,6 @@ func TestCompileToCoreWithBinaryOperations(t *testing.T) {
 															coreast.NewVariable("$literal-1"),
 															nil,
 														),
-														coretypes.NewBoxed(numberAlgebraic),
 														[]coreast.AlgebraicAlternative{
 															coreast.NewAlgebraicAlternative(
 																numberConstructor,
