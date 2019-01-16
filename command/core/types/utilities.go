@@ -20,5 +20,5 @@ func Unbox(t Type) Type {
 
 // Equal checks type equality.
 func Equal(t, tt Type) bool {
-	return t.equal(tt)
+	return newEqualityChecker().Check(t, tt)
 }
