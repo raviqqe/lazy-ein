@@ -48,6 +48,22 @@ func (c equalityChecker) Check(t, tt Type) bool {
 		}
 
 		return true
+	case Function:
+		f, ok := tt.(Function)
+
+		if !ok || len(t.Arguments()) != len(f.Arguments()) {
+			return false
+		}
+
+		c = c.pushTypes(t, tt)
+
+		for i, a := range t.Arguments() {
+			if !c.Check(a, f.Arguments()[i]) {
+				return false
+			}
+		}
+
+		return c.Check(t, tt)
 	}
 
 	return t.equal(tt)
