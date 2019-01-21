@@ -57,3 +57,4 @@ func (a Algebraic) equal(t Type) bool {
 }
 
 func (Algebraic) isBindable() {}
+func (Algebraic) isBoxable()  {}

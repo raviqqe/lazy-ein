@@ -2,8 +2,8 @@ package types
 
 // Box boxes a type.
 func Box(t Type) Type {
-	if a, ok := t.(Algebraic); ok {
-		return NewBoxed(a)
+	if t, ok := t.(Boxable); ok {
+		return NewBoxed(t)
 	}
 
 	return t

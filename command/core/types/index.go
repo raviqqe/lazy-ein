@@ -37,3 +37,5 @@ func (i Index) equal(t Type) bool {
 
 	return i.value == ii.value
 }
+
+func (Index) isBoxable() {}
