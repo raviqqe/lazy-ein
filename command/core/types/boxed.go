@@ -36,4 +36,4 @@ func (b Boxed) equal(t Type) bool {
 	return b.algebraic.equal(bb.algebraic)
 }
 
-func (Boxed) isBoxable() {}
+func (Boxed) isBindable() {}

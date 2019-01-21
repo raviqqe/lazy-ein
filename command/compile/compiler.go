@@ -62,7 +62,7 @@ func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
 
 		return coreast.NewBind(
 			b.Name(),
-			coreast.NewVariableLambda(vs, true, e, t.(coretypes.Boxable)),
+			coreast.NewVariableLambda(vs, true, e, t.(coretypes.Bindable)),
 		), nil
 	}
 
@@ -236,7 +236,7 @@ func (c compiler) compileCase(cc ast.Case) (coreast.Expression, error) {
 		[]coreast.Bind{
 			coreast.NewBind(
 				d.Variable(),
-				coreast.NewVariableLambda(vs, true, arg, cc.Type().ToCore().(coretypes.Boxable)),
+				coreast.NewVariableLambda(vs, true, arg, cc.Type().ToCore().(coretypes.Bindable)),
 			),
 		},
 		coreast.NewPrimitiveCase(

@@ -56,4 +56,4 @@ func (a Algebraic) equal(t Type) bool {
 	return true
 }
 
-func (Algebraic) isBoxable() {}
+func (Algebraic) isBindable() {}

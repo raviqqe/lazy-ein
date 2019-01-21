@@ -12,7 +12,7 @@ type Lambda struct {
 }
 
 // NewVariableLambda creates a lambda form.
-func NewVariableLambda(vs []Argument, u bool, e Expression, t types.Boxable) Lambda {
+func NewVariableLambda(vs []Argument, u bool, e Expression, t types.Bindable) Lambda {
 	return Lambda{vs, u, nil, e, t}
 }
 
