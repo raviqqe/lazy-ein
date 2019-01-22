@@ -20,5 +20,10 @@ func Unbox(t Type) Type {
 
 // Equal checks type equality.
 func Equal(t, tt Type) bool {
-	return newEqualityChecker().Check(t, tt)
+	return newEqualityChecker(nil).Check(t, tt)
+}
+
+// EqualWithEnvironment checks type equality with environment.
+func EqualWithEnvironment(t, tt Type, ts []Type) bool {
+	return newEqualityChecker(ts).Check(t, tt)
 }

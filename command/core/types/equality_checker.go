@@ -5,8 +5,8 @@ type equalityChecker struct {
 	leftStack, rightStack []Type
 }
 
-func newEqualityChecker() equalityChecker {
-	return equalityChecker{nil, nil, nil}
+func newEqualityChecker(s []Type) equalityChecker {
+	return equalityChecker{nil, s, s}
 }
 
 func (c equalityChecker) Check(t, tt Type) bool {
@@ -48,6 +48,14 @@ func (c equalityChecker) Check(t, tt Type) bool {
 		}
 
 		return true
+	case Boxed:
+		b, ok := tt.(Boxed)
+
+		if !ok {
+			return false
+		}
+
+		return c.Check(t.Content(), b.Content())
 	case Function:
 		f, ok := tt.(Function)
 
