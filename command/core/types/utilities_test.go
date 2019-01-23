@@ -122,3 +122,22 @@ func TestEqual(t *testing.T) {
 		assert.False(t, Equal(ts[0], ts[1]))
 	}
 }
+
+func TestValidate(t *testing.T) {
+	for _, tt := range []Type{
+		NewAlgebraic(NewConstructor()),
+		NewAlgebraic(NewConstructor(NewIndex(0))),
+		NewAlgebraic(NewConstructor(NewBoxed(NewIndex(0)))),
+		NewFunction([]Type{NewFloat64()}, NewFloat64()),
+		NewFunction([]Type{NewIndex(0)}, NewFloat64()),
+	} {
+		assert.True(t, Validate(tt))
+	}
+
+	for _, tt := range []Type{
+		NewAlgebraic(NewConstructor(NewIndex(1))),
+		NewFunction([]Type{NewIndex(1)}, NewFloat64()),
+	} {
+		assert.False(t, Validate(tt))
+	}
+}

@@ -27,3 +27,8 @@ func Equal(t, tt Type) bool {
 func EqualWithEnvironment(t, tt Type, ts []Type) bool {
 	return newEqualityChecker(ts).Check(t, tt)
 }
+
+// Validate validates a type.
+func Validate(t Type) bool {
+	return newValidator().Validate(t)
+}

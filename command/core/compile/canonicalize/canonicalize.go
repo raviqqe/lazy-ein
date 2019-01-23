@@ -12,7 +12,7 @@ func Canonicalize(m ast.Module) ast.Module {
 	m.ConvertTypes(func(t types.Type) types.Type {
 		switch t.(type) {
 		case types.Algebraic, types.Function:
-			if newTypeValidator().Validate(t) {
+			if types.Validate(t) {
 				ts = append(ts, newTypeCanonicalizer().Canonicalize(t))
 			}
 		}
@@ -21,7 +21,7 @@ func Canonicalize(m ast.Module) ast.Module {
 	})
 
 	return m.ConvertTypes(func(t types.Type) types.Type {
-		if !newTypeValidator().Validate(t) {
+		if !types.Validate(t) {
 			return t
 		}
 
