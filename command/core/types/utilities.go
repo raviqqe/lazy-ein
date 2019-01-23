@@ -32,3 +32,8 @@ func EqualWithEnvironment(t, tt Type, ts []Type) bool {
 func Validate(t Type) bool {
 	return newValidator().Validate(t)
 }
+
+// IsRecursive checks if a type is recursive.
+func IsRecursive(t Type) bool {
+	return newRecursivityChecker().Check(t)
+}

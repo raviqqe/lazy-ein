@@ -145,3 +145,21 @@ func TestValidate(t *testing.T) {
 		assert.False(t, Validate(tt))
 	}
 }
+
+func TestIsRecursive(t *testing.T) {
+	for _, tt := range []Type{
+		NewAlgebraic(NewConstructor(NewIndex(0))),
+		NewAlgebraic(NewConstructor(NewBoxed(NewIndex(0)))),
+		NewFunction([]Type{NewIndex(0)}, NewFloat64()),
+	} {
+		assert.True(t, IsRecursive(tt))
+	}
+
+	for _, tt := range []Type{
+		NewAlgebraic(NewConstructor()),
+		NewFunction([]Type{NewFloat64()}, NewFloat64()),
+		NewAlgebraic(NewConstructor(NewAlgebraic(NewConstructor(NewIndex(0))))),
+	} {
+		assert.False(t, IsRecursive(tt))
+	}
+}
