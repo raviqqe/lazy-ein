@@ -55,6 +55,26 @@ func TestTypeGeneratorGenerateSizedPayload(t *testing.T) {
 	}
 }
 
+func TestTypeGeneratorGenerateWithRecursiveTypes(t *testing.T) {
+	for _, t := range []types.Type{
+		types.NewAlgebraic(types.NewConstructor(types.NewBoxed(types.NewIndex(0)))),
+		types.NewAlgebraic(
+			types.NewConstructor(
+				types.NewBoxed(
+					types.NewAlgebraic(types.NewConstructor(types.NewBoxed(types.NewIndex(1)))),
+				),
+			),
+		),
+		types.NewFunction([]types.Type{types.NewIndex(0)}, types.NewFloat64()),
+		types.NewFunction(
+			[]types.Type{types.NewFunction([]types.Type{types.NewIndex(1)}, types.NewFloat64())},
+			types.NewFloat64(),
+		),
+	} {
+		newTypeGenerator(llvm.NewModule("")).Generate(t)
+	}
+}
+
 func TestTypeGeneratorBytesToWords(t *testing.T) {
 	for k, v := range map[int]int{
 		0:  0,

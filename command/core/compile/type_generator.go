@@ -8,34 +8,24 @@ import (
 )
 
 type typeGenerator struct {
+	stack      []llvm.Type
 	targetData llvm.TargetData
 }
 
 func newTypeGenerator(m llvm.Module) typeGenerator {
-	return typeGenerator{llvm.NewTargetData(m.DataLayout())}
+	return typeGenerator{nil, llvm.NewTargetData(m.DataLayout())}
 }
 
 func (g typeGenerator) Generate(t types.Type) llvm.Type {
 	switch t := t.(type) {
 	case types.Algebraic:
-		if len(t.Constructors()) == 1 {
-			return g.GenerateConstructorElements(t.Constructors()[0])
+		if types.IsRecursive(t) {
+			s := llvm.GlobalContext().StructCreateNamed(t.String())
+			s.StructSetBody(g.pushType(s).generateAlgebraicBody(t), false)
+			return s
 		}
 
-		n := 0
-
-		for _, c := range t.Constructors() {
-			if m := g.getSize(g.GenerateConstructorElements(c)); m > n {
-				n = m
-			}
-		}
-
-		return llir.StructType(
-			[]llvm.Type{
-				g.GenerateConstructorTag(),
-				llvm.ArrayType(llvm.Int64Type(), g.bytesToWords(n)),
-			},
-		)
+		return llir.StructType(g.pushDummyType().generateAlgebraicBody(t))
 	case types.Boxed:
 		return llir.PointerType(
 			g.generateClosure(g.generateEntryFunction(nil, t.Content()), g.GenerateUnsizedPayload()),
@@ -43,15 +33,47 @@ func (g typeGenerator) Generate(t types.Type) llvm.Type {
 	case types.Float64:
 		return llvm.DoubleType()
 	case types.Function:
-		return llir.PointerType(
-			g.generateClosure(
-				g.generateEntryFunction(t.Arguments(), t.Result()),
-				g.GenerateUnsizedPayload(),
-			),
-		)
+		if types.IsRecursive(t) {
+			s := llvm.GlobalContext().StructCreateNamed(t.String())
+			s.StructSetBody(
+				g.pushType(llir.PointerType(s)).generateFunctionCloure(t).StructElementTypes(),
+				false,
+			)
+			return llir.PointerType(s)
+		}
+
+		return llir.PointerType(g.pushDummyType().generateFunctionCloure(t))
+	case types.Index:
+		return g.stack[len(g.stack)-1-t.Value()]
 	}
 
 	panic("unreachable")
+}
+
+func (g typeGenerator) generateAlgebraicBody(t types.Algebraic) []llvm.Type {
+	if len(t.Constructors()) == 1 {
+		return g.GenerateConstructorElements(t.Constructors()[0]).StructElementTypes()
+	}
+
+	n := 0
+
+	for _, c := range t.Constructors() {
+		if m := g.getSize(g.GenerateConstructorElements(c)); m > n {
+			n = m
+		}
+	}
+
+	return []llvm.Type{
+		g.GenerateConstructorTag(),
+		llvm.ArrayType(llvm.Int64Type(), g.bytesToWords(n)),
+	}
+}
+
+func (g typeGenerator) generateFunctionCloure(t types.Function) llvm.Type {
+	return g.generateClosure(
+		g.generateEntryFunction(t.Arguments(), t.Result()),
+		g.GenerateUnsizedPayload(),
+	)
 }
 
 func (g typeGenerator) GenerateSizedClosure(l ast.Lambda) llvm.Type {
@@ -157,4 +179,12 @@ func (g typeGenerator) bytesToWords(n int) int {
 	}
 
 	return (n-1)/g.targetData.PointerSize() + 1
+}
+
+func (g typeGenerator) pushType(t llvm.Type) typeGenerator {
+	return typeGenerator{append(g.stack, t), g.targetData}
+}
+
+func (g typeGenerator) pushDummyType() typeGenerator {
+	return typeGenerator{append(g.stack, llvm.VoidType()), g.targetData}
 }
