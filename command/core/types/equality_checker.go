@@ -71,7 +71,7 @@ func (c equalityChecker) Check(t, tt Type) bool {
 			}
 		}
 
-		return c.Check(t, tt)
+		return c.Check(t.Result(), f.Result())
 	}
 
 	return t.equal(tt)

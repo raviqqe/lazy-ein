@@ -77,12 +77,12 @@ func TestEqual(t *testing.T) {
 			NewFunction([]Type{NewFloat64()}, NewAlgebraic(NewConstructor(NewIndex(0)))),
 		},
 		{
-			NewFunction([]Type{NewFloat64()}, NewAlgebraic(NewConstructor(NewIndex(0)))),
+			NewFunction([]Type{NewFloat64()}, NewAlgebraic(NewConstructor(NewIndex(1)))),
 			NewFunction(
 				[]Type{NewFloat64()},
 				NewAlgebraic(
 					NewConstructor(
-						NewFunction([]Type{NewFloat64()}, NewAlgebraic(NewConstructor(NewIndex(0)))),
+						NewFunction([]Type{NewFloat64()}, NewAlgebraic(NewConstructor(NewIndex(1)))),
 					),
 				),
 			),
@@ -113,6 +113,10 @@ func TestEqual(t *testing.T) {
 		{
 			NewFunction([]Type{NewFloat64()}, NewFloat64()),
 			NewFunction([]Type{NewAlgebraic(NewConstructor())}, NewFloat64()),
+		},
+		{
+			NewFunction([]Type{NewFloat64()}, NewFloat64()),
+			NewFunction([]Type{NewFloat64()}, NewAlgebraic(NewConstructor())),
 		},
 		{
 			NewFunction([]Type{NewFloat64()}, NewFloat64()),
