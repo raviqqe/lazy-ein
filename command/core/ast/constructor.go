@@ -24,7 +24,7 @@ func (c Constructor) AlgebraicType() types.Algebraic {
 
 // ConstructorType returns a constructor type.
 func (c Constructor) ConstructorType() types.Constructor {
-	return c.typ.Constructors()[c.index]
+	return types.Unwrap(c.typ).(types.Algebraic).Constructors()[c.index]
 }
 
 // Index returns a constructor index.

@@ -105,6 +105,8 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 		return c.compileCase(e)
 	case ast.Let:
 		return c.compileLet(e)
+	case ast.List:
+		return c.compileList(e)
 	case ast.Unboxed:
 		return c.compileUnboxed(e)
 	case ast.Variable:
@@ -274,6 +276,58 @@ func (c compiler) compileLet(l ast.Let) (coreast.Expression, error) {
 	}
 
 	return coreast.NewLet(bs, ee), nil
+}
+
+func (c compiler) compileList(l ast.List) (coreast.Expression, error) {
+	t := coretypes.Unbox(l.Type().ToCore()).(coretypes.Algebraic)
+	s := "$nil"
+
+	bs := make([]coreast.Bind, 0, len(l.Elements())+1)
+	bs = append(
+		bs,
+		coreast.NewBind(
+			s,
+			coreast.NewVariableLambda(
+				nil,
+				true,
+				coreast.NewConstructorApplication(coreast.NewConstructor(t, 1), nil),
+				t,
+			),
+		),
+	)
+
+	for i := range l.Elements() {
+		e := l.Elements()[len(l.Elements())-1-i].(ast.Variable)
+		ss := fmt.Sprintf("$list-%v", i)
+		vs := []coreast.Argument{coreast.NewArgument(s, coretypes.NewBoxed(t))}
+
+		if len(c.freeVariableFinder.Find(e)) > 0 {
+			vs = append(vs, coreast.NewArgument(e.Name(), t.Constructors()[0].Elements()[i]))
+		}
+
+		bs = append(
+			bs,
+			coreast.NewBind(
+				ss,
+				coreast.NewVariableLambda(
+					vs,
+					true,
+					coreast.NewConstructorApplication(
+						coreast.NewConstructor(t, 0),
+						[]coreast.Atom{
+							coreast.NewVariable(e.Name()),
+							coreast.NewVariable(s),
+						},
+					),
+					t,
+				),
+			),
+		)
+
+		s = ss
+	}
+
+	return coreast.NewLet(bs, coreast.NewFunctionApplication(coreast.NewVariable(s), nil)), nil
 }
 
 func (c compiler) compileUnboxed(u ast.Unboxed) (coreast.Expression, error) {

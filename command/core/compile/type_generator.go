@@ -9,18 +9,25 @@ import (
 
 type typeGenerator struct {
 	stack      []llvm.Type
+	cache      map[string]llvm.Type
 	targetData llvm.TargetData
 }
 
 func newTypeGenerator(m llvm.Module) typeGenerator {
-	return typeGenerator{nil, llvm.NewTargetData(m.DataLayout())}
+	return typeGenerator{nil, map[string]llvm.Type{}, llvm.NewTargetData(m.DataLayout())}
 }
 
 func (g typeGenerator) Generate(t types.Type) llvm.Type {
+	if t, ok := g.cache[t.String()]; ok {
+		return t
+	}
+
 	switch t := t.(type) {
 	case types.Algebraic:
 		if types.IsRecursive(t) {
 			s := llvm.GlobalContext().StructCreateNamed(t.String())
+			g.cache[t.String()] = s
+
 			s.StructSetBody(g.pushType(s).generateAlgebraicBody(t), false)
 			return s
 		}
@@ -35,6 +42,8 @@ func (g typeGenerator) Generate(t types.Type) llvm.Type {
 	case types.Function:
 		if types.IsRecursive(t) {
 			s := llvm.GlobalContext().StructCreateNamed(t.String())
+			g.cache[t.String()] = s
+
 			s.StructSetBody(
 				g.pushType(llir.PointerType(s)).generateFunctionCloure(t).StructElementTypes(),
 				false,
@@ -182,9 +191,9 @@ func (g typeGenerator) bytesToWords(n int) int {
 }
 
 func (g typeGenerator) pushType(t llvm.Type) typeGenerator {
-	return typeGenerator{append(g.stack, t), g.targetData}
+	return typeGenerator{append(g.stack, t), g.cache, g.targetData}
 }
 
 func (g typeGenerator) pushDummyType() typeGenerator {
-	return typeGenerator{append(g.stack, llvm.VoidType()), g.targetData}
+	return typeGenerator{append(g.stack, llvm.VoidType()), g.cache, g.targetData}
 }

@@ -12,6 +12,9 @@ import (
 
 var numberAlgebraic = coretypes.NewAlgebraic(coretypes.NewConstructor(coretypes.NewFloat64()))
 var numberConstructor = coreast.NewConstructor(numberAlgebraic, 0)
+var listAlgebraic = coretypes.Unbox(
+	types.NewList(types.NewNumber(nil), nil).ToCore(),
+).(coretypes.Algebraic)
 
 func TestCompileWithEmptySource(t *testing.T) {
 	_, err := Compile(ast.NewModule("", []ast.Bind{}))
@@ -102,6 +105,26 @@ func TestCompileWithDeeplyNestedFunctionApplicationsInLambdaExpressions(t *testi
 								),
 							},
 						),
+					),
+				),
+			},
+		),
+	)
+
+	assert.Nil(t, err)
+}
+
+func TestCompileWithLists(t *testing.T) {
+	_, err := Compile(
+		ast.NewModule(
+			"",
+			[]ast.Bind{
+				ast.NewBind(
+					"x",
+					types.NewList(types.NewNumber(nil), nil),
+					ast.NewList(
+						types.NewList(types.NewNumber(nil), nil),
+						[]ast.Expression{ast.NewNumber(42)},
 					),
 				),
 			},
@@ -411,6 +434,83 @@ func TestCompileToCoreWithNestedLetExpressionsInLambdaExpressions(t *testing.T) 
 							coreast.NewFunctionApplication(coreast.NewVariable("y"), nil),
 						),
 						coretypes.NewBoxed(numberAlgebraic),
+					),
+				),
+			},
+		),
+		m,
+	)
+}
+
+func TestCompileToCoreWithLists(t *testing.T) {
+	m, err := compileToCore(
+		ast.NewModule(
+			"foo",
+			[]ast.Bind{
+				ast.NewBind(
+					"x",
+					types.NewList(types.NewNumber(nil), nil),
+					ast.NewList(types.NewUnknown(nil), []ast.Expression{ast.NewNumber(42)}),
+				),
+			},
+		),
+	)
+	assert.Nil(t, err)
+
+	assert.Equal(
+		t,
+		coreast.NewModule(
+			"foo",
+			[]coreast.Bind{
+				coreast.NewBind(
+					"$literal-0",
+					coreast.NewVariableLambda(
+						nil,
+						true,
+						numberConstructorApplication(coreast.NewFloat64(42)),
+						numberAlgebraic,
+					),
+				),
+				coreast.NewBind(
+					"x",
+					coreast.NewVariableLambda(
+						nil,
+						true,
+						coreast.NewLet(
+							[]coreast.Bind{
+								coreast.NewBind(
+									"$nil",
+									coreast.NewVariableLambda(
+										nil,
+										true,
+										coreast.NewConstructorApplication(
+											coreast.NewConstructor(listAlgebraic, 1),
+											nil,
+										),
+										listAlgebraic,
+									),
+								),
+								coreast.NewBind(
+									"$list-0",
+									coreast.NewVariableLambda(
+										[]coreast.Argument{
+											coreast.NewArgument("$nil", coretypes.NewBoxed(listAlgebraic)),
+										},
+										true,
+										coreast.NewConstructorApplication(
+											coreast.NewConstructor(listAlgebraic, 0),
+											[]coreast.Atom{
+												coreast.NewVariable("$literal-0"),
+												coreast.NewVariable("$nil"),
+											},
+										),
+										listAlgebraic,
+									),
+								),
+							},
+							coreast.NewFunctionApplication(coreast.NewVariable("$list-0"), nil),
+						),
+						coretypes.NewBoxed(listAlgebraic),
 					),
 				),
 			},

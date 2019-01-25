@@ -37,3 +37,43 @@ func Validate(t Type) bool {
 func IsRecursive(t Type) bool {
 	return newRecursivityChecker().Check(t)
 }
+
+// Unwrap unwraps a recursive type by a level.
+func Unwrap(t Type) Type {
+	return unwrap(t, nil)
+}
+
+func unwrap(t Type, ts []Type) Type {
+	switch t := t.(type) {
+	case Algebraic:
+		ts = append(ts, t)
+		cs := make([]Constructor, 0, len(t.Constructors()))
+
+		for _, c := range t.Constructors() {
+			es := make([]Type, 0, len(c.Elements()))
+
+			for _, e := range c.Elements() {
+				es = append(es, unwrap(e, ts))
+			}
+
+			cs = append(cs, NewConstructor(es...))
+		}
+
+		return NewAlgebraic(cs[0], cs[1:]...)
+	case Boxed:
+		return NewBoxed(unwrap(t.Content(), ts).(Boxable))
+	case Function:
+		ts = append(ts, t)
+		as := make([]Type, 0, len(t.Arguments()))
+
+		for _, a := range t.Arguments() {
+			as = append(as, unwrap(a, ts))
+		}
+
+		return NewFunction(as, t.Result())
+	case Index:
+		return ts[len(ts)-1-t.Value()]
+	}
+
+	return t
+}
