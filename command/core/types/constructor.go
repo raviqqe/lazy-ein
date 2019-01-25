@@ -30,7 +30,7 @@ func (c Constructor) ConvertTypes(f func(Type) Type) Constructor {
 
 func (c Constructor) String() string {
 	if len(c.elements) == 0 {
-		return "Constructor"
+		return "c"
 	}
 
 	s := c.elements[0].String()
@@ -39,7 +39,7 @@ func (c Constructor) String() string {
 		s += "," + e.String()
 	}
 
-	return fmt.Sprintf("Constructor(%v)", s)
+	return fmt.Sprintf("c(%v)", s)
 }
 
 func (c Constructor) equal(cc Constructor) bool {

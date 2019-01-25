@@ -24,7 +24,7 @@ func (i Index) ConvertTypes(f func(Type) Type) Type {
 }
 
 func (i Index) String() string {
-	return fmt.Sprintf("Index(%v)", i.value)
+	return fmt.Sprintf("&%v", i.value)
 }
 
 // equal checks structural equality.

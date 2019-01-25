@@ -14,7 +14,7 @@ func (f Float64) ConvertTypes(ff func(Type) Type) Type {
 }
 
 func (Float64) String() string {
-	return "Float64"
+	return "f64"
 }
 
 func (Float64) equal(t Type) bool {

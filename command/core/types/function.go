@@ -45,7 +45,7 @@ func (f Function) String() string {
 		s += "," + a.String()
 	}
 
-	return fmt.Sprintf("Function([%v],%v)", s, f.result)
+	return fmt.Sprintf("f([%v],%v)", s, f.result)
 }
 
 func (f Function) equal(t Type) bool {

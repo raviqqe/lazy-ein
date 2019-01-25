@@ -13,7 +13,7 @@ func TestNewBoxed(t *testing.T) {
 func TestBoxedString(t *testing.T) {
 	assert.Equal(
 		t,
-		"Boxed(Algebraic(Constructor(Float64)))",
+		"*a(c(f64))",
 		NewBoxed(NewAlgebraic(NewConstructor(NewFloat64()))).String(),
 	)
 }

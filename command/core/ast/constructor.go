@@ -34,5 +34,5 @@ func (c Constructor) Index() int {
 
 // ID returns an ID.
 func (c Constructor) ID() string {
-	return fmt.Sprintf("%v.%v", c.typ, c.index)
+	return fmt.Sprintf("%v[%v]", c.typ, c.index)
 }

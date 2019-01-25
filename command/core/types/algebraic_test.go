@@ -9,7 +9,7 @@ import (
 func TestAlgebraicString(t *testing.T) {
 	assert.Equal(
 		t,
-		"Algebraic(Constructor,Constructor)",
+		"a(c,c)",
 		NewAlgebraic(NewConstructor(), NewConstructor()).String(),
 	)
 }

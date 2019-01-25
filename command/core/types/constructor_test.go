@@ -7,10 +7,10 @@ import (
 )
 
 func TestConstructorString(t *testing.T) {
-	assert.Equal(t, "Constructor", NewConstructor().String())
+	assert.Equal(t, "c", NewConstructor().String())
 	assert.Equal(
 		t,
-		"Constructor(Float64,Float64)",
+		"c(f64,f64)",
 		NewConstructor(NewFloat64(), NewFloat64()).String(),
 	)
 }

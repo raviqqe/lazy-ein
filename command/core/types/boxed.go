@@ -23,7 +23,7 @@ func (b Boxed) ConvertTypes(f func(Type) Type) Type {
 }
 
 func (b Boxed) String() string {
-	return fmt.Sprintf("Boxed(%v)", b.content)
+	return fmt.Sprintf("*%v", b.content)
 }
 
 func (b Boxed) equal(t Type) bool {

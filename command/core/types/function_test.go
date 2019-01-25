@@ -18,7 +18,7 @@ func TestNewFunctionPanic(t *testing.T) {
 func TestFunctionString(t *testing.T) {
 	assert.Equal(
 		t,
-		"Function([Float64,Float64],Float64)",
+		"f([f64,f64],f64)",
 		NewFunction([]Type{NewFloat64(), NewFloat64()}, NewFloat64()).String(),
 	)
 }
