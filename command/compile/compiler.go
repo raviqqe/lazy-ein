@@ -208,7 +208,11 @@ func (c compiler) compileCase(cc ast.Case) (coreast.Expression, error) {
 			return nil, err
 		}
 
-		as = append(as, coreast.NewPrimitiveAlternative(c.compileUnboxedLiteral(a.Literal()), e))
+		// TODO: Handle list alternatives.
+		as = append(
+			as,
+			coreast.NewPrimitiveAlternative(c.compileUnboxedLiteral(a.Pattern().(ast.Literal)), e),
+		)
 	}
 
 	d, ok := cc.DefaultAlternative()

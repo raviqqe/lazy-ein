@@ -150,7 +150,7 @@ func (s *state) expressionWithOptions(b, a bool) parcom.Parser {
 		append(
 			ps,
 			s.numberLiteral(),
-			s.listLiteral(),
+			s.listLiteral(s.expression()),
 			s.let(),
 			s.caseOf(),
 			s.variable(),
@@ -185,14 +185,14 @@ func (s *state) numberLiteral() parcom.Parser {
 	)
 }
 
-func (s *state) listLiteral() parcom.Parser {
+func (s *state) listLiteral(p parcom.Parser) parcom.Parser {
 	return s.withDebugInformation(
 		s.Wrap(
 			s.sign(openBracketSign),
 			s.Or(
 				s.And(
-					s.expression(),
-					s.Many(s.Prefix(s.sign(commaSign), s.expression())),
+					p,
+					s.Many(s.Prefix(s.sign(commaSign), p)),
 					s.Maybe(s.sign(commaSign)),
 				),
 				s.None(),
@@ -302,9 +302,9 @@ func (s *state) alternative() parcom.Parser {
 	return s.App(
 		func(x interface{}) (interface{}, error) {
 			xs := x.([]interface{})
-			return ast.NewAlternative(xs[0].(ast.Literal), xs[2].(ast.Expression)), nil
+			return ast.NewAlternative(xs[0].(ast.Expression), xs[2].(ast.Expression)), nil
 		},
-		s.WithPosition(s.And(s.numberLiteral(), s.sign(mapSign), s.expression())),
+		s.WithPosition(s.And(s.pattern(), s.sign(mapSign), s.expression())),
 	)
 }
 
@@ -315,6 +315,17 @@ func (s *state) defaultAlternative() parcom.Parser {
 			return ast.NewDefaultAlternative(xs[0].(string), xs[2].(ast.Expression)), nil
 		},
 		s.WithPosition(s.And(s.identifier(), s.sign(mapSign), s.expression())),
+	)
+}
+
+func (s *state) pattern() parcom.Parser {
+	return s.Lazy(
+		func() parcom.Parser {
+			return s.Or(
+				s.numberLiteral(),
+				s.listLiteral(s.pattern()),
+			)
+		},
 	)
 }
 

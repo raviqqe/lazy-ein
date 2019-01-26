@@ -154,7 +154,8 @@ func TestStateListLiteral(t *testing.T) {
 		"[42, 42,]",
 		"[[42]]",
 	} {
-		_, err := newState("", s).listLiteral()()
+		ss := newState("", s)
+		_, err := ss.listLiteral(ss.expression())()
 		assert.Nil(t, err)
 	}
 }
@@ -165,7 +166,8 @@ func TestStateListLiteralError(t *testing.T) {
 		"[,42]",
 		"[42,,]",
 	} {
-		_, err := newState("", s).listLiteral()()
+		ss := newState("", s)
+		_, err := ss.listLiteral(ss.expression())()
 		assert.Error(t, err)
 	}
 }
@@ -268,11 +270,51 @@ func TestStateCaseOf(t *testing.T) {
 				ast.NewDefaultAlternative("x", ast.NewNumber(4)),
 			),
 		},
+		{
+			"case [42] of\n [42] -> 42",
+			ast.NewCaseWithoutDefault(
+				ast.NewList(
+					types.NewUnknown(debug.NewInformation("", 1, 6, "case [42] of")),
+					[]ast.Expression{ast.NewNumber(42)},
+				),
+				types.NewUnknown(debug.NewInformation("", 1, 1, "case [42] of")),
+				[]ast.Alternative{
+					ast.NewAlternative(
+						ast.NewList(
+							types.NewUnknown(debug.NewInformation("", 2, 2, " [42] -> 42")),
+							[]ast.Expression{ast.NewNumber(42)},
+						),
+						ast.NewNumber(42),
+					),
+				},
+			),
+		},
 	} {
 		a, err := newState("", c.source).caseOf()()
 
 		assert.Nil(t, err)
 		assert.Equal(t, c.ast, a)
+	}
+}
+
+func TestStatePattern(t *testing.T) {
+	for _, s := range []string{
+		"42",
+		"[42]",
+		"[42, [42]]",
+	} {
+		_, err := newState("", s).pattern()()
+		assert.Nil(t, err)
+	}
+}
+
+func TestStatePatternError(t *testing.T) {
+	for _, s := range []string{
+		"x",
+		"[f x y]",
+	} {
+		_, err := newState("", s).pattern()()
+		assert.Error(t, err)
 	}
 }
 
