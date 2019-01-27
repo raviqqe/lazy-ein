@@ -151,13 +151,33 @@ func (i inferrer) inferCase(c ast.Case) (types.Type, []types.Equation, error) {
 	ts := make([]types.Type, 0, len(c.Alternatives())+1)
 
 	for _, a := range c.Alternatives() {
-		t, ees, err := i.inferType(a.Expression())
+		// Alternative patterns
+
+		tt, ees, err := i.inferType(a.Pattern())
 
 		if err != nil {
 			return nil, nil, err
 		}
 
-		ts = append(ts, t)
+		es = append(es, ees...)
+
+		ees, err = t.Unify(tt)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		es = append(es, ees...)
+
+		// Alternative expressions
+
+		tt, ees, err = i.inferType(a.Expression())
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		ts = append(ts, tt)
 		es = append(es, ees...)
 	}
 
@@ -353,21 +373,33 @@ func (i inferrer) substituteVariablesInModule(m ast.Module, ss map[int]types.Typ
 	return m.ConvertExpressions(func(e ast.Expression) ast.Expression {
 		switch e := e.(type) {
 		case ast.Case:
+			as := make([]ast.Alternative, 0, len(e.Alternatives()))
+
+			for _, a := range e.Alternatives() {
+				as = append(
+					as,
+					ast.NewAlternative(
+						a.Pattern().ConvertExpressions(func(e ast.Expression) ast.Expression {
+							switch e := e.(type) {
+							case ast.List:
+								return ast.NewList(i.substituteVariable(e.Type(), ss), e.Elements())
+							}
+
+							return e
+						}).(ast.Expression),
+						a.Expression(),
+					),
+				)
+			}
+
 			a, ok := e.DefaultAlternative()
 
 			if !ok {
-				return ast.NewCaseWithoutDefault(
-					e.Expression(),
-					i.substituteVariable(e.Type(), ss),
-					e.Alternatives())
+				return ast.NewCaseWithoutDefault(e.Expression(), i.substituteVariable(e.Type(), ss),
+					as)
 			}
 
-			return ast.NewCase(
-				e.Expression(),
-				i.substituteVariable(e.Type(), ss),
-				e.Alternatives(),
-				a,
-			)
+			return ast.NewCase(e.Expression(), i.substituteVariable(e.Type(), ss), as, a)
 		case ast.Let:
 			bs := make([]ast.Bind, 0, len(e.Binds()))
 
@@ -425,17 +457,32 @@ func (i inferrer) insertTypeVariables(m ast.Module) ast.Module {
 	return m.ConvertExpressions(func(e ast.Expression) ast.Expression {
 		switch e := e.(type) {
 		case ast.Case:
-			a, ok := e.DefaultAlternative()
+			as := make([]ast.Alternative, 0, len(e.Alternatives()))
 
-			if !ok {
-				return ast.NewCaseWithoutDefault(
-					e.Expression(),
-					i.createTypeVariable(),
-					e.Alternatives(),
+			for _, a := range e.Alternatives() {
+				as = append(
+					as,
+					ast.NewAlternative(
+						a.Pattern().ConvertExpressions(func(e ast.Expression) ast.Expression {
+							switch e := e.(type) {
+							case ast.List:
+								return ast.NewList(i.createTypeVariable(), e.Elements())
+							}
+
+							return e
+						}).(ast.Expression),
+						a.Expression(),
+					),
 				)
 			}
 
-			return ast.NewCase(e.Expression(), i.createTypeVariable(), e.Alternatives(), a)
+			a, ok := e.DefaultAlternative()
+
+			if !ok {
+				return ast.NewCaseWithoutDefault(e.Expression(), i.createTypeVariable(), as)
+			}
+
+			return ast.NewCase(e.Expression(), i.createTypeVariable(), as, a)
 		case ast.Let:
 			bs := make([]ast.Bind, 0, len(e.Binds()))
 
