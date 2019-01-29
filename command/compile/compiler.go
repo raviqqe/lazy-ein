@@ -193,6 +193,17 @@ func (c compiler) compileBinaryOperation(o ast.BinaryOperation) (coreast.Express
 }
 
 func (c compiler) compileCase(cc ast.Case) (coreast.Expression, error) {
+	switch cc.Type().(type) {
+	case types.Number:
+		return c.compilePrimitiveCase(cc)
+	case types.List:
+		return c.compileListCase(cc)
+	}
+
+	panic("unreachable")
+}
+
+func (c compiler) compilePrimitiveCase(cc ast.Case) (coreast.Expression, error) {
 	arg, err := c.compileExpression(cc.Expression())
 
 	if err != nil {
@@ -208,7 +219,6 @@ func (c compiler) compileCase(cc ast.Case) (coreast.Expression, error) {
 			return nil, err
 		}
 
-		// TODO: Handle list alternatives.
 		as = append(
 			as,
 			coreast.NewPrimitiveAlternative(c.compileUnboxedLiteral(a.Pattern().(ast.Literal)), e),
@@ -254,6 +264,10 @@ func (c compiler) compileCase(cc ast.Case) (coreast.Expression, error) {
 			coreast.NewDefaultAlternative("", de),
 		),
 	), nil
+}
+
+func (c compiler) compileListCase(cc ast.Case) (coreast.Expression, error) {
+	panic("not implemented")
 }
 
 func (c compiler) compileLet(l ast.Let) (coreast.Expression, error) {
