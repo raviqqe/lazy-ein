@@ -9,8 +9,8 @@ type List struct {
 }
 
 // NewList creates a list.
-func NewList(t types.Type, as []Expression) List {
-	return List{t, as}
+func NewList(t types.Type, es []Expression) List {
+	return List{t, es}
 }
 
 // Type returns a type.
