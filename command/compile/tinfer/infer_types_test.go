@@ -230,7 +230,7 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 						types.NewUnknown(nil),
 						ast.NewList(
 							types.NewUnknown(nil),
-							[]ast.Expression{ast.NewNumber(42)},
+							[]ast.ListArgument{ast.NewListArgument(ast.NewNumber(42), false)},
 						),
 					),
 				},
@@ -243,7 +243,7 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 						types.NewList(types.NewNumber(nil), nil),
 						ast.NewList(
 							types.NewList(types.NewNumber(nil), nil),
-							[]ast.Expression{ast.NewNumber(42)},
+							[]ast.ListArgument{ast.NewListArgument(ast.NewNumber(42), false)},
 						),
 					),
 				},
@@ -258,11 +258,17 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 						"x",
 						types.NewUnknown(nil),
 						ast.NewCaseWithoutDefault(
-							ast.NewList(types.NewUnknown(nil), []ast.Expression{ast.NewNumber(42)}),
+							ast.NewList(
+								types.NewUnknown(nil),
+								[]ast.ListArgument{ast.NewListArgument(ast.NewNumber(42), false)},
+							),
 							types.NewUnknown(nil),
 							[]ast.Alternative{
 								ast.NewAlternative(
-									ast.NewList(types.NewUnknown(nil), []ast.Expression{ast.NewNumber(42)}),
+									ast.NewList(
+										types.NewUnknown(nil),
+										[]ast.ListArgument{ast.NewListArgument(ast.NewNumber(42), false)},
+									),
 									ast.NewNumber(42),
 								),
 							},
@@ -279,14 +285,14 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 						ast.NewCaseWithoutDefault(
 							ast.NewList(
 								types.NewList(types.NewNumber(nil), nil),
-								[]ast.Expression{ast.NewNumber(42)},
+								[]ast.ListArgument{ast.NewListArgument(ast.NewNumber(42), false)},
 							),
 							types.NewList(types.NewNumber(nil), nil),
 							[]ast.Alternative{
 								ast.NewAlternative(
 									ast.NewList(
 										types.NewList(types.NewNumber(nil), nil),
-										[]ast.Expression{ast.NewNumber(42)},
+										[]ast.ListArgument{ast.NewListArgument(ast.NewNumber(42), false)},
 									),
 									ast.NewNumber(42),
 								),

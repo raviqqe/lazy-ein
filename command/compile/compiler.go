@@ -300,7 +300,7 @@ func (c compiler) compileList(l ast.List) (coreast.Expression, error) {
 	t := coretypes.Unbox(l.Type().ToCore()).(coretypes.Algebraic)
 	s := "$nil"
 
-	bs := make([]coreast.Bind, 0, len(l.Elements())+1)
+	bs := make([]coreast.Bind, 0, len(l.Arguments())+1)
 	bs = append(
 		bs,
 		coreast.NewBind(
@@ -314,8 +314,14 @@ func (c compiler) compileList(l ast.List) (coreast.Expression, error) {
 		),
 	)
 
-	for i := range l.Elements() {
-		e := l.Elements()[len(l.Elements())-1-i].(ast.Variable)
+	for i := range l.Arguments() {
+		a := l.Arguments()[len(l.Arguments())-1-i]
+
+		if a.Expanded() {
+			panic("not implemented")
+		}
+
+		e := a.Expression().(ast.Variable)
 		ss := fmt.Sprintf("$list-%v", i)
 		vs := []coreast.Argument{coreast.NewArgument(s, coretypes.NewBoxed(t))}
 

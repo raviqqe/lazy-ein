@@ -4,13 +4,13 @@ import "github.com/ein-lang/ein/command/types"
 
 // List is a list.
 type List struct {
-	typ      types.Type
-	elements []Expression
+	typ       types.Type
+	arguments []ListArgument
 }
 
 // NewList creates a list.
-func NewList(t types.Type, es []Expression) List {
-	return List{t, es}
+func NewList(t types.Type, as []ListArgument) List {
+	return List{t, as}
 }
 
 // Type returns a type.
@@ -18,20 +18,20 @@ func (l List) Type() types.Type {
 	return l.typ
 }
 
-// Elements returns elements.
-func (l List) Elements() []Expression {
-	return l.elements
+// Arguments returns arguments.
+func (l List) Arguments() []ListArgument {
+	return l.arguments
 }
 
 // ConvertExpressions visits expressions.
 func (l List) ConvertExpressions(f func(Expression) Expression) Node {
-	es := make([]Expression, 0, len(l.elements))
+	as := make([]ListArgument, 0, len(l.arguments))
 
-	for _, e := range l.elements {
-		es = append(es, e.ConvertExpressions(f).(Expression))
+	for _, a := range l.arguments {
+		as = append(as, a.ConvertExpressions(f).(ListArgument))
 	}
 
-	return f(NewList(l.typ, es))
+	return f(NewList(l.typ, as))
 }
 
 // VisitTypes visits types.
@@ -40,8 +40,8 @@ func (l List) VisitTypes(f func(types.Type) error) error {
 		return err
 	}
 
-	for _, e := range l.elements {
-		if err := e.VisitTypes(f); err != nil {
+	for _, a := range l.arguments {
+		if err := a.VisitTypes(f); err != nil {
 			return err
 		}
 	}

@@ -61,8 +61,8 @@ func (f freeVariableFinder) Find(e ast.Expression) []string {
 	case ast.List:
 		ss := []string{}
 
-		for _, e := range e.Elements() {
-			ss = append(ss, f.Find(e)...)
+		for _, a := range e.Arguments() {
+			ss = append(ss, f.Find(a.Expression())...)
 		}
 
 		return ss

@@ -124,7 +124,7 @@ func TestCompileWithLists(t *testing.T) {
 					types.NewList(types.NewNumber(nil), nil),
 					ast.NewList(
 						types.NewList(types.NewNumber(nil), nil),
-						[]ast.Expression{ast.NewNumber(42)},
+						[]ast.ListArgument{ast.NewListArgument(ast.NewNumber(42), false)},
 					),
 				),
 			},
@@ -450,7 +450,10 @@ func TestCompileToCoreWithLists(t *testing.T) {
 				ast.NewBind(
 					"x",
 					types.NewList(types.NewNumber(nil), nil),
-					ast.NewList(types.NewUnknown(nil), []ast.Expression{ast.NewNumber(42)}),
+					ast.NewList(
+						types.NewUnknown(nil),
+						[]ast.ListArgument{ast.NewListArgument(ast.NewNumber(42), false)},
+					),
 				),
 			},
 		),

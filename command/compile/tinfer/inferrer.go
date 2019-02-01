@@ -266,8 +266,8 @@ func (i inferrer) inferList(l ast.List) (types.Type, []types.Equation, error) {
 		return nil, nil, err
 	}
 
-	for _, e := range l.Elements() {
-		et, ees, err := i.inferType(e)
+	for _, a := range l.Arguments() {
+		tt, ees, err := i.inferType(a.Expression())
 
 		if err != nil {
 			return nil, nil, err
@@ -275,7 +275,13 @@ func (i inferrer) inferList(l ast.List) (types.Type, []types.Equation, error) {
 
 		es = append(es, ees...)
 
-		ees, err = t.Element().Unify(et)
+		ttt := t.Element()
+
+		if a.Expanded() {
+			ttt = t
+		}
+
+		ees, err = ttt.Unify(tt)
 
 		if err != nil {
 			return nil, nil, err
@@ -382,7 +388,7 @@ func (i inferrer) substituteVariablesInModule(m ast.Module, ss map[int]types.Typ
 						a.Pattern().ConvertExpressions(func(e ast.Expression) ast.Expression {
 							switch e := e.(type) {
 							case ast.List:
-								return ast.NewList(i.substituteVariable(e.Type(), ss), e.Elements())
+								return ast.NewList(i.substituteVariable(e.Type(), ss), e.Arguments())
 							}
 
 							return e
@@ -412,7 +418,7 @@ func (i inferrer) substituteVariablesInModule(m ast.Module, ss map[int]types.Typ
 
 			return ast.NewLet(bs, e.Expression())
 		case ast.List:
-			return ast.NewList(i.substituteVariable(e.Type(), ss), e.Elements())
+			return ast.NewList(i.substituteVariable(e.Type(), ss), e.Arguments())
 		}
 
 		return e
@@ -466,7 +472,7 @@ func (i inferrer) insertTypeVariables(m ast.Module) ast.Module {
 						a.Pattern().ConvertExpressions(func(e ast.Expression) ast.Expression {
 							switch e := e.(type) {
 							case ast.List:
-								return ast.NewList(i.createTypeVariable(), e.Elements())
+								return ast.NewList(i.createTypeVariable(), e.Arguments())
 							}
 
 							return e
@@ -492,7 +498,7 @@ func (i inferrer) insertTypeVariables(m ast.Module) ast.Module {
 
 			return ast.NewLet(bs, e.Expression())
 		case ast.List:
-			return ast.NewList(i.createTypeVariable(), e.Elements())
+			return ast.NewList(i.createTypeVariable(), e.Arguments())
 		}
 
 		return e

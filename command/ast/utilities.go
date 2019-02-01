@@ -6,17 +6,22 @@ func PatternsEqual(e, ee Expression) bool {
 	case List:
 		l, ok := ee.(List)
 
-		if !ok || len(e.Elements()) != len(l.Elements()) {
+		if !ok || len(e.Arguments()) != len(l.Arguments()) {
 			return false
-		} else if len(e.Elements()) == 0 {
+		} else if len(e.Arguments()) == 0 {
 			return true
+		} else if e.Arguments()[0].Expanded() != l.Arguments()[0].Expanded() {
+			return false
 		}
 
-		return PatternsEqual(e.Elements()[0], l.Elements()[0]) &&
-			PatternsEqual(NewList(e.Type(), e.Elements()[1:]), NewList(l.Type(), l.Elements()[1:]))
+		return PatternsEqual(e.Arguments()[0].Expression(), l.Arguments()[0].Expression()) &&
+			PatternsEqual(NewList(e.Type(), e.Arguments()[1:]), NewList(l.Type(), l.Arguments()[1:]))
 	case Number:
 		n, ok := ee.(Number)
 		return ok && e.Value() == n.Value()
+	case Variable:
+		_, ok := ee.(Variable)
+		return ok
 	}
 
 	panic("unreachable")

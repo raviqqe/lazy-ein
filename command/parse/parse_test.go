@@ -275,14 +275,14 @@ func TestStateCaseOf(t *testing.T) {
 			ast.NewCaseWithoutDefault(
 				ast.NewList(
 					types.NewUnknown(debug.NewInformation("", 1, 6, "case [42] of")),
-					[]ast.Expression{ast.NewNumber(42)},
+					[]ast.ListArgument{ast.NewListArgument(ast.NewNumber(42), false)},
 				),
 				types.NewUnknown(debug.NewInformation("", 1, 1, "case [42] of")),
 				[]ast.Alternative{
 					ast.NewAlternative(
 						ast.NewList(
 							types.NewUnknown(debug.NewInformation("", 2, 2, " [42] -> 42")),
-							[]ast.Expression{ast.NewNumber(42)},
+							[]ast.ListArgument{ast.NewListArgument(ast.NewNumber(42), false)},
 						),
 						ast.NewNumber(42),
 					),

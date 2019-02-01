@@ -205,13 +205,13 @@ func (s *state) listLiteral(p parcom.Parser) parcom.Parser {
 			}
 
 			xs := x.([]interface{})
-			es := []ast.Expression{xs[0].(ast.Expression)}
+			as := []ast.ListArgument{ast.NewListArgument(xs[0].(ast.Expression), false)}
 
 			for _, x := range xs[1].([]interface{}) {
-				es = append(es, x.(ast.Expression))
+				as = append(as, ast.NewListArgument(x.(ast.Expression), false))
 			}
 
-			return ast.NewList(types.NewUnknown(i), es), nil
+			return ast.NewList(types.NewUnknown(i), as), nil
 		},
 	)
 }

@@ -16,24 +16,26 @@ func desugarComplexLists(m ast.Module) ast.Module {
 			return e
 		}
 
-		bs := make([]ast.Bind, 0, len(l.Elements()))
-		es := make([]ast.Expression, 0, len(l.Elements()))
+		bs := make([]ast.Bind, 0, len(l.Arguments()))
+		as := make([]ast.ListArgument, 0, len(l.Arguments()))
 
-		for _, e := range l.Elements() {
-			v, ok := e.(ast.Variable)
-
-			if !ok {
-				v = ast.NewVariable(g.Generate("element"))
-				bs = append(bs, ast.NewBind(v.Name(), types.NewUnknown(nil), e))
+		for _, a := range l.Arguments() {
+			if a.Expanded() {
+				panic("not implemented")
+			} else if _, ok := a.Expression().(ast.Variable); ok {
+				as = append(as, a)
+				continue
 			}
 
-			es = append(es, v)
+			s := g.Generate("element")
+			bs = append(bs, ast.NewBind(s, types.NewUnknown(nil), a.Expression()))
+			as = append(as, ast.NewListArgument(ast.NewVariable(s), false))
 		}
 
 		if len(bs) == 0 {
 			return l
 		}
 
-		return ast.NewLet(bs, ast.NewList(l.Type(), es))
+		return ast.NewLet(bs, ast.NewList(l.Type(), as))
 	}).(ast.Module)
 }

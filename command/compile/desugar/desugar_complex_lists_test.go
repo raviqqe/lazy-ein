@@ -25,7 +25,8 @@ func TestDesugarComplexLists(t *testing.T) {
 						types.NewList(types.NewNumber(nil), nil),
 						ast.NewList(
 							types.NewList(types.NewNumber(nil), nil),
-							[]ast.Expression{ast.NewVariable("y")}),
+							[]ast.ListArgument{ast.NewListArgument(ast.NewVariable("y"), false)},
+						),
 					),
 				},
 			),
@@ -37,7 +38,8 @@ func TestDesugarComplexLists(t *testing.T) {
 						types.NewList(types.NewNumber(nil), nil),
 						ast.NewList(
 							types.NewList(types.NewNumber(nil), nil),
-							[]ast.Expression{ast.NewVariable("y")}),
+							[]ast.ListArgument{ast.NewListArgument(ast.NewVariable("y"), false)},
+						),
 					),
 				},
 			),
@@ -52,8 +54,14 @@ func TestDesugarComplexLists(t *testing.T) {
 						types.NewList(types.NewNumber(nil), nil),
 						ast.NewList(
 							types.NewList(types.NewNumber(nil), nil),
-							[]ast.Expression{
-								ast.NewApplication(ast.NewVariable("f"), []ast.Expression{ast.NewVariable("y")}),
+							[]ast.ListArgument{
+								ast.NewListArgument(
+									ast.NewApplication(
+										ast.NewVariable("f"),
+										[]ast.Expression{ast.NewVariable("y")},
+									),
+									false,
+								),
 							},
 						),
 					),
@@ -78,7 +86,9 @@ func TestDesugarComplexLists(t *testing.T) {
 							},
 							ast.NewList(
 								types.NewList(types.NewNumber(nil), nil),
-								[]ast.Expression{ast.NewVariable("$list.element-0")},
+								[]ast.ListArgument{
+									ast.NewListArgument(ast.NewVariable("$list.element-0"), false),
+								},
 							),
 						),
 					),
