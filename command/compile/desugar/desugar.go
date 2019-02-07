@@ -9,6 +9,7 @@ func WithoutTypes(m ast.Module) ast.Module {
 		desugarComplexApplications,
 		desugarComplexBinaryOperations,
 		desugarComplexLists,
+		desugarListCases,
 	} {
 		m = f(m)
 	}
