@@ -302,6 +302,7 @@ func TestStatePattern(t *testing.T) {
 		"42",
 		"[42]",
 		"[42, [42]]",
+		"[x]",
 	} {
 		_, err := newState("", s).pattern()()
 		assert.Nil(t, err)
@@ -311,7 +312,7 @@ func TestStatePattern(t *testing.T) {
 func TestStatePatternError(t *testing.T) {
 	for _, s := range []string{
 		"x",
-		"[f x y]",
+		"[f x]",
 	} {
 		_, err := newState("", s).pattern()()
 		assert.Error(t, err)

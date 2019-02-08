@@ -319,11 +319,18 @@ func (s *state) defaultAlternative() parcom.Parser {
 }
 
 func (s *state) pattern() parcom.Parser {
+	return s.Or(
+		s.numberLiteral(),
+		s.listLiteral(s.innerPattern()),
+	)
+}
+
+func (s *state) innerPattern() parcom.Parser {
 	return s.Lazy(
 		func() parcom.Parser {
 			return s.Or(
-				s.numberLiteral(),
-				s.listLiteral(s.pattern()),
+				s.variable(),
+				s.pattern(),
 			)
 		},
 	)
