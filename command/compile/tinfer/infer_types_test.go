@@ -303,6 +303,65 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 				ast.NewNumber(42),
 			),
 		},
+		// List case expressions with variable elements
+		{
+			ast.NewLet(
+				[]ast.Bind{
+					ast.NewBind(
+						"x",
+						types.NewUnknown(nil),
+						ast.NewCaseWithoutDefault(
+							ast.NewList(
+								types.NewUnknown(nil),
+								[]ast.ListArgument{ast.NewListArgument(ast.NewNumber(42), false)},
+							),
+							types.NewUnknown(nil),
+							[]ast.Alternative{
+								ast.NewAlternative(
+									ast.NewList(
+										types.NewUnknown(nil),
+										[]ast.ListArgument{
+											ast.NewListArgument(ast.NewVariable("y"), false),
+											ast.NewListArgument(ast.NewVariable("ys"), true),
+										},
+									),
+									ast.NewVariable("y"),
+								),
+							},
+						),
+					),
+				},
+				ast.NewNumber(42),
+			),
+			ast.NewLet(
+				[]ast.Bind{
+					ast.NewBind(
+						"x",
+						types.NewNumber(nil),
+						ast.NewCaseWithoutDefault(
+							ast.NewList(
+								types.NewList(types.NewNumber(nil), nil),
+								[]ast.ListArgument{ast.NewListArgument(ast.NewNumber(42), false)},
+							),
+							types.NewList(types.NewNumber(nil), nil),
+							[]ast.Alternative{
+								ast.NewAlternative(
+									ast.NewList(
+										types.NewList(types.NewNumber(nil), nil),
+										[]ast.ListArgument{
+											ast.NewListArgument(ast.NewVariable("y"), false),
+											ast.NewListArgument(ast.NewVariable("ys"), true),
+										},
+									),
+									ast.NewVariable("y"),
+								),
+							},
+						),
+					),
+				},
+				ast.NewNumber(42),
+			),
+		},
 	} {
 		m, err := tinfer.InferTypes(
 			ast.NewModule("", []ast.Bind{ast.NewBind("bar", types.NewNumber(nil), ls[0])}),

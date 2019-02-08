@@ -151,6 +151,14 @@ func (i inferrer) inferCase(c ast.Case) (types.Type, []types.Equation, error) {
 	ts := make([]types.Type, 0, len(c.Alternatives())+1)
 
 	for _, a := range c.Alternatives() {
+		i, ees, err := i.addVariablesFromPattern(a.Pattern())
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		es = append(es, ees...)
+
 		// Alternative patterns
 
 		tt, ees, err := i.inferType(a.Pattern())
@@ -437,6 +445,44 @@ func (i inferrer) addVariablesFromBinds(bs []ast.Bind) inferrer {
 	}
 
 	return i.addVariables(m)
+}
+
+func (i inferrer) addVariablesFromPattern(e ast.Expression) (inferrer, []types.Equation, error) {
+	l, ok := e.(ast.List)
+
+	if !ok {
+		return i, nil, nil
+	}
+
+	m := make(map[string]types.Type, len(l.Arguments()))
+	es := []types.Equation{}
+
+	for _, a := range l.Arguments() {
+		if v, ok := a.Expression().(ast.Variable); ok && a.Expanded() {
+			m[v.Name()] = l.Type()
+		} else if ok && !a.Expanded() {
+			t := types.NewList(i.createTypeVariable(), l.Type().DebugInformation())
+			ees, err := l.Type().Unify(t)
+
+			if err != nil {
+				return inferrer{}, nil, err
+			}
+
+			m[v.Name()] = t.Element()
+			es = append(es, ees...)
+		} else {
+			ii, ees, err := i.addVariablesFromPattern(a.Expression())
+
+			if err != nil {
+				return inferrer{}, nil, err
+			}
+
+			i = ii
+			es = append(es, ees...)
+		}
+	}
+
+	return i.addVariables(m), es, nil
 }
 
 func (i inferrer) addVariables(vs map[string]types.Type) inferrer {
