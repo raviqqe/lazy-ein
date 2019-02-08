@@ -15,6 +15,8 @@ var numberConstructor = coreast.NewConstructor(numberAlgebraic, 0)
 var listAlgebraic = coretypes.Unbox(
 	types.NewList(types.NewNumber(nil), nil).ToCore(),
 ).(coretypes.Algebraic)
+var consConstructor = coreast.NewConstructor(listAlgebraic, 0)
+var nilConstructor = coreast.NewConstructor(listAlgebraic, 1)
 
 func TestCompileWithEmptySource(t *testing.T) {
 	_, err := Compile(ast.NewModule("", []ast.Bind{}))
@@ -522,6 +524,159 @@ func TestCompileToCoreWithLists(t *testing.T) {
 	)
 }
 
+func TestCompileToCoreWithListCaseExpressionsWithoutDefaultAlternatives(t *testing.T) {
+	m, err := compileToCore(
+		ast.NewModule(
+			"foo",
+			[]ast.Bind{
+				ast.NewBind(
+					"x",
+					types.NewNumber(nil),
+					ast.NewCaseWithoutDefault(
+						ast.NewList(
+							types.NewUnknown(nil),
+							[]ast.ListArgument{
+								ast.NewListArgument(ast.NewNumber(42), false),
+							},
+						),
+						types.NewUnknown(nil),
+						[]ast.Alternative{
+							ast.NewAlternative(
+								ast.NewList(
+									types.NewUnknown(nil),
+									[]ast.ListArgument{
+										ast.NewListArgument(ast.NewNumber(42), false),
+									},
+								),
+								ast.NewNumber(42),
+							),
+							ast.NewAlternative(ast.NewList(types.NewUnknown(nil), nil), ast.NewNumber(42)),
+						},
+					),
+				),
+			},
+		),
+	)
+	assert.Nil(t, err)
+
+	assert.Equal(
+		t,
+		coreast.NewModule(
+			"foo",
+			[]coreast.Bind{
+				coreast.NewBind(
+					"$literal-0",
+					coreast.NewVariableLambda(
+						nil,
+						true,
+						numberConstructorApplication(coreast.NewFloat64(42)),
+						numberAlgebraic,
+					),
+				),
+				coreast.NewBind(
+					"$literal-1",
+					coreast.NewVariableLambda(
+						nil,
+						true,
+						numberConstructorApplication(coreast.NewFloat64(42)),
+						numberAlgebraic,
+					),
+				),
+				coreast.NewBind(
+					"$literal-2",
+					coreast.NewVariableLambda(
+						nil,
+						true,
+						numberConstructorApplication(coreast.NewFloat64(42)),
+						numberAlgebraic,
+					),
+				),
+				coreast.NewBind(
+					"x",
+					coreast.NewVariableLambda(
+						nil,
+						true,
+						coreast.NewAlgebraicCaseWithoutDefault(
+							coreast.NewLet(
+								[]coreast.Bind{
+									coreast.NewBind(
+										"$nil",
+										coreast.NewVariableLambda(
+											nil,
+											true,
+											coreast.NewConstructorApplication(nilConstructor, nil),
+											listAlgebraic,
+										),
+									),
+									coreast.NewBind(
+										"$list-0",
+										coreast.NewVariableLambda(
+											[]coreast.Argument{
+												coreast.NewArgument("$nil", coretypes.NewBoxed(listAlgebraic)),
+											},
+											true,
+											listConstructorApplication(
+												coreast.NewVariable("$literal-2"),
+												coreast.NewVariable("$nil"),
+											),
+											listAlgebraic,
+										),
+									),
+								},
+								coreast.NewFunctionApplication(coreast.NewVariable("$list-0"), nil),
+							),
+							[]coreast.AlgebraicAlternative{
+								coreast.NewAlgebraicAlternative(
+									consConstructor,
+									[]string{"$head", "$tail"},
+									coreast.NewPrimitiveCaseWithoutDefault(
+										coreast.NewAlgebraicCaseWithoutDefault(
+											coreast.NewFunctionApplication(coreast.NewVariable("$head"), nil),
+											[]coreast.AlgebraicAlternative{
+												coreast.NewAlgebraicAlternative(
+													numberConstructor,
+													[]string{"$primitive"},
+													coreast.NewFunctionApplication(coreast.NewVariable("$primitive"), nil),
+												),
+											},
+										),
+										coretypes.NewFloat64(),
+										[]coreast.PrimitiveAlternative{
+											coreast.NewPrimitiveAlternative(
+												coreast.NewFloat64(42),
+												coreast.NewAlgebraicCaseWithoutDefault(
+													coreast.NewFunctionApplication(coreast.NewVariable("$tail"), nil),
+													[]coreast.AlgebraicAlternative{
+														coreast.NewAlgebraicAlternative(
+															nilConstructor,
+															nil,
+															coreast.NewFunctionApplication(
+																coreast.NewVariable("$literal-0"),
+																nil,
+															),
+														),
+													},
+												),
+											),
+										},
+									),
+								),
+								coreast.NewAlgebraicAlternative(
+									nilConstructor,
+									nil,
+									coreast.NewFunctionApplication(coreast.NewVariable("$literal-1"), nil),
+								),
+							},
+						),
+						coretypes.NewBoxed(numberAlgebraic),
+					),
+				),
+			},
+		),
+		m,
+	)
+}
+
 func TestCompileToCoreWithBinaryOperations(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
@@ -693,8 +848,9 @@ func TestCompileWithCaseExpressions(t *testing.T) {
 }
 
 func numberConstructorApplication(a coreast.Atom) coreast.Expression {
-	return coreast.NewConstructorApplication(
-		numberConstructor,
-		[]coreast.Atom{a},
-	)
+	return coreast.NewConstructorApplication(numberConstructor, []coreast.Atom{a})
+}
+
+func listConstructorApplication(a, aa coreast.Atom) coreast.Expression {
+	return coreast.NewConstructorApplication(consConstructor, []coreast.Atom{a, aa})
 }

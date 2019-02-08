@@ -26,7 +26,7 @@ func (f freeVariableFinder) Find(e ast.Expression) []string {
 		ss := f.Find(e.Expression())
 
 		for _, a := range e.Alternatives() {
-			ss = append(ss, f.Find(a.Expression())...)
+			ss = append(ss, f.addVariablesFromPattern(a.Pattern()).Find(a.Expression())...)
 		}
 
 		if d, ok := e.DefaultAlternative(); ok {
@@ -77,6 +77,24 @@ func (f freeVariableFinder) Find(e ast.Expression) []string {
 	}
 
 	panic("unreahable")
+}
+
+func (f freeVariableFinder) addVariablesFromPattern(e ast.Expression) freeVariableFinder {
+	l, ok := e.(ast.List)
+
+	if !ok {
+		return f
+	}
+
+	ss := make([]string, 0, len(l.Arguments()))
+
+	for _, a := range l.Arguments() {
+		if v, ok := a.Expression().(ast.Variable); ok {
+			ss = append(ss, v.Name())
+		}
+	}
+
+	return f.addVariables(ss...)
 }
 
 func (f freeVariableFinder) addVariables(ss ...string) freeVariableFinder {

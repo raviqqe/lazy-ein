@@ -197,7 +197,7 @@ func (c compiler) compileCase(cc ast.Case) (coreast.Expression, error) {
 	case types.Number:
 		return c.compilePrimitiveCase(cc)
 	case types.List:
-		return c.compileListCase(cc)
+		return newListCaseCompiler(c).Compile(cc)
 	}
 
 	panic("unreachable")
@@ -264,10 +264,6 @@ func (c compiler) compilePrimitiveCase(cc ast.Case) (coreast.Expression, error) 
 			coreast.NewDefaultAlternative("", de),
 		),
 	), nil
-}
-
-func (c compiler) compileListCase(cc ast.Case) (coreast.Expression, error) {
-	panic("not implemented")
 }
 
 func (c compiler) compileLet(l ast.Let) (coreast.Expression, error) {
