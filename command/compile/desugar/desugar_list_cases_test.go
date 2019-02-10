@@ -200,7 +200,7 @@ func TestDesugarListCases(t *testing.T) {
 				)
 			}(),
 		},
-		// Rest patterns of hidden default alternatives
+		// Hidden default alternatives
 		{
 			ast.NewCase(
 				ast.NewVariable("argument"),
@@ -223,6 +223,137 @@ func TestDesugarListCases(t *testing.T) {
 				ast.NewDefaultAlternative(
 					"xs",
 					ast.NewNumber(42),
+				),
+			),
+		},
+		// Hidden default alternatives with other alternatives
+		{
+			ast.NewCase(
+				ast.NewVariable("argument"),
+				types.NewUnknown(nil),
+				[]ast.Alternative{
+					ast.NewAlternative(
+						ast.NewList(
+							types.NewUnknown(nil),
+							[]ast.ListArgument{
+								ast.NewListArgument(ast.NewNumber(42), false),
+							},
+						),
+						ast.NewNumber(42),
+					),
+					ast.NewAlternative(
+						ast.NewList(
+							types.NewUnknown(nil),
+							[]ast.ListArgument{ast.NewListArgument(ast.NewVariable("xs"), true)},
+						),
+						ast.NewNumber(13),
+					),
+				},
+				ast.NewDefaultAlternative("x", ast.NewNumber(42)),
+			),
+			func() ast.Expression {
+				d := ast.NewDefaultAlternative(
+					"",
+					ast.NewLet(
+						[]ast.Bind{
+							ast.NewBind(
+								"xs",
+								types.NewUnknown(nil),
+								ast.NewVariable("$default-alternative.xs"),
+							),
+						},
+						ast.NewNumber(13),
+					),
+				)
+
+				return ast.NewLet(
+					[]ast.Bind{
+						ast.NewBind(
+							"$default-alternative.xs",
+							types.NewUnknown(nil),
+							ast.NewVariable("argument"),
+						),
+					},
+					ast.NewCase(
+						ast.NewVariable("$default-alternative.xs"),
+						types.NewUnknown(nil),
+						[]ast.Alternative{
+							ast.NewAlternative(
+								ast.NewList(
+									types.NewUnknown(nil),
+									[]ast.ListArgument{
+										ast.NewListArgument(ast.NewVariable("$head"), false),
+										ast.NewListArgument(ast.NewVariable("$tail"), true),
+									},
+								),
+								ast.NewCase(
+									ast.NewVariable("$head"),
+									types.NewUnknown(nil),
+									[]ast.Alternative{
+										ast.NewAlternative(
+											ast.NewNumber(42),
+											ast.NewCase(
+												ast.NewVariable("$tail"),
+												types.NewUnknown(nil),
+												[]ast.Alternative{
+													ast.NewAlternative(
+														ast.NewList(types.NewUnknown(nil), nil),
+														ast.NewNumber(42),
+													),
+												},
+												d,
+											),
+										),
+									},
+									d,
+								),
+							),
+						},
+						d,
+					),
+				)
+			}(),
+		},
+		// Hidden default alternatives with the same usual default alternatives
+		{
+			ast.NewCaseWithoutDefault(
+				ast.NewVariable("argument"),
+				types.NewUnknown(nil),
+				[]ast.Alternative{
+					ast.NewAlternative(
+						ast.NewList(
+							types.NewUnknown(nil),
+							[]ast.ListArgument{
+								ast.NewListArgument(ast.NewNumber(42), false),
+							},
+						),
+						ast.NewNumber(42),
+					),
+					ast.NewAlternative(
+						ast.NewList(
+							types.NewUnknown(nil),
+							[]ast.ListArgument{ast.NewListArgument(ast.NewVariable("xs"), true)},
+						),
+						ast.NewNumber(13),
+					),
+				},
+			),
+			desugarListCase(
+				ast.NewCase(
+					ast.NewVariable("argument"),
+					types.NewUnknown(nil),
+					[]ast.Alternative{
+						ast.NewAlternative(
+							ast.NewList(
+								types.NewUnknown(nil),
+								[]ast.ListArgument{
+									ast.NewListArgument(ast.NewNumber(42), false),
+								},
+							),
+							ast.NewNumber(42),
+						),
+					},
+					ast.NewDefaultAlternative("xs", ast.NewNumber(13)),
 				),
 			),
 		},
