@@ -1,3 +1,9 @@
+extern crate atty;
+extern crate termcolor;
+
+use std::io::{Error, Write};
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+
 #[repr(C)]
 pub struct Closure<E, P> {
     pub entry: E,
@@ -25,4 +31,21 @@ pub extern "C" fn io_main(main: &'static Main) {
     println!("{}", (output.entry)(&output.payload));
 
     std::process::exit(0)
+}
+
+#[no_mangle]
+pub extern "C" fn io_panic() {
+    panic().unwrap();
+
+    std::process::exit(1)
+}
+
+fn panic() -> Result<(), Error> {
+    let mut stderr = StandardStream::stderr(ColorChoice::Auto);
+
+    if atty::is(atty::Stream::Stderr) {
+        stderr.set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
+    }
+
+    writeln!(&mut stderr, "Match error!")
 }

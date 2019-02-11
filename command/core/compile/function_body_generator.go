@@ -201,6 +201,7 @@ func (g *functionBodyGenerator) generateDefaultAlternative(
 	a, ok := c.DefaultAlternative()
 
 	if !ok {
+		g.builder.CreateCall(g.module().NamedFunction("io_panic"), nil, "")
 		g.builder.CreateUnreachable()
 		return nil
 	}

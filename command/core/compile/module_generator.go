@@ -21,6 +21,10 @@ type moduleGenerator struct {
 }
 
 func newModuleGenerator(m llvm.Module, mm ast.Module) (*moduleGenerator, error) {
+	llvm.AddFunction(m, "io_panic", llvm.FunctionType(llvm.VoidType(), nil, false)).SetLinkage(
+		llvm.ExternalLinkage,
+	)
+
 	tg := newTypeGenerator(m)
 	cg := newConstructorGenerator(m, tg)
 

@@ -8,3 +8,5 @@ name = "io"
 crate-type = ["staticlib"]
 
 [dependencies]
+atty = "0.2"
+termcolor = "1"
