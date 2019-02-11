@@ -23,7 +23,7 @@ func (i inferrer) Infer(m ast.Module) (ast.Module, error) {
 	ss := map[int]types.Type{}
 
 	for _, b := range m.Binds() {
-		t, es, err := i.inferType(b.Expression())
+		t, es, err := i.inferExpression(b.Expression())
 
 		if err != nil {
 			return ast.Module{}, err
@@ -49,7 +49,7 @@ func (i inferrer) Infer(m ast.Module) (ast.Module, error) {
 	return i.substituteVariablesInModule(m, ss), nil
 }
 
-func (i inferrer) inferType(e ast.Expression) (types.Type, []types.Equation, error) {
+func (i inferrer) inferExpression(e ast.Expression) (types.Type, []types.Equation, error) {
 	switch e := e.(type) {
 	case ast.Application:
 		return i.inferApplication(e)
@@ -81,7 +81,7 @@ func (i inferrer) inferApplication(a ast.Application) (types.Type, []types.Equat
 		e = a.Function()
 	}
 
-	t, es, err := i.inferType(e)
+	t, es, err := i.inferExpression(e)
 
 	if err != nil {
 		return nil, nil, err
@@ -100,7 +100,7 @@ func (i inferrer) inferApplication(a ast.Application) (types.Type, []types.Equat
 		es = append(es, ees...)
 	}
 
-	arg, ees, err := i.inferType(a.Arguments()[len(a.Arguments())-1])
+	arg, ees, err := i.inferExpression(a.Arguments()[len(a.Arguments())-1])
 
 	if err != nil {
 		return nil, nil, err
@@ -121,7 +121,7 @@ func (i inferrer) inferBinaryOperation(o ast.BinaryOperation) (types.Type, []typ
 	es := []types.Equation{}
 
 	for _, e := range []ast.Expression{o.LHS(), o.RHS()} {
-		l, ees, err := i.inferType(e)
+		l, ees, err := i.inferExpression(e)
 
 		if err != nil {
 			return nil, nil, err
@@ -134,7 +134,7 @@ func (i inferrer) inferBinaryOperation(o ast.BinaryOperation) (types.Type, []typ
 }
 
 func (i inferrer) inferCase(c ast.Case) (types.Type, []types.Equation, error) {
-	t, es, err := i.inferType(c.Expression())
+	t, es, err := i.inferExpression(c.Expression())
 
 	if err != nil {
 		return nil, nil, err
@@ -161,7 +161,7 @@ func (i inferrer) inferCase(c ast.Case) (types.Type, []types.Equation, error) {
 
 		// Alternative patterns
 
-		tt, ees, err := i.inferType(a.Pattern())
+		tt, ees, err := i.inferExpression(a.Pattern())
 
 		if err != nil {
 			return nil, nil, err
@@ -179,7 +179,7 @@ func (i inferrer) inferCase(c ast.Case) (types.Type, []types.Equation, error) {
 
 		// Alternative expressions
 
-		tt, ees, err = i.inferType(a.Expression())
+		tt, ees, err = i.inferExpression(a.Expression())
 
 		if err != nil {
 			return nil, nil, err
@@ -190,7 +190,7 @@ func (i inferrer) inferCase(c ast.Case) (types.Type, []types.Equation, error) {
 	}
 
 	if d, ok := c.DefaultAlternative(); ok {
-		t, ees, err := i.addVariables(map[string]types.Type{d.Variable(): c.Type()}).inferType(
+		t, ees, err := i.addVariables(map[string]types.Type{d.Variable(): c.Type()}).inferExpression(
 			d.Expression(),
 		)
 
@@ -222,7 +222,7 @@ func (i inferrer) inferLambda(l ast.Lambda) (types.Type, []types.Equation, error
 		as[s] = i.createTypeVariable()
 	}
 
-	t, es, err := i.addVariables(as).inferType(l.Expression())
+	t, es, err := i.addVariables(as).inferExpression(l.Expression())
 
 	if err != nil {
 		return nil, nil, err
@@ -240,7 +240,7 @@ func (i inferrer) inferLet(l ast.Let) (types.Type, []types.Equation, error) {
 	i = i.addVariablesFromBinds(l.Binds())
 
 	for _, b := range l.Binds() {
-		t, ees, err := i.inferType(b.Expression())
+		t, ees, err := i.inferExpression(b.Expression())
 
 		if err != nil {
 			return nil, nil, err
@@ -257,7 +257,7 @@ func (i inferrer) inferLet(l ast.Let) (types.Type, []types.Equation, error) {
 		es = append(es, ees...)
 	}
 
-	t, ees, err := i.inferType(l.Expression())
+	t, ees, err := i.inferExpression(l.Expression())
 
 	if err != nil {
 		return nil, nil, err
@@ -275,7 +275,7 @@ func (i inferrer) inferList(l ast.List) (types.Type, []types.Equation, error) {
 	}
 
 	for _, a := range l.Arguments() {
-		tt, ees, err := i.inferType(a.Expression())
+		tt, ees, err := i.inferExpression(a.Expression())
 
 		if err != nil {
 			return nil, nil, err
@@ -302,7 +302,7 @@ func (i inferrer) inferList(l ast.List) (types.Type, []types.Equation, error) {
 }
 
 func (i inferrer) inferUnboxed(u ast.Unboxed) (types.Type, []types.Equation, error) {
-	t, es, err := i.inferType(u.Content())
+	t, es, err := i.inferExpression(u.Content())
 
 	if err != nil {
 		return nil, nil, err
