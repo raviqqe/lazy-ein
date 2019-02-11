@@ -113,7 +113,7 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 		return coreast.NewFunctionApplication(coreast.NewVariable(e.Name()), nil), nil
 	}
 
-	panic("unreahable")
+	panic("unreachable")
 }
 
 func (c compiler) compileApplication(a ast.Application) (coreast.Expression, error) {
@@ -360,7 +360,7 @@ func (c compiler) compileUnboxed(u ast.Unboxed) (coreast.Expression, error) {
 		), nil
 	}
 
-	panic("unreahable")
+	panic("unreachable")
 }
 
 func (compiler) compileUnboxedLiteral(l ast.Literal) coreast.Literal {
@@ -369,7 +369,7 @@ func (compiler) compileUnboxedLiteral(l ast.Literal) coreast.Literal {
 		return coreast.NewFloat64(l.Value())
 	}
 
-	panic("unreahable")
+	panic("unreachable")
 }
 
 func (c compiler) extractNumberPrimitive(e coreast.Expression) coreast.Expression {

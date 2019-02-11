@@ -76,7 +76,7 @@ func (f freeVariableFinder) Find(e ast.Expression) []string {
 		return []string{e.Name()}
 	}
 
-	panic("unreahable")
+	panic("unreachable")
 }
 
 func (f freeVariableFinder) addVariablesFromPattern(e ast.Expression) freeVariableFinder {
