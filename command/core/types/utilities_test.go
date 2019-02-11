@@ -237,18 +237,12 @@ func TestUnwrap(t *testing.T) {
 			Unwrap(NewFunction([]Type{NewIndex(0)}, NewFloat64())).(Function).Arguments()[0],
 		},
 		{
-			NewBoxed(
-				NewAlgebraic(
-					NewConstructor(
-						NewAlgebraic(NewConstructor(NewBoxed(NewAlgebraic(NewConstructor(NewIndex(1)))))),
-					),
-				),
-			),
+			NewBoxed(NewAlgebraic(NewConstructor(NewIndex(0)))),
 			Unwrap(
-				NewAlgebraic(NewConstructor(NewBoxed(NewAlgebraic(NewConstructor(NewIndex(1)))))),
+				NewAlgebraic(NewConstructor(NewBoxed(NewAlgebraic(NewConstructor(NewIndex(0)))))),
 			).(Algebraic).Constructors()[0].Elements()[0],
 		},
 	} {
-		assert.True(t, Equal(ts[0], ts[1]))
+		assert.Equal(t, ts[0], ts[1])
 	}
 }

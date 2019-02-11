@@ -50,7 +50,7 @@ func unwrap(t Type, ts []Type) Type {
 		cs := make([]Constructor, 0, len(t.Constructors()))
 
 		for _, c := range t.Constructors() {
-			es := make([]Type, 0, len(c.Elements()))
+			es := []Type(nil) // HACK: Do not use make() for equality check.
 
 			for _, e := range c.Elements() {
 				es = append(es, unwrap(e, ts))
@@ -72,7 +72,9 @@ func unwrap(t Type, ts []Type) Type {
 
 		return NewFunction(as, t.Result())
 	case Index:
-		return ts[len(ts)-1-t.Value()]
+		if t.Value() == len(ts)-1 {
+			return ts[0]
+		}
 	}
 
 	return t

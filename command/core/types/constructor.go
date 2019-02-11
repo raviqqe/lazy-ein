@@ -19,7 +19,7 @@ func (c Constructor) Elements() []Type {
 
 // ConvertTypes converts types.
 func (c Constructor) ConvertTypes(f func(Type) Type) Constructor {
-	es := []Type(nil) // TODO: Use make() when assert.Equal is fixed.
+	es := []Type(nil) // HACK: Do not use make() for equality check.
 
 	for _, e := range c.elements {
 		es = append(es, e.ConvertTypes(f))
