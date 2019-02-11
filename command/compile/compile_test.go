@@ -835,6 +835,23 @@ func TestCompileWithCaseExpressions(t *testing.T) {
 			nil,
 			ast.NewDefaultAlternative("y", ast.NewVariable("y")),
 		),
+		ast.NewCase(
+			ast.NewList(
+				types.NewUnknown(nil),
+				[]ast.ListArgument{ast.NewListArgument(ast.NewNumber(42), false)},
+			),
+			types.NewUnknown(nil),
+			[]ast.Alternative{
+				ast.NewAlternative(
+					ast.NewList(
+						types.NewUnknown(nil),
+						[]ast.ListArgument{ast.NewListArgument(ast.NewNumber(42), false)},
+					),
+					ast.NewNumber(42),
+				),
+			},
+			ast.NewDefaultAlternative("y", ast.NewNumber(42)),
+		),
 	} {
 		_, err := Compile(
 			ast.NewModule(
