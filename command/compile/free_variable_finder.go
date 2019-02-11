@@ -23,7 +23,7 @@ func (f freeVariableFinder) Find(e ast.Expression) []string {
 	case ast.BinaryOperation:
 		return append(f.Find(e.LHS()), f.Find(e.RHS())...)
 	case ast.Case:
-		ss := f.Find(e.Expression())
+		ss := f.Find(e.Argument())
 
 		for _, a := range e.Alternatives() {
 			ss = append(ss, f.addVariablesFromPattern(a.Pattern()).Find(a.Expression())...)

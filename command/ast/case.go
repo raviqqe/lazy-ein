@@ -4,7 +4,7 @@ import "github.com/ein-lang/ein/command/types"
 
 // Case is a case expression.
 type Case struct {
-	expression         Expression
+	argument           Expression
 	typ                types.Type
 	alternatives       []Alternative
 	defaultAlternative DefaultAlternative
@@ -20,9 +20,9 @@ func NewCaseWithoutDefault(e Expression, t types.Type, as []Alternative) Case {
 	return Case{e, t, as, DefaultAlternative{}}
 }
 
-// Expression returns an expression.
-func (c Case) Expression() Expression {
-	return c.expression
+// Argument returns an argument.
+func (c Case) Argument() Expression {
+	return c.argument
 }
 
 // Type returns an expression.
@@ -58,12 +58,12 @@ func (c Case) ConvertExpressions(f func(Expression) Expression) Node {
 		d = c.defaultAlternative.ConvertExpressions(f).(DefaultAlternative)
 	}
 
-	return f(Case{c.expression.ConvertExpressions(f).(Expression), c.typ, as, d})
+	return f(Case{c.argument.ConvertExpressions(f).(Expression), c.typ, as, d})
 }
 
 // VisitTypes visits types.
 func (c Case) VisitTypes(f func(types.Type) error) error {
-	if err := c.expression.VisitTypes(f); err != nil {
+	if err := c.argument.VisitTypes(f); err != nil {
 		return err
 	} else if err := c.typ.VisitTypes(f); err != nil {
 		return err

@@ -24,10 +24,10 @@ func (dd listCaseDesugarer) Desugar(c ast.Case) ast.Expression {
 	d, ok := c.DefaultAlternative()
 
 	if !ok {
-		return ast.NewCaseWithoutDefault(c.Expression(), c.Type(), dd.createListAlternatives(c, nil))
+		return ast.NewCaseWithoutDefault(c.Argument(), c.Type(), dd.createListAlternatives(c, nil))
 	} else if d.Variable() == "" {
 		return ast.NewCase(
-			c.Expression(),
+			c.Argument(),
 			types.NewUnknown(nil),
 			dd.createListAlternatives(c, d.Expression()),
 			d,
@@ -42,7 +42,7 @@ func (dd listCaseDesugarer) Desugar(c ast.Case) ast.Expression {
 	)
 
 	return ast.NewLet(
-		[]ast.Bind{ast.NewBind(s, types.NewUnknown(nil), c.Expression())},
+		[]ast.Bind{ast.NewBind(s, types.NewUnknown(nil), c.Argument())},
 		ast.NewCase(
 			ast.NewVariable(s),
 			types.NewUnknown(nil),
@@ -211,7 +211,7 @@ func desugarHiddenDefaultAlternative(c ast.Case) ast.Case {
 		return c
 	}
 
-	return ast.NewCase(c.Expression(), c.Type(), as, d)
+	return ast.NewCase(c.Argument(), c.Type(), as, d)
 }
 
 func findHiddenDefaultAlternative(

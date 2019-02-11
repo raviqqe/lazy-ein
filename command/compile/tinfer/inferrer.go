@@ -134,7 +134,7 @@ func (i inferrer) inferBinaryOperation(o ast.BinaryOperation) (types.Type, []typ
 }
 
 func (i inferrer) inferCase(c ast.Case) (types.Type, []types.Equation, error) {
-	t, es, err := i.inferExpression(c.Expression())
+	t, es, err := i.inferExpression(c.Argument())
 
 	if err != nil {
 		return nil, nil, err
@@ -409,11 +409,11 @@ func (i inferrer) substituteVariablesInModule(m ast.Module, ss map[int]types.Typ
 			a, ok := e.DefaultAlternative()
 
 			if !ok {
-				return ast.NewCaseWithoutDefault(e.Expression(), i.substituteVariable(e.Type(), ss),
+				return ast.NewCaseWithoutDefault(e.Argument(), i.substituteVariable(e.Type(), ss),
 					as)
 			}
 
-			return ast.NewCase(e.Expression(), i.substituteVariable(e.Type(), ss), as, a)
+			return ast.NewCase(e.Argument(), i.substituteVariable(e.Type(), ss), as, a)
 		case ast.Let:
 			bs := make([]ast.Bind, 0, len(e.Binds()))
 
@@ -531,10 +531,10 @@ func (i inferrer) insertTypeVariables(m ast.Module) ast.Module {
 			a, ok := e.DefaultAlternative()
 
 			if !ok {
-				return ast.NewCaseWithoutDefault(e.Expression(), i.createTypeVariable(), as)
+				return ast.NewCaseWithoutDefault(e.Argument(), i.createTypeVariable(), as)
 			}
 
-			return ast.NewCase(e.Expression(), i.createTypeVariable(), as, a)
+			return ast.NewCase(e.Argument(), i.createTypeVariable(), as, a)
 		case ast.Let:
 			bs := make([]ast.Bind, 0, len(e.Binds()))
 

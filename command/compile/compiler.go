@@ -204,7 +204,7 @@ func (c compiler) compileCase(cc ast.Case) (coreast.Expression, error) {
 }
 
 func (c compiler) compilePrimitiveCase(cc ast.Case) (coreast.Expression, error) {
-	arg, err := c.compileExpression(cc.Expression())
+	arg, err := c.compileExpression(cc.Argument())
 
 	if err != nil {
 		return nil, err
@@ -242,7 +242,7 @@ func (c compiler) compilePrimitiveCase(cc ast.Case) (coreast.Expression, error) 
 		return nil, err
 	}
 
-	vs, err := c.compileFreeVariables(cc.Expression())
+	vs, err := c.compileFreeVariables(cc.Argument())
 
 	if err != nil {
 		return nil, err

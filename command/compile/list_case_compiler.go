@@ -17,7 +17,7 @@ func newListCaseCompiler(c compiler) listCaseCompiler {
 
 func (c listCaseCompiler) Compile(cc ast.Case) (coreast.Expression, error) {
 	t := coretypes.Unbox(cc.Type().ToCore()).(coretypes.Algebraic)
-	arg, err := c.compileExpression(cc.Expression())
+	arg, err := c.compileExpression(cc.Argument())
 
 	if err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func (c listCaseCompiler) Compile(cc ast.Case) (coreast.Expression, error) {
 		return nil, err
 	}
 
-	vs, err := c.compileFreeVariables(cc.Expression())
+	vs, err := c.compileFreeVariables(cc.Argument())
 
 	if err != nil {
 		return nil, err
