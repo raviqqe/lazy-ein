@@ -42,3 +42,17 @@ Feature: List
     When I successfully run `ein build main.ein`
     And I successfully run `sh -c ./a.out`
     Then the stdout from "sh -c ./a.out" should contain exactly "42"
+
+  Scenario: Use complex list case expressions
+    Given a file named "main.ein" with:
+    """
+    main : Number -> Number
+    main x =
+      case [1, 2, 3] of
+        [x, 2, 4] -> 13
+        [1, x, 4] -> 13
+        [1, 2, x] -> 42
+    """
+    When I successfully run `ein build main.ein`
+    And I successfully run `sh -c ./a.out`
+    Then the stdout from "sh -c ./a.out" should contain exactly "42"
