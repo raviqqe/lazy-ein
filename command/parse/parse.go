@@ -17,6 +17,7 @@ type sign string
 const (
 	bindSign               sign = "="
 	commaSign                   = ","
+	ellipsisSign                = "..."
 	typeDefinitionSign          = ":"
 	mapSign                     = "->"
 	openParenthesisSign         = "("
@@ -186,6 +187,8 @@ func (s *state) numberLiteral() parcom.Parser {
 }
 
 func (s *state) listLiteral(p parcom.Parser) parcom.Parser {
+	p = s.listArgument(p)
+
 	return s.withDebugInformation(
 		s.Wrap(
 			s.sign(openBracketSign),
@@ -205,14 +208,35 @@ func (s *state) listLiteral(p parcom.Parser) parcom.Parser {
 			}
 
 			xs := x.([]interface{})
-			as := []ast.ListArgument{ast.NewListArgument(xs[0].(ast.Expression), false)}
+			as := []ast.ListArgument{xs[0].(ast.ListArgument)}
 
 			for _, x := range xs[1].([]interface{}) {
-				as = append(as, ast.NewListArgument(x.(ast.Expression), false))
+				as = append(as, x.(ast.ListArgument))
 			}
 
 			return ast.NewList(types.NewUnknown(i), as), nil
 		},
+	)
+}
+
+func (s *state) listArgument(p parcom.Parser) parcom.Parser {
+	return s.Or(
+		s.App(
+			func(x interface{}) (interface{}, error) {
+				return ast.NewListArgument(x.(ast.Expression), false), nil
+			},
+			p,
+		),
+		s.expandedListArgument(p),
+	)
+}
+
+func (s *state) expandedListArgument(p parcom.Parser) parcom.Parser {
+	return s.App(
+		func(x interface{}) (interface{}, error) {
+			return ast.NewListArgument(x.([]interface{})[1].(ast.Expression), true), nil
+		},
+		s.And(s.sign(ellipsisSign), p),
 	)
 }
 

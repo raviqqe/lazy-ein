@@ -22,13 +22,16 @@ Feature: List
     And I successfully run `sh -c ./a.out`
     Then the stdout from "sh -c ./a.out" should contain exactly "42"
     Examples:
-      | case expression                 |
-      | case [42] of [42] -> 42         |
-      | case [42] of [y] -> 42          |
-      | case [42] of [y] -> y           |
-      | case [42, 42] of [42, 42] -> 42 |
-      | case [42, 42] of [y, 42] -> y   |
-      | case [42, 42] of [42, y] -> y   |
+      | case expression                     |
+      | case [42] of [42] -> 42             |
+      | case [42] of [y] -> 42              |
+      | case [42] of [y] -> y               |
+      | case [42, 42] of [42, 42] -> 42     |
+      | case [42, 42] of [y, 42] -> y       |
+      | case [42, 42] of [42, y] -> y       |
+      | case [42] of [x, ...xs] -> 42       |
+      | case [42] of [x, ...xs] -> x        |
+      | case [42, 42] of [x, y, ...xs] -> y |
 
   Scenario: Use list case expressions with multiple alternatives
     Given a file named "main.ein" with:

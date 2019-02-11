@@ -303,6 +303,7 @@ func TestStatePattern(t *testing.T) {
 		"[42]",
 		"[42, [42]]",
 		"[x]",
+		"[x, ...xs]",
 	} {
 		_, err := newState("", s).pattern()()
 		assert.Nil(t, err)
