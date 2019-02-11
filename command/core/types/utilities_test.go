@@ -6,6 +6,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestBox(t *testing.T) {
+	a := NewAlgebraic(NewConstructor())
+
+	for _, tt := range []Type{a, NewBoxed(a)} {
+		assert.True(t, Equal(NewBoxed(a), Box(tt)))
+	}
+}
+
+func TestUnbox(t *testing.T) {
+	a := NewAlgebraic(NewConstructor())
+
+	for _, tt := range []Type{a, NewBoxed(a)} {
+		assert.True(t, Equal(a, Unbox(tt)))
+	}
+}
+
 func TestEqual(t *testing.T) {
 	for _, ts := range [][2]Type{
 		{
@@ -127,6 +143,42 @@ func TestEqual(t *testing.T) {
 	}
 }
 
+func TestEqualWithEnvironment(t *testing.T) {
+	assert.True(
+		t,
+		EqualWithEnvironment(
+			NewAlgebraic(NewConstructor(NewIndex(0))),
+			NewAlgebraic(NewConstructor(NewIndex(0))),
+			[]Type{NewAlgebraic(NewConstructor(NewAlgebraic(NewConstructor(NewIndex(0)))))},
+		),
+	)
+	assert.True(
+		t,
+		EqualWithEnvironment(
+			NewAlgebraic(NewConstructor(NewIndex(1))),
+			NewAlgebraic(NewConstructor(NewIndex(1))),
+			[]Type{NewAlgebraic(NewConstructor(NewAlgebraic(NewConstructor(NewIndex(1)))))},
+		),
+	)
+	assert.True(
+		t,
+		EqualWithEnvironment(
+			NewAlgebraic(NewConstructor(NewIndex(0))),
+			NewAlgebraic(NewConstructor(NewIndex(1))),
+			[]Type{NewAlgebraic(NewConstructor(NewAlgebraic(NewConstructor(NewIndex(0)))))},
+		),
+	)
+
+	assert.False(
+		t,
+		EqualWithEnvironment(
+			NewAlgebraic(NewConstructor(NewIndex(0)), NewConstructor()),
+			NewAlgebraic(NewConstructor(NewIndex(1))),
+			[]Type{NewAlgebraic(NewConstructor(NewAlgebraic(NewConstructor(NewIndex(0)))))},
+		),
+	)
+}
+
 func TestValidate(t *testing.T) {
 	for _, tt := range []Type{
 		NewAlgebraic(NewConstructor()),
@@ -161,5 +213,42 @@ func TestIsRecursive(t *testing.T) {
 		NewAlgebraic(NewConstructor(NewAlgebraic(NewConstructor(NewIndex(0))))),
 	} {
 		assert.False(t, IsRecursive(tt))
+	}
+}
+
+func TestUnwrap(t *testing.T) {
+	for _, ts := range [][2]Type{
+		{
+			NewFloat64(),
+			Unwrap(NewFloat64()),
+		},
+		{
+			NewAlgebraic(NewConstructor()),
+			Unwrap(NewAlgebraic(NewConstructor())),
+		},
+		{
+			NewAlgebraic(NewConstructor(NewBoxed(NewIndex(0)))),
+			Unwrap(
+				NewAlgebraic(NewConstructor(NewBoxed(NewIndex(0)))),
+			).(Algebraic).Constructors()[0].Elements()[0].(Boxed).Content(),
+		},
+		{
+			NewFunction([]Type{NewIndex(0)}, NewFloat64()),
+			Unwrap(NewFunction([]Type{NewIndex(0)}, NewFloat64())).(Function).Arguments()[0],
+		},
+		{
+			NewBoxed(
+				NewAlgebraic(
+					NewConstructor(
+						NewAlgebraic(NewConstructor(NewBoxed(NewAlgebraic(NewConstructor(NewIndex(1)))))),
+					),
+				),
+			),
+			Unwrap(
+				NewAlgebraic(NewConstructor(NewBoxed(NewAlgebraic(NewConstructor(NewIndex(1)))))),
+			).(Algebraic).Constructors()[0].Elements()[0],
+		},
+	} {
+		assert.True(t, Equal(ts[0], ts[1]))
 	}
 }
