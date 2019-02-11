@@ -57,18 +57,18 @@ func TestDesugarListCases(t *testing.T) {
 								ast.NewList(
 									types.NewUnknown(nil),
 									[]ast.ListArgument{
-										ast.NewListArgument(ast.NewVariable("$head"), false),
-										ast.NewListArgument(ast.NewVariable("$tail"), true),
+										ast.NewListArgument(ast.NewVariable("$list-case.head-0"), false),
+										ast.NewListArgument(ast.NewVariable("$list-case.tail-0"), true),
 									},
 								),
 								ast.NewCase(
-									ast.NewVariable("$head"),
+									ast.NewVariable("$list-case.head-0"),
 									types.NewUnknown(nil),
 									[]ast.Alternative{
 										ast.NewAlternative(
 											ast.NewNumber(42),
 											ast.NewCase(
-												ast.NewVariable("$tail"),
+												ast.NewVariable("$list-case.tail-0"),
 												types.NewUnknown(nil),
 												[]ast.Alternative{
 													ast.NewAlternative(
@@ -139,36 +139,36 @@ func TestDesugarListCases(t *testing.T) {
 								ast.NewList(
 									types.NewUnknown(nil),
 									[]ast.ListArgument{
-										ast.NewListArgument(ast.NewVariable("$head"), false),
-										ast.NewListArgument(ast.NewVariable("$tail"), true),
+										ast.NewListArgument(ast.NewVariable("$list-case.head-0"), false),
+										ast.NewListArgument(ast.NewVariable("$list-case.tail-0"), true),
 									},
 								),
 								ast.NewCase(
-									ast.NewVariable("$head"),
+									ast.NewVariable("$list-case.head-0"),
 									types.NewUnknown(nil),
 									[]ast.Alternative{
 										ast.NewAlternative(
 											ast.NewNumber(42),
 											ast.NewCase(
-												ast.NewVariable("$tail"),
+												ast.NewVariable("$list-case.tail-0"),
 												types.NewUnknown(nil),
 												[]ast.Alternative{
 													ast.NewAlternative(
 														ast.NewList(
 															types.NewUnknown(nil),
 															[]ast.ListArgument{
-																ast.NewListArgument(ast.NewVariable("$head"), false),
-																ast.NewListArgument(ast.NewVariable("$tail"), true),
+																ast.NewListArgument(ast.NewVariable("$list-case.head-1"), false),
+																ast.NewListArgument(ast.NewVariable("$list-case.tail-1"), true),
 															},
 														),
 														ast.NewCase(
-															ast.NewVariable("$head"),
+															ast.NewVariable("$list-case.head-1"),
 															types.NewUnknown(nil),
 															[]ast.Alternative{
 																ast.NewAlternative(
 																	ast.NewNumber(42),
 																	ast.NewCase(
-																		ast.NewVariable("$tail"),
+																		ast.NewVariable("$list-case.tail-1"),
 																		types.NewUnknown(nil),
 																		[]ast.Alternative{
 																			ast.NewAlternative(
@@ -282,18 +282,18 @@ func TestDesugarListCases(t *testing.T) {
 								ast.NewList(
 									types.NewUnknown(nil),
 									[]ast.ListArgument{
-										ast.NewListArgument(ast.NewVariable("$head"), false),
-										ast.NewListArgument(ast.NewVariable("$tail"), true),
+										ast.NewListArgument(ast.NewVariable("$list-case.head-0"), false),
+										ast.NewListArgument(ast.NewVariable("$list-case.tail-0"), true),
 									},
 								),
 								ast.NewCase(
-									ast.NewVariable("$head"),
+									ast.NewVariable("$list-case.head-0"),
 									types.NewUnknown(nil),
 									[]ast.Alternative{
 										ast.NewAlternative(
 											ast.NewNumber(42),
 											ast.NewCase(
-												ast.NewVariable("$tail"),
+												ast.NewVariable("$list-case.tail-0"),
 												types.NewUnknown(nil),
 												[]ast.Alternative{
 													ast.NewAlternative(
@@ -338,7 +338,7 @@ func TestDesugarListCases(t *testing.T) {
 					),
 				},
 			),
-			desugarListCase(
+			newListCaseDesugarer().Desugar(
 				ast.NewCase(
 					ast.NewVariable("argument"),
 					types.NewUnknown(nil),
@@ -404,23 +404,32 @@ func TestDesugarListCases(t *testing.T) {
 								ast.NewList(
 									types.NewUnknown(nil),
 									[]ast.ListArgument{
-										ast.NewListArgument(ast.NewVariable("$head"), false),
-										ast.NewListArgument(ast.NewVariable("$tail"), true),
+										ast.NewListArgument(ast.NewVariable("$list-case.head-0"), false),
+										ast.NewListArgument(ast.NewVariable("$list-case.tail-0"), true),
 									},
 								),
 								ast.NewCase(
-									ast.NewVariable("$head"),
+									ast.NewVariable("$list-case.head-0"),
 									types.NewUnknown(nil),
 									[]ast.Alternative{},
 									ast.NewDefaultAlternative(
-										"x",
+										"",
 										ast.NewCase(
-											ast.NewVariable("$tail"),
+											ast.NewVariable("$list-case.tail-0"),
 											types.NewUnknown(nil),
 											[]ast.Alternative{
 												ast.NewAlternative(
 													ast.NewList(types.NewUnknown(nil), nil),
-													ast.NewNumber(42),
+													ast.NewLet(
+														[]ast.Bind{
+															ast.NewBind(
+																"x",
+																types.NewUnknown(nil),
+																ast.NewVariable("$list-case.head-0"),
+															),
+														},
+														ast.NewNumber(42),
+													),
 												),
 											},
 											d,
@@ -491,18 +500,18 @@ func TestDesugarListCases(t *testing.T) {
 								ast.NewList(
 									types.NewUnknown(nil),
 									[]ast.ListArgument{
-										ast.NewListArgument(ast.NewVariable("$head"), false),
-										ast.NewListArgument(ast.NewVariable("$tail"), true),
+										ast.NewListArgument(ast.NewVariable("$list-case.head-0"), false),
+										ast.NewListArgument(ast.NewVariable("$list-case.tail-0"), true),
 									},
 								),
 								ast.NewCase(
-									ast.NewVariable("$head"),
+									ast.NewVariable("$list-case.head-0"),
 									types.NewUnknown(nil),
 									[]ast.Alternative{
 										ast.NewAlternative(
 											ast.NewNumber(42),
 											ast.NewCase(
-												ast.NewVariable("$tail"),
+												ast.NewVariable("$list-case.tail-0"),
 												types.NewUnknown(nil),
 												[]ast.Alternative{
 													ast.NewAlternative(
@@ -571,18 +580,18 @@ func TestDesugarListCases(t *testing.T) {
 								ast.NewList(
 									types.NewUnknown(nil),
 									[]ast.ListArgument{
-										ast.NewListArgument(ast.NewVariable("$head"), false),
-										ast.NewListArgument(ast.NewVariable("$tail"), true),
+										ast.NewListArgument(ast.NewVariable("$list-case.head-0"), false),
+										ast.NewListArgument(ast.NewVariable("$list-case.tail-0"), true),
 									},
 								),
 								ast.NewCase(
-									ast.NewVariable("$head"),
+									ast.NewVariable("$list-case.head-0"),
 									types.NewUnknown(nil),
 									[]ast.Alternative{
 										ast.NewAlternative(
 											ast.NewNumber(42),
 											ast.NewCase(
-												ast.NewVariable("$tail"),
+												ast.NewVariable("$list-case.tail-0"),
 												types.NewUnknown(nil),
 												[]ast.Alternative{
 													ast.NewAlternative(
@@ -658,35 +667,44 @@ func TestDesugarListCases(t *testing.T) {
 								ast.NewList(
 									types.NewUnknown(nil),
 									[]ast.ListArgument{
-										ast.NewListArgument(ast.NewVariable("$head"), false),
-										ast.NewListArgument(ast.NewVariable("$tail"), true),
+										ast.NewListArgument(ast.NewVariable("$list-case.head-0"), false),
+										ast.NewListArgument(ast.NewVariable("$list-case.tail-0"), true),
 									},
 								),
 								ast.NewCase(
-									ast.NewVariable("$head"),
+									ast.NewVariable("$list-case.head-0"),
 									types.NewUnknown(nil),
 									[]ast.Alternative{},
 									ast.NewDefaultAlternative(
-										"x",
+										"",
 										ast.NewCase(
-											ast.NewVariable("$tail"),
+											ast.NewVariable("$list-case.tail-0"),
 											types.NewUnknown(nil),
 											[]ast.Alternative{
 												ast.NewAlternative(
 													ast.NewList(types.NewUnknown(nil), nil),
-													ast.NewNumber(42),
+													ast.NewLet(
+														[]ast.Bind{
+															ast.NewBind(
+																"x",
+																types.NewUnknown(nil),
+																ast.NewVariable("$list-case.head-0"),
+															),
+														},
+														ast.NewNumber(42),
+													),
 												),
 											},
 											ast.NewDefaultAlternative(
 												"",
 												ast.NewCase(
-													ast.NewVariable("$head"),
+													ast.NewVariable("$list-case.head-0"),
 													types.NewUnknown(nil),
 													[]ast.Alternative{
 														ast.NewAlternative(
 															ast.NewNumber(42),
 															ast.NewCase(
-																ast.NewVariable("$tail"),
+																ast.NewVariable("$list-case.tail-0"),
 																types.NewUnknown(nil),
 																[]ast.Alternative{
 																	ast.NewAlternative(
@@ -734,18 +752,18 @@ func TestDesugarListCases(t *testing.T) {
 						ast.NewList(
 							types.NewUnknown(nil),
 							[]ast.ListArgument{
-								ast.NewListArgument(ast.NewVariable("$head"), false),
-								ast.NewListArgument(ast.NewVariable("$tail"), true),
+								ast.NewListArgument(ast.NewVariable("$list-case.head-0"), false),
+								ast.NewListArgument(ast.NewVariable("$list-case.tail-0"), true),
 							},
 						),
 						ast.NewCaseWithoutDefault(
-							ast.NewVariable("$head"),
+							ast.NewVariable("$list-case.head-0"),
 							types.NewUnknown(nil),
 							[]ast.Alternative{
 								ast.NewAlternative(
 									ast.NewNumber(42),
 									ast.NewCaseWithoutDefault(
-										ast.NewVariable("$tail"),
+										ast.NewVariable("$list-case.tail-0"),
 										types.NewUnknown(nil),
 										[]ast.Alternative{
 											ast.NewAlternative(

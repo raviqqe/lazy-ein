@@ -628,10 +628,13 @@ func TestCompileToCoreWithListCaseExpressionsWithoutDefaultAlternatives(t *testi
 							[]coreast.AlgebraicAlternative{
 								coreast.NewAlgebraicAlternative(
 									consConstructor,
-									[]string{"$head", "$tail"},
+									[]string{"$list-case.head-0", "$list-case.tail-0"},
 									coreast.NewPrimitiveCaseWithoutDefault(
 										coreast.NewAlgebraicCaseWithoutDefault(
-											coreast.NewFunctionApplication(coreast.NewVariable("$head"), nil),
+											coreast.NewFunctionApplication(
+												coreast.NewVariable("$list-case.head-0"),
+												nil,
+											),
 											[]coreast.AlgebraicAlternative{
 												coreast.NewAlgebraicAlternative(
 													numberConstructor,
@@ -645,7 +648,10 @@ func TestCompileToCoreWithListCaseExpressionsWithoutDefaultAlternatives(t *testi
 											coreast.NewPrimitiveAlternative(
 												coreast.NewFloat64(42),
 												coreast.NewAlgebraicCaseWithoutDefault(
-													coreast.NewFunctionApplication(coreast.NewVariable("$tail"), nil),
+													coreast.NewFunctionApplication(
+														coreast.NewVariable("$list-case.tail-0"),
+														nil,
+													),
 													[]coreast.AlgebraicAlternative{
 														coreast.NewAlgebraicAlternative(
 															nilConstructor,
