@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDesugarComplexLists(t *testing.T) {
+func TestDesugarLists(t *testing.T) {
 	for _, ms := range [][2]ast.Module{
 		// Empty modules
 		{
@@ -96,6 +96,6 @@ func TestDesugarComplexLists(t *testing.T) {
 			),
 		},
 	} {
-		assert.Equal(t, ms[1], desugarComplexLists(ms[0]))
+		assert.Equal(t, ms[1], desugarLists(ms[0]))
 	}
 }

@@ -6,9 +6,9 @@ import "github.com/ein-lang/ein/command/ast"
 func WithoutTypes(m ast.Module) ast.Module {
 	for _, f := range []func(ast.Module) ast.Module{
 		desugarLiterals,
-		desugarComplexApplications,
-		desugarComplexBinaryOperations,
-		desugarComplexLists,
+		desugarApplications,
+		desugarBinaryOperations,
+		desugarLists,
 		desugarListCases,
 	} {
 		m = f(m)

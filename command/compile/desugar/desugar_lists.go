@@ -6,7 +6,7 @@ import (
 	"github.com/ein-lang/ein/command/types"
 )
 
-func desugarComplexLists(m ast.Module) ast.Module {
+func desugarLists(m ast.Module) ast.Module {
 	g := names.NewNameGenerator("list")
 
 	return m.ConvertExpressions(func(e ast.Expression) ast.Expression {

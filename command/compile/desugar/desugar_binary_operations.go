@@ -6,7 +6,7 @@ import (
 	"github.com/ein-lang/ein/command/types"
 )
 
-func desugarComplexBinaryOperations(m ast.Module) ast.Module {
+func desugarBinaryOperations(m ast.Module) ast.Module {
 	g := names.NewNameGenerator("binary-operation")
 
 	return m.ConvertExpressions(func(e ast.Expression) ast.Expression {

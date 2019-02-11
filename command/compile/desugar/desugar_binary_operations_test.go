@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDesugarComplexBinaryOperations(t *testing.T) {
+func TestDesugarBinaryOperations(t *testing.T) {
 	for _, ms := range [][2]ast.Module{
 		// Empty modules
 		{
@@ -72,6 +72,6 @@ func TestDesugarComplexBinaryOperations(t *testing.T) {
 			),
 		},
 	} {
-		assert.Equal(t, ms[1], desugarComplexBinaryOperations(ms[0]))
+		assert.Equal(t, ms[1], desugarBinaryOperations(ms[0]))
 	}
 }
