@@ -729,6 +729,119 @@ func TestDesugarListCases(t *testing.T) {
 				)
 			}(),
 		},
+		// Variable elements after multiple constant elements
+		{
+			ast.NewCaseWithoutDefault(
+				ast.NewVariable("argument"),
+				types.NewUnknown(nil),
+				[]ast.Alternative{
+					ast.NewAlternative(
+						ast.NewList(
+							types.NewUnknown(nil),
+							[]ast.ListArgument{
+								ast.NewListArgument(ast.NewNumber(123), false),
+								ast.NewListArgument(ast.NewNumber(456), false),
+							},
+						),
+						ast.NewNumber(42),
+					),
+					ast.NewAlternative(
+						ast.NewList(
+							types.NewUnknown(nil),
+							[]ast.ListArgument{ast.NewListArgument(ast.NewVariable("x"), false)},
+						),
+						ast.NewNumber(13),
+					),
+				},
+			),
+			func() ast.Expression {
+				d := ast.NewDefaultAlternative(
+					"",
+					ast.NewCaseWithoutDefault(
+						ast.NewVariable("$list-case.tail-0"),
+						types.NewUnknown(nil),
+						[]ast.Alternative{
+							ast.NewAlternative(
+								ast.NewList(types.NewUnknown(nil), nil),
+								ast.NewLet(
+									[]ast.Bind{
+										ast.NewBind(
+											"x",
+											types.NewUnknown(nil),
+											ast.NewVariable("$list-case.head-0"),
+										),
+									},
+									ast.NewNumber(13),
+								),
+							),
+						},
+					),
+				)
+
+				return ast.NewCaseWithoutDefault(
+					ast.NewVariable("argument"),
+					types.NewUnknown(nil),
+					[]ast.Alternative{
+						ast.NewAlternative(
+							ast.NewList(
+								types.NewUnknown(nil),
+								[]ast.ListArgument{
+									ast.NewListArgument(ast.NewVariable("$list-case.head-0"), false),
+									ast.NewListArgument(ast.NewVariable("$list-case.tail-0"), true),
+								},
+							),
+							ast.NewCase(
+								ast.NewVariable("$list-case.head-0"),
+								types.NewUnknown(nil),
+								[]ast.Alternative{
+									ast.NewAlternative(
+										ast.NewNumber(123),
+										ast.NewCase(
+											ast.NewVariable("$list-case.tail-0"),
+											types.NewUnknown(nil),
+											[]ast.Alternative{
+												ast.NewAlternative(
+													ast.NewList(
+														types.NewUnknown(nil),
+														[]ast.ListArgument{
+															ast.NewListArgument(ast.NewVariable("$list-case.head-1"), false),
+															ast.NewListArgument(ast.NewVariable("$list-case.tail-1"), true),
+														},
+													),
+													ast.NewCase(
+														ast.NewVariable("$list-case.head-1"),
+														types.NewUnknown(nil),
+														[]ast.Alternative{
+															ast.NewAlternative(
+																ast.NewNumber(456),
+																ast.NewCase(
+																	ast.NewVariable("$list-case.tail-1"),
+																	types.NewUnknown(nil),
+																	[]ast.Alternative{
+																		ast.NewAlternative(
+																			ast.NewList(types.NewUnknown(nil), nil),
+																			ast.NewNumber(42),
+																		),
+																	},
+																	d,
+																),
+															),
+														},
+														d,
+													),
+												),
+											},
+											d,
+										),
+									),
+								},
+								d,
+							),
+						),
+					},
+				)
+			}(),
+		},
 		// No default alternatives
 		{
 			ast.NewCaseWithoutDefault(
