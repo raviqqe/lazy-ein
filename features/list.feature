@@ -24,6 +24,8 @@ Feature: List
     Examples:
       | case expression                 |
       | case [42] of [42] -> 42         |
+      | case [42] of [y] -> 42          |
+      | case [42] of [y] -> y           |
       | case [42, 42] of [42, 42] -> 42 |
       | case [42, 42] of [y, 42] -> y   |
       | case [42, 42] of [42, y] -> y   |
