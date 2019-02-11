@@ -11,10 +11,10 @@ import (
 )
 
 func TestNewModuleGenerator(t *testing.T) {
-	newModuleGenerator(llvm.NewModule("foo"), ast.NewModule("foo", nil))
+	newModuleGenerator()
 }
 
-func TestNewModuleGeneratorWithAlgebraicTypes(t *testing.T) {
+func TestModuleGeneratorInitializeWithAlgebraicTypes(t *testing.T) {
 	tt0 := types.NewAlgebraic(types.NewConstructor(types.NewFloat64()))
 	tt1 := types.NewAlgebraic(
 		types.NewConstructor(types.NewFloat64()),
@@ -47,7 +47,7 @@ func TestNewModuleGeneratorWithAlgebraicTypes(t *testing.T) {
 			),
 		),
 	} {
-		newModuleGenerator(llvm.NewModule("foo"), ast.NewModule("foo", []ast.Bind{b}))
+		assert.Nil(t, newModuleGenerator().initialize(ast.NewModule("foo", []ast.Bind{b})))
 	}
 }
 
@@ -404,9 +404,8 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 			),
 		},
 	} {
-		g, err := newModuleGenerator(llvm.NewModule("foo"), ast.NewModule("foo", bs))
+		_, err := newModuleGenerator().Generate(ast.NewModule("foo", bs))
 		assert.Nil(t, err)
-		assert.Nil(t, g.Generate(bs))
 	}
 }
 
@@ -427,12 +426,8 @@ func TestModuleGeneratorGenerateWithGlobalFunctionsReturningBoxedValues(t *testi
 			),
 		},
 	)
-	mm := llvm.NewModule(m.Name())
 
-	g, err := newModuleGenerator(mm, m)
-	assert.Nil(t, err)
-
-	err = g.Generate(m.Binds())
+	mm, err := newModuleGenerator().Generate(m)
 	assert.Nil(t, err)
 
 	assert.Equal(
@@ -472,12 +467,8 @@ func TestModuleGeneratorGenerateWithLocalFunctionsReturningBoxedValues(t *testin
 			),
 		},
 	)
-	mm := llvm.NewModule(m.Name())
 
-	g, err := newModuleGenerator(mm, m)
-	assert.Nil(t, err)
-
-	err = g.Generate(m.Binds())
+	mm, err := newModuleGenerator().Generate(m)
 	assert.Nil(t, err)
 
 	assert.Equal(
@@ -510,9 +501,8 @@ func TestModuleGeneratorGenerateWithAlgebraicTypes(t *testing.T) {
 		},
 	)
 
-	g, err := newModuleGenerator(llvm.NewModule(m.Name()), m)
+	_, err := newModuleGenerator().Generate(m)
 	assert.Nil(t, err)
-	assert.Nil(t, g.Generate(m.Binds()))
 }
 
 func TestModuleGeneratorGenerateWithAlgebraicTypesOfMultipleConstructors(t *testing.T) {
@@ -539,9 +529,8 @@ func TestModuleGeneratorGenerateWithAlgebraicTypesOfMultipleConstructors(t *test
 		},
 	)
 
-	g, err := newModuleGenerator(llvm.NewModule(m.Name()), m)
+	_, err := newModuleGenerator().Generate(m)
 	assert.Nil(t, err)
-	assert.Nil(t, g.Generate(m.Binds()))
 }
 
 func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
@@ -621,8 +610,7 @@ func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
 			},
 		)
 
-		g, err := newModuleGenerator(llvm.NewModule(m.Name()), m)
+		_, err := newModuleGenerator().Generate(m)
 		assert.Nil(t, err)
-		assert.Nil(t, g.Generate(m.Binds()))
 	}
 }

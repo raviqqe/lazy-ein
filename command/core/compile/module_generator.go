@@ -20,27 +20,40 @@ type moduleGenerator struct {
 	typeGenerator   typeGenerator
 }
 
-func newModuleGenerator(m llvm.Module, mm ast.Module) (*moduleGenerator, error) {
-	llvm.AddFunction(m, "io_panic", llvm.FunctionType(llvm.VoidType(), nil, false)).SetLinkage(
-		llvm.ExternalLinkage,
-	)
+func newModuleGenerator() *moduleGenerator {
+	return &moduleGenerator{llvm.Module{}, map[string]llvm.Value{}, typeGenerator{}}
+}
 
-	tg := newTypeGenerator(m)
-	cg := newConstructorGenerator(m, tg)
+func (g *moduleGenerator) initialize(m ast.Module) error {
+	g.module = llvm.NewModule(m.Name())
 
-	for _, t := range mm.Types() {
+	llvm.AddFunction(
+		g.module,
+		"io_panic",
+		llvm.FunctionType(llvm.VoidType(), nil, false),
+	).SetLinkage(llvm.ExternalLinkage)
+
+	g.typeGenerator = newTypeGenerator(g.module)
+
+	cg := newConstructorGenerator(g.module, g.typeGenerator)
+
+	for _, t := range m.Types() {
 		if t, ok := t.(types.Algebraic); ok {
 			if err := cg.Generate(t); err != nil {
-				return nil, err
+				return err
 			}
 		}
 	}
 
-	return &moduleGenerator{m, map[string]llvm.Value{}, tg}, nil
+	return nil
 }
 
-func (g *moduleGenerator) Generate(bs []ast.Bind) error {
-	for _, b := range bs {
+func (g *moduleGenerator) Generate(m ast.Module) (llvm.Module, error) {
+	if err := g.initialize(m); err != nil {
+		return llvm.Module{}, err
+	}
+
+	for _, b := range m.Binds() {
 		g.globalVariables[b.Name()] = llvm.AddGlobal(
 			g.module,
 			g.typeGenerator.GenerateSizedClosure(b.Lambda()),
@@ -48,14 +61,14 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 		)
 	}
 
-	for _, b := range bs {
+	for _, b := range m.Binds() {
 		v := g.globalVariables[b.Name()]
 		f, err := g.createLambda(b.Name(), b.Lambda())
 
 		if err != nil {
-			return err
+			return llvm.Module{}, err
 		} else if err := llvm.VerifyFunction(f, llvm.AbortProcessAction); err != nil {
-			return err
+			return llvm.Module{}, err
 		}
 
 		v.SetInitializer(
@@ -68,12 +81,16 @@ func (g *moduleGenerator) Generate(bs []ast.Bind) error {
 
 	// nolint: gotype
 	if err := llvm.VerifyModule(g.module, llvm.AbortProcessAction); err != nil {
-		return err
+		return llvm.Module{}, err
 	}
 
 	g.optimize()
 
-	return llvm.VerifyModule(g.module, llvm.AbortProcessAction)
+	if err := llvm.VerifyModule(g.module, llvm.AbortProcessAction); err != nil {
+		return llvm.Module{}, err
+	}
+
+	return g.module, nil
 }
 
 func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, error) {

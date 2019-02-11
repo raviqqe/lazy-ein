@@ -13,16 +13,5 @@ func Compile(m ast.Module) (llvm.Module, error) {
 		return llvm.Module{}, err
 	}
 
-	m = canonicalize.Canonicalize(m)
-
-	mm := llvm.NewModule(m.Name())
-	g, err := newModuleGenerator(mm, m)
-
-	if err != nil {
-		return llvm.Module{}, err
-	} else if err := g.Generate(m.Binds()); err != nil {
-		return llvm.Module{}, err
-	}
-
-	return mm, nil
+	return newModuleGenerator().Generate(canonicalize.Canonicalize(m))
 }
