@@ -47,7 +47,7 @@ func Executable(m llvm.Module, file, root string) error {
 		"cc",
 		resolveRuntimePath(root, "runtime/executable/libexecutable.a"),
 		f,
-		resolveRuntimePath(root, "runtime/io/target/release/libio.a"),
+		resolveRuntimePath(root, "runtime/runtime/target/release/libruntime.a"),
 		"-ldl",
 		"-lgc",
 		"-lpthread",

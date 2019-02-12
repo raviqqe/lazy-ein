@@ -30,12 +30,12 @@ func (g *moduleGenerator) initialize(m ast.Module) error {
 
 	llvm.AddFunction(
 		g.module,
-		"io_alloc",
+		"runtime_alloc",
 		llvm.FunctionType(llir.PointerType(llvm.VoidType()), []llvm.Type{g.typeGenerator.WordType()}, false),
 	).SetLinkage(llvm.ExternalLinkage)
 	llvm.AddFunction(
 		g.module,
-		"io_panic",
+		"runtime_panic",
 		llvm.FunctionType(llvm.VoidType(), nil, false),
 	).SetLinkage(llvm.ExternalLinkage)
 

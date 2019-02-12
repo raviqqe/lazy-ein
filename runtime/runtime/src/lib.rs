@@ -24,7 +24,7 @@ extern "fastcall" fn input_entry(_: &()) -> f64 {
 }
 
 #[no_mangle]
-pub extern "C" fn io_main(main: &'static Main) {
+pub extern "C" fn runtime_main(main: &'static Main) {
     let output = (main.entry)(
         &main.payload,
         &Input {
@@ -39,12 +39,12 @@ pub extern "C" fn io_main(main: &'static Main) {
 }
 
 #[no_mangle]
-pub extern "C" fn io_alloc(size: usize) -> *mut u8 {
+pub extern "C" fn runtime_alloc(size: usize) -> *mut u8 {
     unsafe { GLOBAL.alloc(Layout::from_size_align_unchecked(size, 8)) as *mut u8 }
 }
 
 #[no_mangle]
-pub extern "C" fn io_panic() {
+pub extern "C" fn runtime_panic() {
     panic().unwrap();
 
     std::process::exit(1)

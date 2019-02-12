@@ -201,7 +201,7 @@ func (g *functionBodyGenerator) generateDefaultAlternative(
 	a, ok := c.DefaultAlternative()
 
 	if !ok {
-		g.builder.CreateCall(g.module().NamedFunction("io_panic"), nil, "")
+		g.builder.CreateCall(g.module().NamedFunction("runtime_panic"), nil, "")
 		g.builder.CreateUnreachable()
 		return nil
 	}
@@ -349,7 +349,7 @@ func (g *functionBodyGenerator) generateAtoms(as []ast.Atom) ([]llvm.Value, erro
 func (g *functionBodyGenerator) allocateHeap(t llvm.Type) llvm.Value {
 	return g.builder.CreateBitCast(
 		g.builder.CreateCall(
-			g.module().NamedFunction("io_alloc"),
+			g.module().NamedFunction("runtime_alloc"),
 			[]llvm.Value{
 				llvm.ConstInt(g.typeGenerator.WordType(), uint64(g.typeGenerator.GetSize(t)), false),
 			},
