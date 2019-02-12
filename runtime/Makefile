@@ -1,8 +1,5 @@
 .PHONY: all
-all: libexecutable libio libcore
-
-libexecutable:
-	cd executable && cmake . && make
+all: libio libcore
 
 libio:
 	cd io && cargo build --release

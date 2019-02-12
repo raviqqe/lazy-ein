@@ -1,5 +1,0 @@
-*.a
-*.cmake
-CMakeCache.txt
-CMakeFiles
-Makefile
