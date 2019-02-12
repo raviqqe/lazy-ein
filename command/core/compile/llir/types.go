@@ -16,3 +16,8 @@ func StructType(ts []llvm.Type) llvm.Type {
 func FunctionType(r llvm.Type, as []llvm.Type) llvm.Type {
 	return llvm.FunctionType(r, as, false)
 }
+
+// WordType is a word type.
+func WordType() llvm.Type {
+	return llvm.Int64Type()
+}

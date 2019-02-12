@@ -150,11 +150,7 @@ func (g typeGenerator) generateMany(ts []types.Type) []llvm.Type {
 }
 
 func (g typeGenerator) GenerateConstructorTag() llvm.Type {
-	if g.targetData.PointerSize() < 8 {
-		return llvm.Int32Type()
-	}
-
-	return llvm.Int64Type()
+	return llir.WordType()
 }
 
 func (g typeGenerator) GenerateConstructorElements(c types.Constructor) llvm.Type {
@@ -182,16 +178,12 @@ func (g typeGenerator) GetSize(t llvm.Type) int {
 	return int(g.targetData.TypeAllocSize(t))
 }
 
-func (g typeGenerator) WordType() llvm.Type {
-	return llvm.IntType(g.targetData.PointerSize() * 8)
-}
-
 func (g typeGenerator) bytesToWords(n int) int {
 	if n == 0 {
 		return 0
 	}
 
-	return (n-1)/g.targetData.PointerSize() + 1
+	return (n-1)/g.GetSize(llir.WordType()) + 1
 }
 
 func (g typeGenerator) pushType(t llvm.Type) typeGenerator {

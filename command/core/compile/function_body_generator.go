@@ -351,7 +351,7 @@ func (g *functionBodyGenerator) allocateHeap(t llvm.Type) llvm.Value {
 		g.builder.CreateCall(
 			g.module().NamedFunction(allocFunctionName),
 			[]llvm.Value{
-				llvm.ConstInt(g.typeGenerator.WordType(), uint64(g.typeGenerator.GetSize(t)), false),
+				llvm.ConstInt(llir.WordType(), uint64(g.typeGenerator.GetSize(t)), false),
 			},
 			"",
 		),
