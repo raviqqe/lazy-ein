@@ -1,0 +1,7 @@
+[package]
+name = "gc"
+version = "0.1.0"
+authors = ["swgillespie <sean.william.g@gmail.com>", "Yota Toyama <raviqqe@gmail.com>"]
+
+[dependencies]
+libc = "0.2"
