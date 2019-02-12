@@ -1,11 +1,14 @@
 .PHONY: all
-all: libexecutable libruntime
+all: libexecutable libio libcore
 
 libexecutable:
 	cd executable && cmake . && make
 
-libruntime:
-	cd runtime && cargo build --release
+libio:
+	cd io && cargo build --release
+
+libcore:
+	cd core && cargo build --release
 
 .PHONY: clean
 clean:

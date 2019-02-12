@@ -1,13 +1,11 @@
 [package]
-name = "runtime"
+name = "io"
 version = "0.1.0"
 publish = false
 
 [lib]
-name = "runtime"
+name = "io"
 crate-type = ["staticlib"]
 
 [dependencies]
-atty = "0.2"
 gc = { path = "../gc" }
-termcolor = "1"

@@ -1,6 +1,6 @@
 package compile
 
 const (
-	allocFunctionName = "runtime_alloc"
-	panicFunctionName = "runtime_panic"
+	allocFunctionName = "core_alloc"
+	panicFunctionName = "core_panic"
 )
