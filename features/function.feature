@@ -11,6 +11,9 @@ Feature: Function
     h : Number -> Number -> Number -> Number
     h x y z = z
 
+    i : (Number -> Number) -> Number
+    i f = f 42
+
     main : Number -> Number
     <bind>
     """
@@ -34,3 +37,4 @@ Feature: Function
       | main = f                     |
       | main = g 13                  |
       | main = h 13 13               |
+      | main x = i f                 |
