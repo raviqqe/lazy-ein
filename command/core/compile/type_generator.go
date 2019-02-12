@@ -67,7 +67,7 @@ func (g typeGenerator) generateAlgebraicBody(t types.Algebraic) []llvm.Type {
 	n := 0
 
 	for _, c := range t.Constructors() {
-		if m := g.getSize(g.GenerateConstructorElements(c)); m > n {
+		if m := g.GetSize(g.GenerateConstructorElements(c)); m > n {
 			n = m
 		}
 	}
@@ -118,9 +118,9 @@ func (g typeGenerator) generateEntryFunction(as []types.Type, r types.Type) llvm
 }
 
 func (g typeGenerator) generateSizedPayload(l ast.Lambda) llvm.Type {
-	n := g.getSize(g.GenerateEnvironment(l))
+	n := g.GetSize(g.GenerateEnvironment(l))
 
-	if m := g.getSize(g.Generate(types.Unbox(l.ResultType()))); l.IsUpdatable() && m > n {
+	if m := g.GetSize(g.Generate(types.Unbox(l.ResultType()))); l.IsUpdatable() && m > n {
 		n = m
 	}
 
@@ -178,8 +178,12 @@ func (g typeGenerator) GenerateConstructorStructifyFunction(
 	)
 }
 
-func (g typeGenerator) getSize(t llvm.Type) int {
+func (g typeGenerator) GetSize(t llvm.Type) int {
 	return int(g.targetData.TypeAllocSize(t))
+}
+
+func (g typeGenerator) WordType() llvm.Type {
+	return llvm.IntType(g.targetData.PointerSize() * 8)
 }
 
 func (g typeGenerator) bytesToWords(n int) int {

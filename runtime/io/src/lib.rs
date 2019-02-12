@@ -2,6 +2,7 @@ extern crate atty;
 extern crate gc;
 extern crate termcolor;
 
+use std::alloc::{GlobalAlloc, Layout};
 use std::io::{Error, Write};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
@@ -35,6 +36,11 @@ pub extern "C" fn io_main(main: &'static Main) {
     println!("{}", (output.entry)(&output.payload));
 
     std::process::exit(0)
+}
+
+#[no_mangle]
+pub extern "C" fn io_alloc(size: usize) -> *mut u8 {
+    unsafe { GLOBAL.alloc(Layout::from_size_align_unchecked(size, 8)) as *mut u8 }
 }
 
 #[no_mangle]

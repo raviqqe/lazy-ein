@@ -240,7 +240,7 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 		t := g.typeGenerator.GenerateSizedClosure(b.Lambda())
 
 		vs[b.Name()] = g.builder.CreateBitCast(
-			g.builder.CreateMalloc(t, ""),
+			g.allocateHeap(t),
 			llir.PointerType(g.typeGenerator.GenerateUnsizedClosure(t)),
 			"",
 		)
@@ -344,6 +344,20 @@ func (g *functionBodyGenerator) generateAtoms(as []ast.Atom) ([]llvm.Value, erro
 	}
 
 	return vs, nil
+}
+
+func (g *functionBodyGenerator) allocateHeap(t llvm.Type) llvm.Value {
+	return g.builder.CreateBitCast(
+		g.builder.CreateCall(
+			g.module().NamedFunction("io_alloc"),
+			[]llvm.Value{
+				llvm.ConstInt(g.typeGenerator.WordType(), uint64(g.typeGenerator.GetSize(t)), false),
+			},
+			"",
+		),
+		llir.PointerType(t),
+		"",
+	)
 }
 
 func (g *functionBodyGenerator) addVariables(vs map[string]llvm.Value) *functionBodyGenerator {

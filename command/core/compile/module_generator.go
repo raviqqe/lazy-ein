@@ -26,14 +26,18 @@ func newModuleGenerator() *moduleGenerator {
 
 func (g *moduleGenerator) initialize(m ast.Module) error {
 	g.module = llvm.NewModule(m.Name())
+	g.typeGenerator = newTypeGenerator(g.module)
 
+	llvm.AddFunction(
+		g.module,
+		"io_alloc",
+		llvm.FunctionType(llir.PointerType(llvm.VoidType()), []llvm.Type{g.typeGenerator.WordType()}, false),
+	).SetLinkage(llvm.ExternalLinkage)
 	llvm.AddFunction(
 		g.module,
 		"io_panic",
 		llvm.FunctionType(llvm.VoidType(), nil, false),
 	).SetLinkage(llvm.ExternalLinkage)
-
-	g.typeGenerator = newTypeGenerator(g.module)
 
 	cg := newConstructorGenerator(g.module, g.typeGenerator)
 
