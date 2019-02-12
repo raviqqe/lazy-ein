@@ -1,8 +1,12 @@
 extern crate atty;
+extern crate gc;
 extern crate termcolor;
 
 use std::io::{Error, Write};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+
+#[global_allocator]
+static GLOBAL: gc::Allocator = gc::Allocator;
 
 #[repr(C)]
 pub struct Closure<E, P> {
