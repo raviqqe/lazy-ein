@@ -19,7 +19,7 @@ jobs:
           name: Build runtime
           command: |
             cd runtime
-            make
+            cargo build --release
       - run:
           name: Build command
           command: go build
