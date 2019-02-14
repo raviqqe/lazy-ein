@@ -42,7 +42,7 @@ func runBuildCommand(f string) error {
 		return err
 	}
 
-	r, err := getRuntimeRoot()
+	r, err := getRuntimePath()
 
 	if err != nil {
 		return err

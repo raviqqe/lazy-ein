@@ -9,14 +9,14 @@ import (
 // nolint: gochecknoinits
 func init() {
 	viper.SetEnvPrefix("ein")
-	viper.BindEnv("root")
+	viper.BindEnv("runtime_path")
 }
 
-func getRuntimeRoot() (string, error) {
-	s := viper.GetString("root")
+func getRuntimePath() (string, error) {
+	s := viper.GetString("runtime_path")
 
 	if s == "" {
-		return "", errors.New("EIN_ROOT environment variable not set")
+		return "", errors.New("EIN_RUNTIME_PATH environment variable not set")
 	}
 
 	return s, nil

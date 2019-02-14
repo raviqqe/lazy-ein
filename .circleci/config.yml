@@ -32,4 +32,4 @@ jobs:
           name: Integration test
           command: |
             bundler install
-            bundler exec cucumber EIN_ROOT=$PWD PATH=$PWD:$PATH
+            bundler exec cucumber EIN_RUNTIME_PATH=$PWD PATH=$PWD:$PATH
