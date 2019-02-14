@@ -145,6 +145,7 @@ func (g *functionBodyGenerator) generateAlgebraicCase(c ast.AlgebraicCase) (llvm
 		p.CreateBr(g.builder, v)
 	}
 
+	// Pass down forced unboxed case arguments.
 	if err = g.generateDefaultAlternative(c, arg, d, p); err != nil {
 		return llvm.Value{}, err
 	}
