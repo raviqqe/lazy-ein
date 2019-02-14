@@ -1,7 +1,7 @@
 extern crate gc;
 
 #[global_allocator]
-static GLOBAL: gc::Allocator = gc::Allocator;
+static mut GLOBAL_ALLOCATOR: gc::Allocator = gc::Allocator;
 
 #[repr(C)]
 pub struct Closure<E, P> {
@@ -26,6 +26,11 @@ extern "fastcall" fn input_entry(_: &Payload) -> f64 {
 
 #[no_mangle]
 pub extern "C" fn main() {
+    unsafe {
+        gc::Allocator::initialize();
+        gc::Allocator::enable_gc();
+    }
+
     let output = unsafe {
         (ein_main.entry)(
             &ein_main.payload,
