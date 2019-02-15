@@ -57,6 +57,33 @@ func TestStateModuleErrorWithErrorMessage(t *testing.T) {
 	assert.Equal(t, 5, err.(parcom.Error).Column())
 }
 
+func TestStateExport(t *testing.T) {
+	for _, s := range []string{
+		"export {}",
+		"export { foo }",
+		"export { foo, bar }",
+		"export { foo, bar, }",
+		"export {\n  foo,\n  bar,\n}",
+	} {
+		_, err := newState("", s).export()()
+		assert.Nil(t, err)
+	}
+}
+
+func TestStateExportWithCommas(t *testing.T) {
+	e, err := newState("", "export { foo }").export()()
+	assert.Nil(t, err)
+	assert.Equal(t, ast.NewExport("foo"), e)
+
+	e, err = newState("", "export { foo, bar }").export()()
+	assert.Nil(t, err)
+	assert.Equal(t, ast.NewExport("foo", "bar"), e)
+
+	e, err = newState("", "export { foo, bar, }").export()()
+	assert.Nil(t, err)
+	assert.Equal(t, ast.NewExport("foo", "bar"), e)
+}
+
 func TestStateBind(t *testing.T) {
 	for _, s := range []string{
 		"x : Number\nx = 42",

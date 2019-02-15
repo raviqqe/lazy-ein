@@ -22,6 +22,8 @@ const (
 	mapSign                     = "->"
 	openParenthesisSign         = "("
 	closeParenthesisSign        = ")"
+	openBraceSign               = "{"
+	closeBraceSign              = "}"
 	openBracketSign             = "["
 	closeBracketSign            = "]"
 	additionOperator            = sign(ast.Add)
@@ -80,6 +82,31 @@ func (s *state) module(f string) parcom.Parser {
 			return ast.NewModule(f, ast.NewExport(), nil, bs), nil
 		},
 		s.Exhaust(s.ExhaustiveBlock(s.bind())),
+	)
+}
+
+func (s *state) export() parcom.Parser {
+	return s.App(
+		func(x interface{}) (interface{}, error) {
+			xs := x.([]interface{})
+			ys := xs[0].([]interface{})
+			ss := make([]string, 0, len(ys)+1)
+
+			for _, y := range ys {
+				ss = append(ss, y.(string))
+			}
+
+			if s, ok := xs[1].(string); ok {
+				ss = append(ss, s)
+			}
+
+			return ast.NewExport(ss...), nil
+		},
+		s.Wrap(
+			s.And(s.keyword(exportKeyword), s.sign(openBraceSign)),
+			s.And(s.Many(s.Suffix(s.identifier(), s.sign(commaSign))), s.Maybe(s.identifier())),
+			s.sign(closeBraceSign),
+		),
 	)
 }
 
