@@ -13,7 +13,7 @@ import (
 func TestParseWithEmptySource(t *testing.T) {
 	x, err := Parse("", "")
 
-	assert.Equal(t, ast.NewModule("", []ast.Bind{}), x)
+	assert.Equal(t, ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}), x)
 	assert.Nil(t, err)
 }
 
@@ -77,6 +77,8 @@ func TestStateBindWithVariableBind(t *testing.T) {
 		t,
 		ast.NewModule(
 			"",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"x",

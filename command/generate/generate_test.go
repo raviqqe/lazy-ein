@@ -14,6 +14,8 @@ import (
 func TestExecutable(t *testing.T) {
 	m, err := compile.Compile(ast.NewModule(
 		"main.ein",
+		ast.NewExport(),
+		nil,
 		[]ast.Bind{
 			ast.NewBind(
 				"main",

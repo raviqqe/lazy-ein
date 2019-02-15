@@ -12,18 +12,22 @@ func TestDesugarLiterals(t *testing.T) {
 	for _, ms := range [][2]ast.Module{
 		// Don't convert empty modules
 		{
-			ast.NewModule("", []ast.Bind{}),
-			ast.NewModule("", []ast.Bind{}),
+			ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}),
+			ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}),
 		},
 		// Convert variable binds
 		// TODO: Don't convert variable binds in a special way and optimize codes in core language.
 		{
 			ast.NewModule(
 				"",
+				ast.NewExport(),
+				nil,
 				[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
 			),
 			ast.NewModule(
 				"",
+				ast.NewExport(),
+				nil,
 				[]ast.Bind{
 					ast.NewBind(
 						"x",
@@ -37,6 +41,8 @@ func TestDesugarLiterals(t *testing.T) {
 		{
 			ast.NewModule(
 				"foo",
+				ast.NewExport(),
+				nil,
 				[]ast.Bind{
 					ast.NewBind(
 						"f",
@@ -46,6 +52,8 @@ func TestDesugarLiterals(t *testing.T) {
 			),
 			ast.NewModule(
 				"foo",
+				ast.NewExport(),
+				nil,
 				[]ast.Bind{
 					ast.NewBind(
 						"$literal-0",
@@ -63,6 +71,8 @@ func TestDesugarLiterals(t *testing.T) {
 		{
 			ast.NewModule(
 				"",
+				ast.NewExport(),
+				nil,
 				[]ast.Bind{
 					ast.NewBind(
 						"f",
@@ -73,6 +83,8 @@ func TestDesugarLiterals(t *testing.T) {
 			),
 			ast.NewModule(
 				"",
+				ast.NewExport(),
+				nil,
 				[]ast.Bind{
 					ast.NewBind(
 						"f",

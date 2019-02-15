@@ -77,7 +77,7 @@ func (s *state) module(f string) parcom.Parser {
 				bs = append(bs, x.(ast.Bind))
 			}
 
-			return ast.NewModule(f, bs), nil
+			return ast.NewModule(f, ast.NewExport(), nil, bs), nil
 		},
 		s.Exhaust(s.ExhaustiveBlock(s.bind())),
 	)

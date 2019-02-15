@@ -19,7 +19,7 @@ var consConstructor = coreast.NewConstructor(listAlgebraic, 0)
 var nilConstructor = coreast.NewConstructor(listAlgebraic, 1)
 
 func TestCompileWithEmptySource(t *testing.T) {
-	_, err := Compile(ast.NewModule("", []ast.Bind{}))
+	_, err := Compile(ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}))
 	assert.Nil(t, err)
 }
 
@@ -27,6 +27,8 @@ func TestCompileWithFunctionApplications(t *testing.T) {
 	_, err := Compile(
 		ast.NewModule(
 			"",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"f",
@@ -52,6 +54,8 @@ func TestCompileWithNestedFunctionApplications(t *testing.T) {
 	_, err := Compile(
 		ast.NewModule(
 			"",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"f",
@@ -82,6 +86,8 @@ func TestCompileWithDeeplyNestedFunctionApplicationsInLambdaExpressions(t *testi
 	_, err := Compile(
 		ast.NewModule(
 			"",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"f",
@@ -120,6 +126,8 @@ func TestCompileWithLists(t *testing.T) {
 	_, err := Compile(
 		ast.NewModule(
 			"",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"x",
@@ -140,6 +148,8 @@ func TestCompileErrorWithUnknownVariables(t *testing.T) {
 	_, err := Compile(
 		ast.NewModule(
 			"",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewVariable("y"))}),
 	)
 	assert.Error(t, err)
@@ -150,13 +160,16 @@ func TestCompilePanicWithUntypedGlobals(t *testing.T) {
 		Compile(
 			ast.NewModule(
 				"",
-				[]ast.Bind{ast.NewBind("x", types.NewUnknown(nil), ast.NewNumber(42))}),
+				ast.NewExport(),
+				nil,
+				[]ast.Bind{ast.NewBind("x", types.NewUnknown(nil), ast.NewNumber(42))},
+			),
 		)
 	})
 }
 
 func TestCompileToCoreWithEmptySource(t *testing.T) {
-	m, err := compileToCore(ast.NewModule("", []ast.Bind{}))
+	m, err := compileToCore(ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}))
 	assert.Nil(t, err)
 
 	assert.Equal(t, coreast.NewModule("", []coreast.Bind{}), m)
@@ -166,6 +179,8 @@ func TestCompileToCoreWithVariableBinds(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
 			"",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
 		),
 	)
@@ -195,6 +210,8 @@ func TestCompileToCoreWithFunctionBinds(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
 			"foo",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"f",
@@ -250,6 +267,8 @@ func TestCompileToCoreWithLetExpressions(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
 			"foo",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"x",
@@ -310,6 +329,8 @@ func TestCompileToCoreWithLetExpressionsAndFreeVariables(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
 			"foo",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"f",
@@ -368,6 +389,8 @@ func TestCompileToCoreWithNestedLetExpressionsInLambdaExpressions(t *testing.T) 
 	m, err := compileToCore(
 		ast.NewModule(
 			"foo",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"f",
@@ -448,6 +471,8 @@ func TestCompileToCoreWithLists(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
 			"foo",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"x",
@@ -528,6 +553,8 @@ func TestCompileToCoreWithListCaseExpressionsWithoutDefaultAlternatives(t *testi
 	m, err := compileToCore(
 		ast.NewModule(
 			"foo",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"x",
@@ -687,6 +714,8 @@ func TestCompileToCoreWithBinaryOperations(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
 			"foo",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"x",
@@ -791,6 +820,8 @@ func TestCompileWithComplexBinaryOperations(t *testing.T) {
 	_, err := Compile(
 		ast.NewModule(
 			"foo",
+			ast.NewExport(),
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"x",
@@ -856,6 +887,8 @@ func TestCompileWithCaseExpressions(t *testing.T) {
 		_, err := Compile(
 			ast.NewModule(
 				"foo",
+				ast.NewExport(),
+				nil,
 				[]ast.Bind{
 					ast.NewBind(
 						"x",

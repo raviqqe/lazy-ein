@@ -47,5 +47,5 @@ func desugarLiterals(m ast.Module) ast.Module {
 		}).(ast.Bind))
 	}
 
-	return ast.NewModule(m.Name(), bs)
+	return ast.NewModule(m.Name(), m.Export(), m.Imports(), bs)
 }

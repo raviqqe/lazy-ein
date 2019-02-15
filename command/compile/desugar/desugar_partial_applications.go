@@ -14,7 +14,7 @@ func desugarPartialApplications(m ast.Module) ast.Module {
 		bs = append(bs, desugarPartialApplicationsInBind(b))
 	}
 
-	return ast.NewModule(m.Name(), bs)
+	return ast.NewModule(m.Name(), m.Export(), m.Imports(), bs)
 }
 
 func desugarPartialApplicationsInBind(b ast.Bind) ast.Bind {
