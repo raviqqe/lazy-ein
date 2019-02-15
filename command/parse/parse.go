@@ -26,6 +26,7 @@ const (
 	closeBraceSign              = "}"
 	openBracketSign             = "["
 	closeBracketSign            = "]"
+	doubleQuoteSign             = "\""
 	additionOperator            = sign(ast.Add)
 	subtractionOperator         = sign(ast.Subtract)
 	multiplicationOperator      = sign(ast.Multiply)
@@ -110,6 +111,15 @@ func (s *state) export() parcom.Parser {
 	)
 }
 
+func (s *state) importModule() parcom.Parser {
+	return s.App(
+		func(x interface{}) (interface{}, error) {
+			return ast.NewImport(x.(string)), nil
+		},
+		s.Prefix(s.keyword(importKeyword), s.rawStringLiteral()),
+	)
+}
+
 func (s *state) bind() parcom.Parser {
 	return s.withDebugInformation(
 		s.HeteroBlock(
@@ -179,6 +189,7 @@ func (s *state) expressionWithOptions(b, a bool) parcom.Parser {
 			ps,
 			s.numberLiteral(),
 			s.listLiteral(s.expression()),
+			// TODO: Add string literal.
 			s.let(),
 			s.caseOf(),
 			s.variable(),
@@ -243,6 +254,33 @@ func (s *state) listLiteral(p parcom.Parser) parcom.Parser {
 
 			return ast.NewList(types.NewUnknown(i), as), nil
 		},
+	)
+}
+
+func (s *state) rawStringLiteral() parcom.Parser {
+	p := s.Str(doubleQuoteSign)
+
+	return s.App(
+		func(x interface{}) (interface{}, error) {
+			return strconv.Unquote(x.(string))
+		},
+		s.token(
+			s.Stringify(
+				s.And(
+					p,
+					s.Many(
+						s.Or(
+							s.NotChars("\"\\"),
+							s.Str("\\\""),
+							s.Str("\\\\"),
+							s.Str("\\n"),
+							s.Str("\\t"),
+						),
+					),
+					p,
+				),
+			),
+		),
 	)
 }
 
@@ -373,6 +411,7 @@ func (s *state) pattern() parcom.Parser {
 	return s.Or(
 		s.numberLiteral(),
 		s.listLiteral(s.innerPattern()),
+		// TODO: Add string literal.
 	)
 }
 

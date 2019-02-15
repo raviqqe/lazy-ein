@@ -84,6 +84,17 @@ func TestStateExportWithCommas(t *testing.T) {
 	assert.Equal(t, ast.NewExport("foo", "bar"), e)
 }
 
+func TestStateImport(t *testing.T) {
+	for _, s := range []string{
+		`import "foo"`,
+		`import "foo/bar"`,
+	} {
+		ss := newState("", s)
+		_, err := ss.Exhaust(ss.importModule())()
+		assert.Nil(t, err)
+	}
+}
+
 func TestStateBind(t *testing.T) {
 	for _, s := range []string{
 		"x : Number\nx = 42",
@@ -198,6 +209,23 @@ func TestStateListLiteralError(t *testing.T) {
 		ss := newState("", s)
 		_, err := ss.listLiteral(ss.expression())()
 		assert.Error(t, err)
+	}
+}
+
+func TestStateRawStringLiteral(t *testing.T) {
+	for _, ss := range [][2]string{
+		{`"foo"`, "foo"},
+		{`"foo/bar"`, "foo/bar"},
+		{`"foo\"bar"`, "foo\"bar"},
+		{`"foo\\bar"`, "foo\\bar"},
+		{`"foo\nbar"`, "foo\nbar"},
+		{`"foo\tbar"`, "foo\tbar"},
+	} {
+		s := newState("", ss[0])
+		x, err := s.Exhaust(s.rawStringLiteral())()
+
+		assert.Nil(t, err)
+		assert.Equal(t, ss[1], x)
 	}
 }
 
