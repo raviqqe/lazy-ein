@@ -13,7 +13,7 @@ import (
 func TestParseWithEmptySource(t *testing.T) {
 	x, err := Parse("", "")
 
-	assert.Equal(t, ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}), x)
+	assert.Equal(t, ast.NewModule("", ast.NewExport(), []ast.Import{}, []ast.Bind{}), x)
 	assert.Nil(t, err)
 }
 
@@ -31,10 +31,40 @@ func TestStateModule(t *testing.T) {
 		"f : Number -> Number\nf x = 42",
 		"f : Number -> Number -> Number\nf x y = 42",
 		"f : Number -> Number\nf x = let y = x in y",
+		"export { x }\nx : Number\nx = 42",
+		"import \"foo\"\nx : Number\nx = 42",
+		"import \"foo\"\nimport \"bar\"\nx : Number\nx = 42",
+		"export { x }\nimport \"foo\"\nx : Number\nx = 42",
+		"export { x }\nimport \"foo\"\nimport \"bar\"\nx : Number\nx = 42",
 	} {
 		_, err := newState("", s).module("")()
 		assert.Nil(t, err)
 	}
+}
+
+func TestStateModuleWithResult(t *testing.T) {
+	m, err := newState(
+		"module",
+		"export { x }\nimport \"foo\"\nx : Number\nx = 42",
+	).module("module")()
+
+	assert.Nil(t, err)
+	assert.Equal(
+		t,
+		ast.NewModule(
+			"module",
+			ast.NewExport("x"),
+			[]ast.Import{ast.NewImport("foo")},
+			[]ast.Bind{
+				ast.NewBind(
+					"x",
+					types.NewNumber(debug.NewInformation("module", 3, 5, "x : Number")),
+					ast.NewNumber(42),
+				),
+			},
+		),
+		m,
+	)
 }
 
 func TestStateModuleError(t *testing.T) {
@@ -116,7 +146,7 @@ func TestStateBindWithVariableBind(t *testing.T) {
 		ast.NewModule(
 			"",
 			ast.NewExport(),
-			nil,
+			[]ast.Import{},
 			[]ast.Bind{
 				ast.NewBind(
 					"x",

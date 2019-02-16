@@ -74,15 +74,35 @@ func (s *state) module(f string) parcom.Parser {
 	return s.App(
 		func(x interface{}) (interface{}, error) {
 			xs := x.([]interface{})
-			bs := make([]ast.Bind, 0, len(xs))
+			e := ast.NewExport()
 
-			for _, x := range xs {
-				bs = append(bs, x.(ast.Bind))
+			if ee, ok := xs[0].(ast.Export); ok {
+				e = ee
 			}
 
-			return ast.NewModule(f, ast.NewExport(), nil, bs), nil
+			ys := xs[1].([]interface{})
+			is := make([]ast.Import, 0, len(ys))
+
+			for _, y := range ys {
+				is = append(is, y.(ast.Import))
+			}
+
+			zs := xs[2].([]interface{})
+			bs := make([]ast.Bind, 0, len(zs))
+
+			for _, z := range zs {
+				bs = append(bs, z.(ast.Bind))
+			}
+
+			return ast.NewModule(f, e, is, bs), nil
 		},
-		s.Exhaust(s.ExhaustiveBlock(s.bind())),
+		s.Exhaust(
+			s.HeteroBlock(
+				s.Maybe(s.export()),
+				s.Block(s.importModule()),
+				s.ExhaustiveBlock(s.bind()),
+			),
+		),
 	)
 }
 
@@ -116,7 +136,7 @@ func (s *state) importModule() parcom.Parser {
 		func(x interface{}) (interface{}, error) {
 			return ast.NewImport(x.(string)), nil
 		},
-		s.Prefix(s.keyword(importKeyword), s.rawStringLiteral()),
+		s.WithPosition(s.Prefix(s.keyword(importKeyword), s.rawStringLiteral())),
 	)
 }
 
