@@ -11,7 +11,7 @@ import (
 )
 
 func TestValidate(t *testing.T) {
-	assert.Nil(t, validate.Validate(ast.NewModule("foo", nil)))
+	assert.Nil(t, validate.Validate(ast.NewModule("foo", nil, nil)))
 }
 
 func TestValidateError(t *testing.T) {
@@ -23,6 +23,7 @@ func TestValidateError(t *testing.T) {
 		validate.Validate(
 			ast.NewModule(
 				"foo",
+				nil,
 				[]ast.Bind{
 					ast.NewBind(
 						"x",

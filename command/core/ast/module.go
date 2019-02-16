@@ -4,18 +4,24 @@ import "github.com/ein-lang/ein/command/core/types"
 
 // Module is a module.
 type Module struct {
-	name  string
-	binds []Bind
+	name         string
+	declarations []Bind
+	binds        []Bind
 }
 
 // NewModule creates a module.
-func NewModule(n string, bs []Bind) Module {
-	return Module{n, bs}
+func NewModule(s string, ds []Bind, bs []Bind) Module {
+	return Module{s, ds, bs}
 }
 
 // Name returns a name.
 func (m Module) Name() string {
 	return m.name
+}
+
+// Declarations returns declarations.
+func (m Module) Declarations() []Bind {
+	return m.declarations
 }
 
 // Binds returns binds.
@@ -49,5 +55,5 @@ func (m Module) ConvertTypes(f func(types.Type) types.Type) Module {
 		bs = append(bs, b.ConvertTypes(f))
 	}
 
-	return Module{m.name, bs}
+	return Module{m.name, m.declarations, bs}
 }

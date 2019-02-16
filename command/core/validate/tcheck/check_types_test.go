@@ -243,7 +243,7 @@ func TestCheckTypes(t *testing.T) {
 			),
 		},
 	} {
-		assert.Nil(t, tcheck.CheckTypes(ast.NewModule("", bs)))
+		assert.Nil(t, tcheck.CheckTypes(ast.NewModule("", nil, bs)))
 	}
 }
 
@@ -400,6 +400,6 @@ func TestCheckTypesError(t *testing.T) {
 			),
 		},
 	} {
-		assert.Error(t, tcheck.CheckTypes(ast.NewModule("", bs)))
+		assert.Error(t, tcheck.CheckTypes(ast.NewModule("", nil, bs)))
 	}
 }

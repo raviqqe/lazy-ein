@@ -20,6 +20,7 @@ func TestCompile(t *testing.T) {
 	m, err := compile.Compile(
 		ast.NewModule(
 			"foo",
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"foo",
@@ -44,6 +45,7 @@ func TestGlobalThunkForce(t *testing.T) {
 	m, err := compile.Compile(
 		ast.NewModule(
 			"",
+			nil,
 			[]ast.Bind{
 				ast.NewBind(
 					"x",
