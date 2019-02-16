@@ -39,6 +39,14 @@ func (g *moduleGenerator) initialize(m ast.Module) error {
 		llvm.FunctionType(llvm.VoidType(), nil, false),
 	).SetLinkage(llvm.ExternalLinkage)
 
+	for _, d := range m.Declarations() {
+		g.globalVariables[d.Name()] = llvm.AddGlobal(
+			g.module,
+			g.typeGenerator.GenerateSizedClosure(d.Lambda()),
+			d.Name(),
+		)
+	}
+
 	cg := newConstructorGenerator(g.module, g.typeGenerator)
 
 	for _, t := range m.Types() {

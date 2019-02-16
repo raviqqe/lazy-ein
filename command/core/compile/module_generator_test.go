@@ -619,3 +619,40 @@ func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
 		assert.Nil(t, err)
 	}
 }
+
+func TestModuleGeneratorGenerateWithDeclarations(t *testing.T) {
+	a := types.NewAlgebraic(types.NewConstructor(types.NewFloat64()))
+	tt := types.NewBoxed(a)
+
+	m := ast.NewModule(
+		"foo",
+		[]ast.Bind{
+			ast.NewBind(
+				"x",
+				ast.NewVariableLambda(
+					nil,
+					true,
+					ast.NewConstructorApplication(
+						ast.NewConstructor(a, 0),
+						[]ast.Atom{ast.NewFloat64(42)},
+					),
+					tt,
+				),
+			),
+		},
+		[]ast.Bind{
+			ast.NewBind(
+				"y",
+				ast.NewVariableLambda(
+					nil,
+					true,
+					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
+					tt,
+				),
+			),
+		},
+	)
+
+	_, err := newModuleGenerator().Generate(m)
+	assert.Nil(t, err)
+}
