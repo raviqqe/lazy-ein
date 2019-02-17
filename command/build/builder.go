@@ -13,12 +13,12 @@ import (
 )
 
 type builder struct {
-	runtimePath string
-	objectCache objectCache
+	runtimePath, moduleRootDirectory string
+	objectCache                      objectCache
 }
 
 func newBuilder(runtimePath, moduleRootPath, cacheDir string) builder {
-	return builder{runtimePath, newObjectCache(cacheDir, moduleRootPath)}
+	return builder{runtimePath, moduleRootPath, newObjectCache(cacheDir, moduleRootPath)}
 }
 
 func (b builder) BuildExecutable(f string) error {
@@ -68,7 +68,7 @@ func (b builder) buildModuleWithoutCache(f string) ([]byte, error) {
 		return nil, err
 	}
 
-	m, err := parse.Parse(f, string(bs))
+	m, err := parse.Parse(f, string(bs), b.moduleRootDirectory)
 
 	if err != nil {
 		return nil, err

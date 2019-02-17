@@ -63,12 +63,6 @@ func (c objectCache) generateModuleHash(h hash.Hash, f string) error {
 		return err
 	}
 
-	f, err = c.normalizePath(f)
-
-	if err != nil {
-		return err
-	}
-
 	h.Write([]byte(f))
 	h.Write(bs)
 
@@ -80,7 +74,7 @@ func (c objectCache) generateModuleHash(h hash.Hash, f string) error {
 }
 
 func (c objectCache) generateSubmodulesHash(h hash.Hash, f, s string) error {
-	m, err := parse.Parse(f, s)
+	m, err := parse.Parse(f, s, c.moduleRootDirectory)
 
 	if err != nil {
 		return err
@@ -93,20 +87,4 @@ func (c objectCache) generateSubmodulesHash(h hash.Hash, f, s string) error {
 	}
 
 	return nil
-}
-
-func (c objectCache) normalizePath(f string) (string, error) {
-	d, err := filepath.Abs(c.moduleRootDirectory)
-
-	if err != nil {
-		return "", err
-	}
-
-	f, err = filepath.Abs(f)
-
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.Rel(d, f)
 }

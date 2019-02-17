@@ -54,7 +54,13 @@ var keywords = map[keyword]struct{}{
 }
 
 // Parse parses a module into an AST.
-func Parse(f, s string) (ast.Module, error) {
+func Parse(f, s, rootDir string) (ast.Module, error) {
+	f, err := normalizePath(f, rootDir)
+
+	if err != nil {
+		return ast.Module{}, err
+	}
+
 	x, err := newState(f, s).module(f)()
 
 	switch err := err.(type) {
