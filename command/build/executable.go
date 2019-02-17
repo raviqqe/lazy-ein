@@ -1,4 +1,4 @@
-package generate
+package build
 
 // Executable builds an executable file.
 func Executable(f, runtimePath, cacheDir string) error {

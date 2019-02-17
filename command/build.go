@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ein-lang/ein/command/build"
 	"github.com/ein-lang/ein/command/debug"
-	"github.com/ein-lang/ein/command/generate"
 	"github.com/spf13/cobra"
 )
 
@@ -40,7 +40,7 @@ func runBuildCommand(f string) error {
 		return err
 	}
 
-	return generate.Executable(f, r, c)
+	return build.Executable(f, r, c)
 }
 
 func getCacheDirectory() (string, error) {

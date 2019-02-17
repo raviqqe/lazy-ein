@@ -1,4 +1,4 @@
-package generate_test
+package build_test
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ein-lang/ein/command/generate"
+	"github.com/ein-lang/ein/command/build"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,7 +24,7 @@ func TestExecutable(t *testing.T) {
 	defer os.Remove(d)
 	assert.Nil(t, err)
 
-	assert.Nil(t, generate.Executable(f.Name(), "../..", d))
+	assert.Nil(t, build.Executable(f.Name(), "../..", d))
 }
 
 func TestExecutableWithoutMainFunction(t *testing.T) {
@@ -39,6 +39,6 @@ func TestExecutableWithoutMainFunction(t *testing.T) {
 	assert.Equal(
 		t,
 		errors.New("main function not found"),
-		generate.Executable(f.Name(), "../..", d),
+		build.Executable(f.Name(), "../..", d),
 	)
 }

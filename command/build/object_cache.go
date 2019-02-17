@@ -1,4 +1,4 @@
-package generate
+package build
 
 import (
 	"crypto/sha256"
