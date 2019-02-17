@@ -21,7 +21,7 @@ func newBuilder(runtimeDir, rootDir, cacheDir string) builder {
 	return builder{runtimeDir, rootDir, newObjectCache(cacheDir, rootDir)}
 }
 
-func (b builder) BuildExecutable(f string) error {
+func (b builder) Build(f string) error {
 	f, err := b.BuildModule(f)
 
 	if err != nil {

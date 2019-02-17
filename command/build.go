@@ -46,7 +46,7 @@ func runBuildCommand(f string) error {
 		return err
 	}
 
-	return build.Executable(f, runtime, root, c)
+	return build.Build(f, runtime, root, c)
 }
 
 func getCacheDirectory() (string, error) {

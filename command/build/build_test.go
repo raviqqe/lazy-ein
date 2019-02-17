@@ -11,7 +11,7 @@ import (
 
 const source = "main : Number -> Number\nmain x = 42"
 
-func TestExecutable(t *testing.T) {
+func TestBuild(t *testing.T) {
 	cacheDir, rootDir, clean := setUpEnvironmentDirectories(t)
 	defer clean()
 
@@ -22,10 +22,10 @@ func TestExecutable(t *testing.T) {
 	_, err = f.WriteString(source)
 	assert.Nil(t, err)
 
-	assert.Nil(t, Executable(f.Name(), "../..", rootDir, cacheDir))
+	assert.Nil(t, Build(f.Name(), "../..", rootDir, cacheDir))
 }
 
-func TestExecutableWithoutMainFunction(t *testing.T) {
+func TestBuildWithoutMainFunction(t *testing.T) {
 	cacheDir, rootDir, clean := setUpEnvironmentDirectories(t)
 	defer clean()
 
@@ -36,6 +36,6 @@ func TestExecutableWithoutMainFunction(t *testing.T) {
 	assert.Equal(
 		t,
 		errors.New("main function not found"),
-		Executable(f.Name(), "../..", rootDir, cacheDir),
+		Build(f.Name(), "../..", rootDir, cacheDir),
 	)
 }
