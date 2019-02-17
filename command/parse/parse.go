@@ -54,14 +54,8 @@ var keywords = map[keyword]struct{}{
 }
 
 // Parse parses a module into an AST.
-func Parse(f, s, rootDir string) (ast.Module, error) {
-	f, err := normalizePath(f, rootDir)
-
-	if err != nil {
-		return ast.Module{}, err
-	}
-
-	x, err := newState(f, s).module(f)()
+func Parse(f, s string) (ast.Module, error) {
+	x, err := newState(f, s).module()()
 
 	switch err := err.(type) {
 	case parcom.Error:
@@ -76,7 +70,7 @@ func Parse(f, s, rootDir string) (ast.Module, error) {
 	return x.(ast.Module), nil
 }
 
-func (s *state) module(f string) parcom.Parser {
+func (s *state) module() parcom.Parser {
 	return s.App(
 		func(x interface{}) (interface{}, error) {
 			xs := x.([]interface{})
@@ -100,7 +94,7 @@ func (s *state) module(f string) parcom.Parser {
 				bs = append(bs, z.(ast.Bind))
 			}
 
-			return ast.NewModule(f, e, is, bs), nil
+			return ast.NewModule(e, is, bs), nil
 		},
 		s.Exhaust(
 			s.HeteroBlock(

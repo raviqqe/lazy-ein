@@ -12,13 +12,12 @@ func TestDesugarLists(t *testing.T) {
 	for _, ms := range [][2]ast.Module{
 		// Empty modules
 		{
-			ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}),
-			ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}),
+			ast.NewModule(ast.NewExport(), nil, []ast.Bind{}),
+			ast.NewModule(ast.NewExport(), nil, []ast.Bind{}),
 		},
 		// Simple lists
 		{
 			ast.NewModule(
-				"foo",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -33,7 +32,6 @@ func TestDesugarLists(t *testing.T) {
 				},
 			),
 			ast.NewModule(
-				"foo",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -51,7 +49,6 @@ func TestDesugarLists(t *testing.T) {
 		// Complex lists
 		{
 			ast.NewModule(
-				"foo",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -74,7 +71,6 @@ func TestDesugarLists(t *testing.T) {
 				},
 			),
 			ast.NewModule(
-				"foo",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{

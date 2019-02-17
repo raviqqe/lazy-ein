@@ -90,7 +90,6 @@ func TestCanonicalizeWithAlgebraicTypes(t *testing.T) {
 			ts[1],
 			canonicalize.Canonicalize(
 				ast.NewModule(
-					"",
 					nil,
 					[]ast.Bind{
 						ast.NewBind("x", ast.NewVariableLambda(nil, true, ast.NewFloat64(42), ts[0])),
@@ -131,7 +130,6 @@ func TestCanonicalizeWithFunctions(t *testing.T) {
 			ts[1],
 			canonicalize.Canonicalize(
 				ast.NewModule(
-					"",
 					nil,
 					[]ast.Bind{
 						ast.NewBind(

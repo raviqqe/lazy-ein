@@ -1,4 +1,4 @@
-package parse
+package build
 
 import "path/filepath"
 

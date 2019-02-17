@@ -47,7 +47,7 @@ func TestModuleGeneratorInitializeWithAlgebraicTypes(t *testing.T) {
 			),
 		),
 	} {
-		assert.Nil(t, newModuleGenerator().initialize(ast.NewModule("foo", nil, []ast.Bind{b})))
+		assert.Nil(t, newModuleGenerator().initialize(ast.NewModule(nil, []ast.Bind{b})))
 	}
 }
 
@@ -404,7 +404,7 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 			),
 		},
 	} {
-		_, err := newModuleGenerator().Generate(ast.NewModule("foo", nil, bs))
+		_, err := newModuleGenerator().Generate(ast.NewModule(nil, bs))
 		assert.Nil(t, err)
 	}
 }
@@ -413,7 +413,6 @@ func TestModuleGeneratorGenerateWithGlobalFunctionsReturningBoxedValues(t *testi
 	a := types.NewAlgebraic(types.NewConstructor())
 
 	m := ast.NewModule(
-		"foo",
 		nil,
 		[]ast.Bind{
 			ast.NewBind(
@@ -442,7 +441,6 @@ func TestModuleGeneratorGenerateWithLocalFunctionsReturningBoxedValues(t *testin
 	a := types.NewAlgebraic(types.NewConstructor())
 
 	m := ast.NewModule(
-		"foo",
 		nil,
 		[]ast.Bind{
 			ast.NewBind(
@@ -486,7 +484,6 @@ func TestModuleGeneratorGenerateWithAlgebraicTypes(t *testing.T) {
 	tt := types.NewAlgebraic(types.NewConstructor(types.NewFloat64()))
 
 	m := ast.NewModule(
-		"foo",
 		nil,
 		[]ast.Bind{
 			ast.NewBind(
@@ -515,7 +512,6 @@ func TestModuleGeneratorGenerateWithAlgebraicTypesOfMultipleConstructors(t *test
 	)
 
 	m := ast.NewModule(
-		"foo",
 		nil,
 		[]ast.Bind{
 			ast.NewBind(
@@ -600,7 +596,6 @@ func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
 		),
 	} {
 		m := ast.NewModule(
-			"f",
 			nil,
 			[]ast.Bind{
 				ast.NewBind(
@@ -625,7 +620,6 @@ func TestModuleGeneratorGenerateWithDeclarations(t *testing.T) {
 	tt := types.NewBoxed(a)
 
 	m := ast.NewModule(
-		"foo",
 		[]ast.Bind{
 			ast.NewBind(
 				"x",

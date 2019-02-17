@@ -19,14 +19,13 @@ var consConstructor = coreast.NewConstructor(listAlgebraic, 0)
 var nilConstructor = coreast.NewConstructor(listAlgebraic, 1)
 
 func TestCompileWithEmptySource(t *testing.T) {
-	_, err := Compile(ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}))
+	_, err := Compile(ast.NewModule(ast.NewExport(), nil, []ast.Bind{}))
 	assert.Nil(t, err)
 }
 
 func TestCompileWithFunctionApplications(t *testing.T) {
 	_, err := Compile(
 		ast.NewModule(
-			"",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{
@@ -53,7 +52,6 @@ func TestCompileWithFunctionApplications(t *testing.T) {
 func TestCompileWithNestedFunctionApplications(t *testing.T) {
 	_, err := Compile(
 		ast.NewModule(
-			"",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{
@@ -85,7 +83,6 @@ func TestCompileWithNestedFunctionApplications(t *testing.T) {
 func TestCompileWithDeeplyNestedFunctionApplicationsInLambdaExpressions(t *testing.T) {
 	_, err := Compile(
 		ast.NewModule(
-			"",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{
@@ -125,7 +122,6 @@ func TestCompileWithDeeplyNestedFunctionApplicationsInLambdaExpressions(t *testi
 func TestCompileWithLists(t *testing.T) {
 	_, err := Compile(
 		ast.NewModule(
-			"",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{
@@ -147,7 +143,6 @@ func TestCompileWithLists(t *testing.T) {
 func TestCompileErrorWithUnknownVariables(t *testing.T) {
 	_, err := Compile(
 		ast.NewModule(
-			"",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewVariable("y"))}),
@@ -159,7 +154,6 @@ func TestCompilePanicWithUntypedGlobals(t *testing.T) {
 	assert.Panics(t, func() {
 		Compile(
 			ast.NewModule(
-				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{ast.NewBind("x", types.NewUnknown(nil), ast.NewNumber(42))},
@@ -169,16 +163,15 @@ func TestCompilePanicWithUntypedGlobals(t *testing.T) {
 }
 
 func TestCompileToCoreWithEmptySource(t *testing.T) {
-	m, err := compileToCore(ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}))
+	m, err := compileToCore(ast.NewModule(ast.NewExport(), nil, []ast.Bind{}))
 	assert.Nil(t, err)
 
-	assert.Equal(t, coreast.NewModule("", nil, []coreast.Bind{}), m)
+	assert.Equal(t, coreast.NewModule(nil, []coreast.Bind{}), m)
 }
 
 func TestCompileToCoreWithVariableBinds(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
-			"",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
@@ -189,7 +182,6 @@ func TestCompileToCoreWithVariableBinds(t *testing.T) {
 	assert.Equal(
 		t,
 		coreast.NewModule(
-			"",
 			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
@@ -210,7 +202,6 @@ func TestCompileToCoreWithVariableBinds(t *testing.T) {
 func TestCompileToCoreWithFunctionBinds(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
-			"foo",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{
@@ -235,7 +226,6 @@ func TestCompileToCoreWithFunctionBinds(t *testing.T) {
 	assert.Equal(
 		t,
 		coreast.NewModule(
-			"foo",
 			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
@@ -268,7 +258,6 @@ func TestCompileToCoreWithFunctionBinds(t *testing.T) {
 func TestCompileToCoreWithLetExpressions(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
-			"foo",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{
@@ -288,7 +277,6 @@ func TestCompileToCoreWithLetExpressions(t *testing.T) {
 	assert.Equal(
 		t,
 		coreast.NewModule(
-			"foo",
 			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
@@ -331,7 +319,6 @@ func TestCompileToCoreWithLetExpressions(t *testing.T) {
 func TestCompileToCoreWithLetExpressionsAndFreeVariables(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
-			"foo",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{
@@ -354,7 +341,6 @@ func TestCompileToCoreWithLetExpressionsAndFreeVariables(t *testing.T) {
 	assert.Equal(
 		t,
 		coreast.NewModule(
-			"foo",
 			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
@@ -392,7 +378,6 @@ func TestCompileToCoreWithLetExpressionsAndFreeVariables(t *testing.T) {
 func TestCompileToCoreWithNestedLetExpressionsInLambdaExpressions(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
-			"foo",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{
@@ -422,7 +407,6 @@ func TestCompileToCoreWithNestedLetExpressionsInLambdaExpressions(t *testing.T) 
 	assert.Equal(
 		t,
 		coreast.NewModule(
-			"foo",
 			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
@@ -475,7 +459,6 @@ func TestCompileToCoreWithNestedLetExpressionsInLambdaExpressions(t *testing.T) 
 func TestCompileToCoreWithLists(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
-			"foo",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{
@@ -495,7 +478,6 @@ func TestCompileToCoreWithLists(t *testing.T) {
 	assert.Equal(
 		t,
 		coreast.NewModule(
-			"foo",
 			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
@@ -558,7 +540,6 @@ func TestCompileToCoreWithLists(t *testing.T) {
 func TestCompileToCoreWithListCaseExpressionsWithoutDefaultAlternatives(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
-			"foo",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{
@@ -595,7 +576,6 @@ func TestCompileToCoreWithListCaseExpressionsWithoutDefaultAlternatives(t *testi
 	assert.Equal(
 		t,
 		coreast.NewModule(
-			"foo",
 			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
@@ -720,7 +700,6 @@ func TestCompileToCoreWithListCaseExpressionsWithoutDefaultAlternatives(t *testi
 func TestCompileToCoreWithBinaryOperations(t *testing.T) {
 	m, err := compileToCore(
 		ast.NewModule(
-			"foo",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{
@@ -737,7 +716,6 @@ func TestCompileToCoreWithBinaryOperations(t *testing.T) {
 	assert.Equal(
 		t,
 		coreast.NewModule(
-			"foo",
 			nil,
 			[]coreast.Bind{
 				coreast.NewBind(
@@ -827,7 +805,6 @@ func TestCompileToCoreWithBinaryOperations(t *testing.T) {
 func TestCompileWithComplexBinaryOperations(t *testing.T) {
 	_, err := Compile(
 		ast.NewModule(
-			"foo",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{
@@ -894,7 +871,6 @@ func TestCompileWithCaseExpressions(t *testing.T) {
 	} {
 		_, err := Compile(
 			ast.NewModule(
-				"foo",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{

@@ -4,20 +4,14 @@ import "github.com/ein-lang/ein/command/types"
 
 // Module is a module.
 type Module struct {
-	name    string
 	export  Export
 	imports []Import
 	binds   []Bind
 }
 
 // NewModule creates a module.
-func NewModule(n string, e Export, is []Import, bs []Bind) Module {
-	return Module{n, e, is, bs}
-}
-
-// Name returns a name.
-func (m Module) Name() string {
-	return m.name
+func NewModule(e Export, is []Import, bs []Bind) Module {
+	return Module{e, is, bs}
 }
 
 // Export returns an export.
@@ -54,7 +48,7 @@ func (m Module) ConvertExpressions(f func(Expression) Expression) Node {
 		bs = append(bs, b.ConvertExpressions(f).(Bind))
 	}
 
-	return NewModule(m.name, m.export, m.imports, bs)
+	return NewModule(m.export, m.imports, bs)
 }
 
 // VisitTypes visits types.

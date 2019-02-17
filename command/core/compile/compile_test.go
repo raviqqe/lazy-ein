@@ -19,7 +19,6 @@ var algebraicType = types.NewAlgebraic(types.NewConstructor())
 func TestCompile(t *testing.T) {
 	m, err := compile.Compile(
 		ast.NewModule(
-			"foo",
 			nil,
 			[]ast.Bind{
 				ast.NewBind(
@@ -44,7 +43,6 @@ func TestGlobalThunkForce(t *testing.T) {
 
 	m, err := compile.Compile(
 		ast.NewModule(
-			"",
 			nil,
 			[]ast.Bind{
 				ast.NewBind(

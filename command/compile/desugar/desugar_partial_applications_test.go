@@ -12,13 +12,12 @@ func TestDesugarPartialApplications(t *testing.T) {
 	for _, ms := range [][2]ast.Module{
 		// Empty modules
 		{
-			ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}),
-			ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}),
+			ast.NewModule(ast.NewExport(), nil, []ast.Bind{}),
+			ast.NewModule(ast.NewExport(), nil, []ast.Bind{}),
 		},
 		// Variables with single arguments
 		{
 			ast.NewModule(
-				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -35,7 +34,6 @@ func TestDesugarPartialApplications(t *testing.T) {
 				},
 			),
 			ast.NewModule(
-				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -61,7 +59,6 @@ func TestDesugarPartialApplications(t *testing.T) {
 		// Variables with multiple arguments
 		{
 			ast.NewModule(
-				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -86,7 +83,6 @@ func TestDesugarPartialApplications(t *testing.T) {
 				},
 			),
 			ast.NewModule(
-				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -123,7 +119,6 @@ func TestDesugarPartialApplications(t *testing.T) {
 		// Applications
 		{
 			ast.NewModule(
-				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -144,7 +139,6 @@ func TestDesugarPartialApplications(t *testing.T) {
 				},
 			),
 			ast.NewModule(
-				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -174,7 +168,6 @@ func TestDesugarPartialApplications(t *testing.T) {
 		// Let expressions
 		{
 			ast.NewModule(
-				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -194,7 +187,6 @@ func TestDesugarPartialApplications(t *testing.T) {
 				},
 			),
 			ast.NewModule(
-				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -223,7 +215,6 @@ func TestDesugarPartialApplications(t *testing.T) {
 		// Binds in let expressions
 		{
 			ast.NewModule(
-				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -249,7 +240,6 @@ func TestDesugarPartialApplications(t *testing.T) {
 				},
 			),
 			ast.NewModule(
-				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -284,7 +274,6 @@ func TestDesugarPartialApplications(t *testing.T) {
 		// Lambda expressions
 		{
 			ast.NewModule(
-				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -305,7 +294,6 @@ func TestDesugarPartialApplications(t *testing.T) {
 				},
 			),
 			ast.NewModule(
-				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{

@@ -74,7 +74,7 @@ func (b builder) buildModuleWithoutCache(f string) ([]byte, error) {
 		return nil, err
 	}
 
-	m, err := parse.Parse(f, string(bs), b.moduleRootDirectory)
+	m, err := parse.Parse(f, string(bs))
 
 	if err != nil {
 		return nil, err
@@ -142,7 +142,7 @@ func (b builder) isMainModule(f string) (bool, error) {
 		return false, err
 	}
 
-	m, err := parse.Parse(f, string(bs), b.moduleRootDirectory)
+	m, err := parse.Parse(f, string(bs))
 
 	if err != nil {
 		return false, err

@@ -1,8 +1,6 @@
 package parse
 
 import (
-	"io/ioutil"
-	"path/filepath"
 	"testing"
 
 	"github.com/ein-lang/ein/command/ast"
@@ -13,29 +11,17 @@ import (
 )
 
 func TestParseWithEmptySource(t *testing.T) {
-	x, err := Parse("", "", ".")
+	x, err := Parse("", "")
 
-	assert.Equal(t, ast.NewModule("", ast.NewExport(), []ast.Import{}, []ast.Bind{}), x)
+	assert.Equal(t, ast.NewModule(ast.NewExport(), []ast.Import{}, []ast.Bind{}), x)
 	assert.Nil(t, err)
 }
 
 func TestParseError(t *testing.T) {
-	_, err := Parse("foo.ein", "bar", ".")
+	_, err := Parse("foo.ein", "bar")
 
 	assert.Error(t, err)
 	assert.Equal(t, "foo.ein:1:4:\tbar", err.(debug.Error).DebugInformation().String())
-}
-
-func TestParseWithNormalizedModuleNames(t *testing.T) {
-	d, err := ioutil.TempDir("", "")
-	assert.Nil(t, err)
-
-	f, err := ioutil.TempFile(d, "")
-	assert.Nil(t, err)
-
-	m, err := Parse(f.Name(), "x : Number\nx = 42", d)
-	assert.Nil(t, err)
-	assert.Equal(t, filepath.Base(f.Name()), m.Name())
 }
 
 func TestStateModule(t *testing.T) {
@@ -51,7 +37,7 @@ func TestStateModule(t *testing.T) {
 		"export { x }\nimport \"foo\"\nx : Number\nx = 42",
 		"export { x }\nimport \"foo\"\nimport \"bar\"\nx : Number\nx = 42",
 	} {
-		_, err := newState("", s).module("")()
+		_, err := newState("", s).module()()
 		assert.Nil(t, err)
 	}
 }
@@ -60,13 +46,12 @@ func TestStateModuleWithResult(t *testing.T) {
 	m, err := newState(
 		"module",
 		"export { x }\nimport \"foo\"\nx : Number\nx = 42",
-	).module("module")()
+	).module()()
 
 	assert.Nil(t, err)
 	assert.Equal(
 		t,
 		ast.NewModule(
-			"module",
 			ast.NewExport("x"),
 			[]ast.Import{ast.NewImport("foo")},
 			[]ast.Bind{
@@ -87,13 +72,13 @@ func TestStateModuleError(t *testing.T) {
 		"x : Number\nx = 42\n  y : Number\n  y = 42",
 		" x : Number\n x = 42",
 	} {
-		_, err := newState("", s).module("")()
+		_, err := newState("", s).module()()
 		assert.Error(t, err)
 	}
 }
 
 func TestStateModuleErrorWithErrorMessage(t *testing.T) {
-	_, err := newState("", "x : Number\nx = 🗿").module("")()
+	_, err := newState("", "x : Number\nx = 🗿").module()()
 
 	assert.Error(t, err)
 	assert.Equal(t, "invalid character '🗿'", err.Error())
@@ -153,12 +138,11 @@ func TestStateBind(t *testing.T) {
 }
 
 func TestStateBindWithVariableBind(t *testing.T) {
-	x, err := Parse("", "x : Number\nx = 42", ".")
+	x, err := Parse("", "x : Number\nx = 42")
 
 	assert.Equal(
 		t,
 		ast.NewModule(
-			"",
 			ast.NewExport(),
 			[]ast.Import{},
 			[]ast.Bind{

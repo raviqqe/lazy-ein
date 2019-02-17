@@ -11,7 +11,7 @@ import (
 )
 
 func TestValidate(t *testing.T) {
-	assert.Nil(t, validate.Validate(ast.NewModule("foo", nil, nil)))
+	assert.Nil(t, validate.Validate(ast.NewModule(nil, nil)))
 }
 
 func TestValidateError(t *testing.T) {
@@ -22,7 +22,6 @@ func TestValidateError(t *testing.T) {
 		errors.New("globals must not have free variables"),
 		validate.Validate(
 			ast.NewModule(
-				"foo",
 				nil,
 				[]ast.Bind{
 					ast.NewBind(

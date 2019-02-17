@@ -25,7 +25,7 @@ func newModuleGenerator() *moduleGenerator {
 }
 
 func (g *moduleGenerator) initialize(m ast.Module) error {
-	g.module = llvm.NewModule(m.Name())
+	g.module = llvm.NewModule("")
 	g.typeGenerator = newTypeGenerator(g.module)
 
 	llvm.AddFunction(
