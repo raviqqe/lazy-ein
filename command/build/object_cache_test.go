@@ -10,18 +10,22 @@ import (
 )
 
 func TestObjectCacheStore(t *testing.T) {
-	d, err := ioutil.TempDir("", "")
-	defer os.Remove(d)
+	cacheDir, err := ioutil.TempDir("", "")
+	defer os.Remove(cacheDir)
 	assert.Nil(t, err)
 
-	f, err := ioutil.TempFile("", "")
+	rootDir, err := ioutil.TempDir("", "")
+	defer os.Remove(cacheDir)
+	assert.Nil(t, err)
+
+	f, err := ioutil.TempFile(rootDir, "")
 	defer os.Remove(f.Name())
 	assert.Nil(t, err)
 
 	_, err = f.WriteString("main : Number -> Number\nmain x = 42")
 	assert.Nil(t, err)
 
-	c := newObjectCache(d)
+	c := newObjectCache(cacheDir, rootDir)
 
 	s, ok, err := c.Get(f.Name())
 
@@ -42,18 +46,22 @@ func TestObjectCacheStore(t *testing.T) {
 }
 
 func TestObjectCacheGeneratePath(t *testing.T) {
-	d, err := ioutil.TempDir("", "")
-	defer os.Remove(d)
+	cacheDir, err := ioutil.TempDir("", "")
+	defer os.Remove(cacheDir)
 	assert.Nil(t, err)
 
-	f, err := ioutil.TempFile("", "")
+	rootDir, err := ioutil.TempDir("", "")
+	defer os.Remove(cacheDir)
+	assert.Nil(t, err)
+
+	f, err := ioutil.TempFile(rootDir, "")
 	defer os.Remove(f.Name())
 	assert.Nil(t, err)
 
 	_, err = f.WriteString("export { x }\nx : Number\nx = 42")
 	assert.Nil(t, err)
 
-	ff, err := ioutil.TempFile("", "")
+	ff, err := ioutil.TempFile(rootDir, "")
 	defer os.Remove(f.Name())
 	assert.Nil(t, err)
 
@@ -62,7 +70,7 @@ func TestObjectCacheGeneratePath(t *testing.T) {
 	)
 	assert.Nil(t, err)
 
-	c := newObjectCache(d)
+	c := newObjectCache(cacheDir, rootDir)
 	s, err := c.generatePath(ff.Name())
 
 	assert.Nil(t, err)

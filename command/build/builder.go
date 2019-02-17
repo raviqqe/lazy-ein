@@ -17,8 +17,8 @@ type builder struct {
 	objectCache objectCache
 }
 
-func newBuilder(runtimePath, cacheDir string) builder {
-	return builder{runtimePath, newObjectCache(cacheDir)}
+func newBuilder(runtimePath, moduleRootPath, cacheDir string) builder {
+	return builder{runtimePath, newObjectCache(cacheDir, moduleRootPath)}
 }
 
 func (b builder) BuildExecutable(f string) error {

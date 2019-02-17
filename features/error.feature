@@ -10,7 +10,7 @@ Feature: Error
     And the stderr should contain exactly:
     """
     SyntaxError: unexpected end of source
-    main.ein:2:9:	main x =
+    tmp/aruba/main.ein:2:9:	main x =
     """
 
   Scenario: Emit build errors

@@ -12,11 +12,11 @@ import (
 )
 
 type objectCache struct {
-	directory string
+	cacheDirectory, moduleRootDirectory string
 }
 
-func newObjectCache(s string) objectCache {
-	return objectCache{s}
+func newObjectCache(cacheDir, moduleRootPath string) objectCache {
+	return objectCache{cacheDir, moduleRootPath}
 }
 
 func (c objectCache) Store(f string, bs []byte) (string, error) {
@@ -51,19 +51,19 @@ func (c objectCache) generatePath(f string) (string, error) {
 	}
 
 	return filepath.Join(
-		c.directory,
+		c.cacheDirectory,
 		base32.HexEncoding.WithPadding(base32.NoPadding).EncodeToString(h.Sum(nil)),
 	), nil
 }
 
 func (c objectCache) generateModuleHash(h hash.Hash, f string) error {
-	f, err := filepath.Abs(f)
+	bs, err := ioutil.ReadFile(f)
 
 	if err != nil {
 		return err
 	}
 
-	bs, err := ioutil.ReadFile(f)
+	f, err = c.normalizePath(f)
 
 	if err != nil {
 		return err
@@ -93,4 +93,20 @@ func (c objectCache) generateSubmodulesHash(h hash.Hash, f, s string) error {
 	}
 
 	return nil
+}
+
+func (c objectCache) normalizePath(f string) (string, error) {
+	d, err := filepath.Abs(c.moduleRootDirectory)
+
+	if err != nil {
+		return "", err
+	}
+
+	f, err = filepath.Abs(f)
+
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Rel(d, f)
 }

@@ -28,7 +28,13 @@ var buildCommand = cobra.Command{
 }
 
 func runBuildCommand(f string) error {
-	r, err := getRuntimePath()
+	runtime, err := getRuntimePath()
+
+	if err != nil {
+		return err
+	}
+
+	root, err := getModulesRootPath()
 
 	if err != nil {
 		return err
@@ -40,7 +46,7 @@ func runBuildCommand(f string) error {
 		return err
 	}
 
-	return build.Executable(f, r, c)
+	return build.Executable(f, runtime, root, c)
 }
 
 func getCacheDirectory() (string, error) {

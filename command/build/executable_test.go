@@ -13,32 +13,40 @@ import (
 const source = "main : Number -> Number\nmain x = 42"
 
 func TestExecutable(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
+	cacheDir, err := ioutil.TempDir("", "")
+	defer os.Remove(cacheDir)
+	assert.Nil(t, err)
+
+	rootDir, err := ioutil.TempDir("", "")
+	defer os.Remove(cacheDir)
+	assert.Nil(t, err)
+
+	f, err := ioutil.TempFile(rootDir, "")
 	defer os.Remove(f.Name())
 	assert.Nil(t, err)
 
-	_, err = f.Write([]byte(source))
+	_, err = f.WriteString(source)
 	assert.Nil(t, err)
 
-	d, err := ioutil.TempDir("", "")
-	defer os.Remove(d)
-	assert.Nil(t, err)
-
-	assert.Nil(t, build.Executable(f.Name(), "../..", d))
+	assert.Nil(t, build.Executable(f.Name(), "../..", rootDir, cacheDir))
 }
 
 func TestExecutableWithoutMainFunction(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
-	defer os.Remove(f.Name())
+	cacheDir, err := ioutil.TempDir("", "")
+	defer os.Remove(cacheDir)
 	assert.Nil(t, err)
 
-	d, err := ioutil.TempDir("", "")
-	defer os.Remove(d)
+	rootDir, err := ioutil.TempDir("", "")
+	defer os.Remove(cacheDir)
+	assert.Nil(t, err)
+
+	f, err := ioutil.TempFile(rootDir, "")
+	defer os.Remove(f.Name())
 	assert.Nil(t, err)
 
 	assert.Equal(
 		t,
 		errors.New("main function not found"),
-		build.Executable(f.Name(), "../..", d),
+		build.Executable(f.Name(), "../..", rootDir, cacheDir),
 	)
 }

@@ -16,6 +16,7 @@ func TestRootCommandError(t *testing.T) {
 
 func TestBuildCommand(t *testing.T) {
 	os.Setenv("EIN_RUNTIME_PATH", "..")
+	os.Setenv("EIN_MODULE_ROOT_PATH", ".")
 
 	f, err := ioutil.TempFile("", "")
 	assert.Nil(t, err)
