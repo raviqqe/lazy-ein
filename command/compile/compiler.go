@@ -14,19 +14,25 @@ type compiler struct {
 	freeVariableFinder freeVariableFinder
 }
 
-func newCompiler(m ast.Module) (compiler, error) {
-	vs := make(map[string]coretypes.Type, len(m.Binds()))
+func newCompiler() compiler {
+	return compiler{}
+}
+
+func (c *compiler) initialize(m ast.Module) {
+	c.variables = make(map[string]coretypes.Type, len(m.Binds()))
 	gs := make(map[string]struct{}, len(m.Binds()))
 
 	for _, b := range m.Binds() {
-		vs[b.Name()] = types.Box(b.Type()).ToCore()
+		c.variables[b.Name()] = types.Box(b.Type()).ToCore()
 		gs[b.Name()] = struct{}{}
 	}
 
-	return compiler{vs, newFreeVariableFinder(gs)}, nil
+	c.freeVariableFinder = newFreeVariableFinder(gs)
 }
 
 func (c compiler) Compile(m ast.Module) (coreast.Module, error) {
+	c.initialize(m)
+
 	bs := make([]coreast.Bind, 0, len(m.Binds()))
 
 	for _, b := range m.Binds() {
