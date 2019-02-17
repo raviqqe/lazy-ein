@@ -3,9 +3,12 @@ package build
 import (
 	"crypto/sha256"
 	"encoding/base32"
+	"hash"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/ein-lang/ein/command/parse"
 )
 
 type objectCache struct {
@@ -41,24 +44,53 @@ func (c objectCache) Get(f string) (string, bool, error) {
 }
 
 func (c objectCache) generatePath(f string) (string, error) {
-	bs, err := ioutil.ReadFile(f)
-
-	if err != nil {
-		return "", err
-	}
-
-	f, err = filepath.Abs(f)
-
-	if err != nil {
-		return "", err
-	}
-
 	h := sha256.New()
-	h.Write([]byte(f))
-	h.Write(bs)
+
+	if err := c.generateModuleHash(h, f); err != nil {
+		return "", err
+	}
 
 	return filepath.Join(
 		c.directory,
 		base32.HexEncoding.WithPadding(base32.NoPadding).EncodeToString(h.Sum(nil)),
 	), nil
+}
+
+func (c objectCache) generateModuleHash(h hash.Hash, f string) error {
+	f, err := filepath.Abs(f)
+
+	if err != nil {
+		return err
+	}
+
+	bs, err := ioutil.ReadFile(f)
+
+	if err != nil {
+		return err
+	}
+
+	h.Write([]byte(f))
+	h.Write(bs)
+
+	if err := c.generateSubmodulesHash(h, f, string(bs)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c objectCache) generateSubmodulesHash(h hash.Hash, f, s string) error {
+	m, err := parse.Parse(f, s)
+
+	if err != nil {
+		return err
+	}
+
+	for _, i := range m.Imports() {
+		if err := c.generateModuleHash(h, i.Path()); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

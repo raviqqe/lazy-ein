@@ -1,6 +1,7 @@
 package build
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -17,7 +18,7 @@ func TestObjectCacheStore(t *testing.T) {
 	defer os.Remove(f.Name())
 	assert.Nil(t, err)
 
-	_, err = f.Write([]byte("bar"))
+	_, err = f.WriteString("main : Number -> Number\nmain x = 42")
 	assert.Nil(t, err)
 
 	c := newObjectCache(d)
@@ -38,4 +39,40 @@ func TestObjectCacheStore(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, ok)
 	assert.Equal(t, s, ss)
+}
+
+func TestObjectCacheGeneratePath(t *testing.T) {
+	d, err := ioutil.TempDir("", "")
+	defer os.Remove(d)
+	assert.Nil(t, err)
+
+	f, err := ioutil.TempFile("", "")
+	defer os.Remove(f.Name())
+	assert.Nil(t, err)
+
+	_, err = f.WriteString("export { x }\nx : Number\nx = 42")
+	assert.Nil(t, err)
+
+	ff, err := ioutil.TempFile("", "")
+	defer os.Remove(f.Name())
+	assert.Nil(t, err)
+
+	_, err = ff.WriteString(
+		fmt.Sprintf("import \"%s\"\nmain : Number -> Number\nmain x = 42", f.Name()),
+	)
+	assert.Nil(t, err)
+
+	c := newObjectCache(d)
+	s, err := c.generatePath(ff.Name())
+
+	assert.Nil(t, err)
+	assert.NotEqual(t, "", s)
+
+	_, err = f.WriteAt([]byte("export { y }\ny : Number\ny = 42"), 0)
+	assert.Nil(t, err)
+
+	ss, err := c.generatePath(ff.Name())
+
+	assert.Nil(t, err)
+	assert.NotEqual(t, s, ss)
 }
