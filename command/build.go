@@ -2,13 +2,11 @@ package command
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
+	"path/filepath"
 
-	"github.com/ein-lang/ein/command/compile"
 	"github.com/ein-lang/ein/command/debug"
 	"github.com/ein-lang/ein/command/generate"
-	"github.com/ein-lang/ein/command/parse"
 	"github.com/spf13/cobra"
 )
 
@@ -30,29 +28,33 @@ var buildCommand = cobra.Command{
 }
 
 func runBuildCommand(f string) error {
-	bs, err := ioutil.ReadFile(f)
-
-	if err != nil {
-		return err
-	}
-
-	m, err := parse.Parse(f, string(bs))
-
-	if err != nil {
-		return err
-	}
-
 	r, err := getRuntimePath()
 
 	if err != nil {
 		return err
 	}
 
-	mm, err := compile.Compile(m)
+	c, err := getCacheDirectory()
 
 	if err != nil {
 		return err
 	}
 
-	return generate.Executable(mm, f, r)
+	return generate.Executable(f, r, c)
+}
+
+func getCacheDirectory() (string, error) {
+	d, err := os.UserCacheDir()
+
+	if err != nil {
+		return "", err
+	}
+
+	d = filepath.Join(d, "ein-lang")
+
+	if err := os.MkdirAll(d, 0755); err != nil {
+		return "", err
+	}
+
+	return d, nil
 }
