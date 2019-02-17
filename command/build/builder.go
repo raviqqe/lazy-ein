@@ -13,12 +13,12 @@ import (
 )
 
 type builder struct {
-	runtimePath, moduleRootDirectory string
-	objectCache                      objectCache
+	runtimeDirectory, moduleRootDirectory string
+	objectCache                           objectCache
 }
 
-func newBuilder(runtimePath, moduleRootPath, cacheDir string) builder {
-	return builder{runtimePath, moduleRootPath, newObjectCache(cacheDir, moduleRootPath)}
+func newBuilder(runtimeDir, rootDir, cacheDir string) builder {
+	return builder{runtimeDir, rootDir, newObjectCache(cacheDir, rootDir)}
 }
 
 func (b builder) BuildExecutable(f string) error {
@@ -112,7 +112,7 @@ func (b builder) generateModule(m llvm.Module) ([]byte, error) {
 }
 
 func (b builder) resolveRuntimeLibrary(f string) string {
-	return filepath.Join(b.runtimePath, filepath.FromSlash(f))
+	return filepath.Join(b.runtimeDirectory, filepath.FromSlash(f))
 }
 
 func (b builder) renameMainFunction(m llvm.Module) error {

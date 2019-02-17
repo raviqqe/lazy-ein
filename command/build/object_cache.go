@@ -15,8 +15,8 @@ type objectCache struct {
 	cacheDirectory, moduleRootDirectory string
 }
 
-func newObjectCache(cacheDir, moduleRootPath string) objectCache {
-	return objectCache{cacheDir, moduleRootPath}
+func newObjectCache(cacheDir, rootDir string) objectCache {
+	return objectCache{cacheDir, rootDir}
 }
 
 func (c objectCache) Store(f string, bs []byte) (string, error) {
