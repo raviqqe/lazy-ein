@@ -1,6 +1,8 @@
 package parse
 
 import (
+	"io/ioutil"
+	"path/filepath"
 	"testing"
 
 	"github.com/ein-lang/ein/command/ast"
@@ -22,6 +24,18 @@ func TestParseError(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Equal(t, "foo.ein:1:4:\tbar", err.(debug.Error).DebugInformation().String())
+}
+
+func TestParseWithNormalizedModuleNames(t *testing.T) {
+	d, err := ioutil.TempDir("", "")
+	assert.Nil(t, err)
+
+	f, err := ioutil.TempFile(d, "")
+	assert.Nil(t, err)
+
+	m, err := Parse(f.Name(), "x : Number\nx = 42", d)
+	assert.Nil(t, err)
+	assert.Equal(t, filepath.Base(f.Name()), m.Name())
 }
 
 func TestStateModule(t *testing.T) {

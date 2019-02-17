@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -73,4 +74,27 @@ func TestObjectCacheGeneratePath(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.NotEqual(t, s, ss)
+}
+
+func TestObjectCacheGeneratePathWithUnnormalizedModulePaths(t *testing.T) {
+	cacheDir, rootDir, clean := setUpEnvironmentDirectories(t)
+	defer clean()
+
+	f, err := ioutil.TempFile(rootDir, "")
+	defer os.Remove(f.Name())
+	assert.Nil(t, err)
+
+	_, err = f.WriteString("export { x }\nx : Number\nx = 42")
+	assert.Nil(t, err)
+
+	c := newObjectCache(cacheDir, rootDir)
+	s, err := c.generatePath(f.Name())
+	assert.Nil(t, err)
+	assert.NotEqual(t, "", s)
+
+	assert.Nil(t, os.Chdir(filepath.Dir(f.Name())))
+
+	ss, err := c.generatePath(filepath.Base(f.Name()))
+	assert.Nil(t, err)
+	assert.Equal(t, s, ss)
 }
