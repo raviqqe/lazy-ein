@@ -47,8 +47,13 @@ func (c objectCache) generatePath(f string) (string, error) {
 		return "", err
 	}
 
-	h := sha256.New()
+	f, err = filepath.Abs(f)
 
+	if err != nil {
+		return "", err
+	}
+
+	h := sha256.New()
 	h.Write([]byte(f))
 	h.Write(bs)
 
