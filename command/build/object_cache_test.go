@@ -10,13 +10,8 @@ import (
 )
 
 func TestObjectCacheStore(t *testing.T) {
-	cacheDir, err := ioutil.TempDir("", "")
-	defer os.Remove(cacheDir)
-	assert.Nil(t, err)
-
-	rootDir, err := ioutil.TempDir("", "")
-	defer os.Remove(cacheDir)
-	assert.Nil(t, err)
+	cacheDir, rootDir, clean := setUpEnvironmentDirectories(t)
+	defer clean()
 
 	f, err := ioutil.TempFile(rootDir, "")
 	defer os.Remove(f.Name())
@@ -46,13 +41,8 @@ func TestObjectCacheStore(t *testing.T) {
 }
 
 func TestObjectCacheGeneratePath(t *testing.T) {
-	cacheDir, err := ioutil.TempDir("", "")
-	defer os.Remove(cacheDir)
-	assert.Nil(t, err)
-
-	rootDir, err := ioutil.TempDir("", "")
-	defer os.Remove(cacheDir)
-	assert.Nil(t, err)
+	cacheDir, rootDir, clean := setUpEnvironmentDirectories(t)
+	defer clean()
 
 	f, err := ioutil.TempFile(rootDir, "")
 	defer os.Remove(f.Name())
