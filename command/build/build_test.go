@@ -1,7 +1,6 @@
 package build
 
 import (
-	"errors"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -11,7 +10,7 @@ import (
 
 const source = "main : Number -> Number\nmain x = 42"
 
-func TestBuild(t *testing.T) {
+func TestBuildWithMainModules(t *testing.T) {
 	cacheDir, rootDir, clean := setUpEnvironmentDirectories(t)
 	defer clean()
 
@@ -23,9 +22,14 @@ func TestBuild(t *testing.T) {
 	assert.Nil(t, err)
 
 	assert.Nil(t, Build(f.Name(), "../..", rootDir, cacheDir))
+
+	_, err = os.Stat("a.out")
+	assert.Nil(t, err)
+
+	os.Remove("a.out")
 }
 
-func TestBuildWithoutMainFunction(t *testing.T) {
+func TestBuildWithSubmodules(t *testing.T) {
 	cacheDir, rootDir, clean := setUpEnvironmentDirectories(t)
 	defer clean()
 
@@ -33,9 +37,8 @@ func TestBuildWithoutMainFunction(t *testing.T) {
 	defer os.Remove(f.Name())
 	assert.Nil(t, err)
 
-	assert.Equal(
-		t,
-		errors.New("main function not found"),
-		Build(f.Name(), "../..", rootDir, cacheDir),
-	)
+	assert.Nil(t, Build(f.Name(), "../..", rootDir, cacheDir))
+
+	_, err = os.Stat("a.out")
+	assert.Error(t, err)
 }

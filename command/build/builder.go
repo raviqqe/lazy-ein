@@ -22,15 +22,21 @@ func newBuilder(runtimeDir, rootDir, cacheDir string) builder {
 }
 
 func (b builder) Build(f string) error {
-	f, err := b.BuildModule(f)
+	o, err := b.BuildModule(f)
 
 	if err != nil {
 		return err
 	}
 
+	if ok, err := b.isMainModule(f); err != nil {
+		return err
+	} else if !ok {
+		return nil
+	}
+
 	bs, err := exec.Command(
 		"cc",
-		f,
+		o,
 		b.resolveRuntimeLibrary("runtime/target/release/libio.a"),
 		b.resolveRuntimeLibrary("runtime/target/release/libcore.a"),
 		"-ldl",
@@ -80,8 +86,10 @@ func (b builder) buildModuleWithoutCache(f string) ([]byte, error) {
 		return nil, err
 	}
 
-	if err := b.renameMainFunction(mm); err != nil {
-		return nil, err
+	if m.IsMainModule() {
+		if err := b.renameMainFunction(mm); err != nil {
+			return nil, err
+		}
 	}
 
 	return b.generateModule(mm)
@@ -125,4 +133,20 @@ func (b builder) renameMainFunction(m llvm.Module) error {
 	v.SetName("ein_main")
 
 	return nil
+}
+
+func (b builder) isMainModule(f string) (bool, error) {
+	bs, err := ioutil.ReadFile(f)
+
+	if err != nil {
+		return false, err
+	}
+
+	m, err := parse.Parse(f, string(bs), b.moduleRootDirectory)
+
+	if err != nil {
+		return false, err
+	}
+
+	return m.IsMainModule(), err
 }

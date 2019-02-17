@@ -35,6 +35,17 @@ func (m Module) Binds() []Bind {
 	return m.binds
 }
 
+// IsMainModule checks if it is a main module.
+func (m Module) IsMainModule() bool {
+	for _, b := range m.binds {
+		if b.Name() == "main" {
+			return true
+		}
+	}
+
+	return false
+}
+
 // ConvertExpressions visits expressions.
 func (m Module) ConvertExpressions(f func(Expression) Expression) Node {
 	bs := make([]Bind, 0, len(m.binds))
