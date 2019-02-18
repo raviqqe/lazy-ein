@@ -3,11 +3,6 @@ package build
 import "path/filepath"
 
 func normalizePath(f, rootDir string) (string, error) {
-	// HACK: To simplify dummy module generation in unit tests.
-	if f == "" {
-		return "", nil
-	}
-
 	d, err := filepath.Abs(rootDir)
 
 	if err != nil {
