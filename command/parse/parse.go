@@ -54,14 +54,19 @@ var keywords = map[keyword]struct{}{
 }
 
 // Parse parses a module into an AST.
-func Parse(f, s string) (ast.Module, error) {
-	x, err := newState(f, s).module()()
+func Parse(s string, n ast.ModuleName) (ast.Module, error) {
+	x, err := newState(s, n).module()()
 
 	switch err := err.(type) {
 	case parcom.Error:
 		return ast.Module{}, newError(
 			err.Error(),
-			debug.NewInformation(f, err.Line(), err.Column(), strings.Split(s, "\n")[err.Line()-1]),
+			debug.NewInformation(
+				string(n),
+				err.Line(),
+				err.Column(),
+				strings.Split(s, "\n")[err.Line()-1],
+			),
 		)
 	case error:
 		return ast.Module{}, err

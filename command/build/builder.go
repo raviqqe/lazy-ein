@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/ein-lang/ein/command/ast"
 	"github.com/ein-lang/ein/command/compile"
 	"github.com/ein-lang/ein/command/parse"
 	"llvm.org/llvm/bindings/go/llvm"
@@ -72,7 +73,13 @@ func (b builder) buildModuleWithoutCache(f string) ([]byte, error) {
 		return nil, err
 	}
 
-	m, err := parse.Parse(f, string(bs))
+	n, err := ast.NewModuleName(f, b.moduleRootDirectory)
+
+	if err != nil {
+		return nil, err
+	}
+
+	m, err := parse.Parse(string(bs), n)
 
 	if err != nil {
 		return nil, err
@@ -140,7 +147,13 @@ func (b builder) isMainModule(f string) (bool, error) {
 		return false, err
 	}
 
-	m, err := parse.Parse(f, string(bs))
+	n, err := ast.NewModuleName(f, b.moduleRootDirectory)
+
+	if err != nil {
+		return false, err
+	}
+
+	m, err := parse.Parse(string(bs), n)
 
 	if err != nil {
 		return false, err

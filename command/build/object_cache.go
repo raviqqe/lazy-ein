@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ein-lang/ein/command/ast"
 	"github.com/ein-lang/ein/command/parse"
 )
 
@@ -63,24 +64,24 @@ func (c objectCache) generateModuleHash(h hash.Hash, f string) error {
 		return err
 	}
 
-	f, err = normalizePath(f, c.moduleRootDirectory)
+	n, err := ast.NewModuleName(f, c.moduleRootDirectory)
 
 	if err != nil {
 		return err
 	}
 
-	h.Write([]byte(f))
+	h.Write([]byte(n))
 	h.Write(bs)
 
-	if err := c.generateSubmodulesHash(h, f, string(bs)); err != nil {
+	if err := c.generateSubmodulesHash(h, n, string(bs)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c objectCache) generateSubmodulesHash(h hash.Hash, f, s string) error {
-	m, err := parse.Parse(f, s)
+func (c objectCache) generateSubmodulesHash(h hash.Hash, n ast.ModuleName, s string) error {
+	m, err := parse.Parse(s, n)
 
 	if err != nil {
 		return err

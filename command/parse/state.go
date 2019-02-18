@@ -3,22 +3,24 @@ package parse
 import (
 	"strings"
 
+	"github.com/ein-lang/ein/command/ast"
 	"github.com/ein-lang/ein/command/debug"
 	"github.com/raviqqe/parcom"
 )
 
 type state struct {
 	*parcom.PositionalState
-	filename, source string
+	source     string
+	moduleName ast.ModuleName
 }
 
-func newState(f, s string) *state {
-	return &state{parcom.NewPositionalState(s), f, s}
+func newState(s string, n ast.ModuleName) *state {
+	return &state{parcom.NewPositionalState(s), s, n}
 }
 
 func (s state) debugInformation() *debug.Information {
 	return debug.NewInformation(
-		s.filename,
+		string(s.moduleName),
 		s.Line(),
 		s.Column(),
 		strings.Split(s.source, "\n")[s.Line()-1],

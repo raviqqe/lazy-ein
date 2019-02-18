@@ -18,7 +18,7 @@ func TestParseWithEmptySource(t *testing.T) {
 }
 
 func TestParseError(t *testing.T) {
-	_, err := Parse("foo.ein", "bar")
+	_, err := Parse("bar", "foo.ein")
 
 	assert.Error(t, err)
 	assert.Equal(t, "foo.ein:1:4:\tbar", err.(debug.Error).DebugInformation().String())
@@ -37,15 +37,15 @@ func TestStateModule(t *testing.T) {
 		"export { x }\nimport \"foo\"\nx : Number\nx = 42",
 		"export { x }\nimport \"foo\"\nimport \"bar\"\nx : Number\nx = 42",
 	} {
-		_, err := newState("", s).module()()
+		_, err := newState(s, "").module()()
 		assert.Nil(t, err)
 	}
 }
 
 func TestStateModuleWithResult(t *testing.T) {
 	m, err := newState(
-		"module",
 		"export { x }\nimport \"foo\"\nx : Number\nx = 42",
+		"module",
 	).module()()
 
 	assert.Nil(t, err)
@@ -72,13 +72,13 @@ func TestStateModuleError(t *testing.T) {
 		"x : Number\nx = 42\n  y : Number\n  y = 42",
 		" x : Number\n x = 42",
 	} {
-		_, err := newState("", s).module()()
+		_, err := newState(s, "").module()()
 		assert.Error(t, err)
 	}
 }
 
 func TestStateModuleErrorWithErrorMessage(t *testing.T) {
-	_, err := newState("", "x : Number\nx = 🗿").module()()
+	_, err := newState("x : Number\nx = 🗿", "").module()()
 
 	assert.Error(t, err)
 	assert.Equal(t, "invalid character '🗿'", err.Error())
@@ -94,21 +94,21 @@ func TestStateExport(t *testing.T) {
 		"export { foo, bar, }",
 		"export {\n  foo,\n  bar,\n}",
 	} {
-		_, err := newState("", s).export()()
+		_, err := newState(s, "").export()()
 		assert.Nil(t, err)
 	}
 }
 
 func TestStateExportWithCommas(t *testing.T) {
-	e, err := newState("", "export { foo }").export()()
+	e, err := newState("export { foo }", "").export()()
 	assert.Nil(t, err)
 	assert.Equal(t, ast.NewExport("foo"), e)
 
-	e, err = newState("", "export { foo, bar }").export()()
+	e, err = newState("export { foo, bar }", "").export()()
 	assert.Nil(t, err)
 	assert.Equal(t, ast.NewExport("foo", "bar"), e)
 
-	e, err = newState("", "export { foo, bar, }").export()()
+	e, err = newState("export { foo, bar, }", "").export()()
 	assert.Nil(t, err)
 	assert.Equal(t, ast.NewExport("foo", "bar"), e)
 }
@@ -118,7 +118,7 @@ func TestStateImport(t *testing.T) {
 		`import "foo"`,
 		`import "foo/bar"`,
 	} {
-		ss := newState("", s)
+		ss := newState(s, "")
 		_, err := ss.Exhaust(ss.importModule())()
 		assert.Nil(t, err)
 	}
@@ -132,13 +132,13 @@ func TestStateBind(t *testing.T) {
 		"x :\n Number\nx = 42",
 		"x : Number\nx =\n 42",
 	} {
-		_, err := newState("", s).bind()()
+		_, err := newState(s, "").bind()()
 		assert.Nil(t, err)
 	}
 }
 
 func TestStateBindWithVariableBind(t *testing.T) {
-	x, err := Parse("", "x : Number\nx = 42")
+	x, err := Parse("x : Number\nx = 42", "")
 
 	assert.Equal(
 		t,
@@ -170,20 +170,20 @@ func TestStateBindErrorWithInconsistentIdentifiers(t *testing.T) {
 
 func TestStateIdentifier(t *testing.T) {
 	for _, s := range []string{"x", "az", "a09"} {
-		_, err := newState("", s).identifier()()
+		_, err := newState(s, "").identifier()()
 		assert.Nil(t, err)
 	}
 }
 
 func TestStateIdentifierError(t *testing.T) {
 	for _, s := range []string{"0", "1x", "let"} {
-		_, err := newState("", s).identifier()()
+		_, err := newState(s, "").identifier()()
 		assert.Error(t, err)
 	}
 }
 
 func TestStateIdentifierErrorWithKeywords(t *testing.T) {
-	_, err := newState("foo.ein", "let").identifier()()
+	_, err := newState("let", "foo.ein").identifier()()
 
 	assert.Equal(t, "SyntaxError: 'let' is a keyword", err.Error())
 	assert.Equal(t, "foo.ein:1:1:\tlet", err.(debug.Error).DebugInformation().String())
@@ -197,7 +197,7 @@ func TestStateNumberLiteral(t *testing.T) {
 		"-1",
 		"0",
 	} {
-		_, err := newState("", s).numberLiteral()()
+		_, err := newState(s, "").numberLiteral()()
 		assert.Nil(t, err)
 	}
 }
@@ -208,7 +208,7 @@ func TestStateNumberLiteralError(t *testing.T) {
 		"01",
 		"1.",
 	} {
-		s := newState("", s)
+		s := newState(s, "")
 		_, err := s.Exhaust(s.numberLiteral())()
 		assert.Error(t, err)
 	}
@@ -222,7 +222,7 @@ func TestStateListLiteral(t *testing.T) {
 		"[42, 42,]",
 		"[[42]]",
 	} {
-		ss := newState("", s)
+		ss := newState(s, "")
 		_, err := ss.listLiteral(ss.expression())()
 		assert.Nil(t, err)
 	}
@@ -234,7 +234,7 @@ func TestStateListLiteralError(t *testing.T) {
 		"[,42]",
 		"[42,,]",
 	} {
-		ss := newState("", s)
+		ss := newState(s, "")
 		_, err := ss.listLiteral(ss.expression())()
 		assert.Error(t, err)
 	}
@@ -249,7 +249,7 @@ func TestStateRawStringLiteral(t *testing.T) {
 		{`"foo\nbar"`, "foo\nbar"},
 		{`"foo\tbar"`, "foo\tbar"},
 	} {
-		s := newState("", ss[0])
+		s := newState(ss[0], "")
 		x, err := s.Exhaust(s.rawStringLiteral())()
 
 		assert.Nil(t, err)
@@ -258,7 +258,7 @@ func TestStateRawStringLiteral(t *testing.T) {
 }
 
 func TestStateVariable(t *testing.T) {
-	_, err := newState("", "x").variable()()
+	_, err := newState("x", "").variable()()
 	assert.Nil(t, err)
 }
 
@@ -281,7 +281,7 @@ func TestStateApplication(t *testing.T) {
 			[]ast.Expression{ast.NewVariable("x")},
 		),
 	} {
-		aa, err := newState("", s).application()()
+		aa, err := newState(s, "").application()()
 
 		assert.Nil(t, err)
 		assert.Equal(t, a, aa)
@@ -295,7 +295,7 @@ func TestStateLet(t *testing.T) {
 		"let x = 42\n    y = 42 in 42",
 		"let x = 42\nin 42",
 	} {
-		s := newState("", s)
+		s := newState(s, "")
 		_, err := s.Exhaust(s.let())()
 		assert.Nil(t, err)
 	}
@@ -307,7 +307,7 @@ func TestStateLetError(t *testing.T) {
 		"let\n x =\n 42 in 42",
 		"let x = 42\n y = 42 in 42",
 	} {
-		s := newState("", s)
+		s := newState(s, "")
 		_, err := s.Exhaust(s.let())()
 		assert.Error(t, err)
 	}
@@ -375,7 +375,7 @@ func TestStateCaseOf(t *testing.T) {
 			),
 		},
 	} {
-		a, err := newState("", c.source).caseOf()()
+		a, err := newState(c.source, "").caseOf()()
 
 		assert.Nil(t, err)
 		assert.Equal(t, c.ast, a)
@@ -390,7 +390,7 @@ func TestStatePattern(t *testing.T) {
 		"[x]",
 		"[x, ...xs]",
 	} {
-		_, err := newState("", s).pattern()()
+		_, err := newState(s, "").pattern()()
 		assert.Nil(t, err)
 	}
 }
@@ -400,7 +400,7 @@ func TestStatePatternError(t *testing.T) {
 		"x",
 		"[f x]",
 	} {
-		_, err := newState("", s).pattern()()
+		_, err := newState(s, "").pattern()()
 		assert.Error(t, err)
 	}
 }
@@ -520,7 +520,7 @@ func TestStateExpressionWithOperators(t *testing.T) {
 			),
 		},
 	} {
-		s := newState("", c.source)
+		s := newState(c.source, "")
 		e, err := s.Exhaust(s.expression())()
 
 		assert.Nil(t, err)
@@ -537,14 +537,14 @@ func TestStateType(t *testing.T) {
 		"[Number]",
 		"[[Number]]",
 	} {
-		_, err := newState("", s).typ()()
+		_, err := newState(s, "").typ()()
 		assert.Nil(t, err)
 	}
 }
 
 func TestStateTypeWithMultipleArguments(t *testing.T) {
 	s := "Number -> Number -> Number"
-	x, err := newState("", s).typ()()
+	x, err := newState(s, "").typ()()
 
 	assert.Equal(
 		t,
