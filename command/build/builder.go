@@ -50,12 +50,10 @@ func (b builder) Build(f string) error {
 }
 
 func (b builder) BuildModule(f string) (string, error) {
-	ff, ok, err := b.objectCache.Get(f)
-
-	if err != nil {
+	if f, ok, err := b.objectCache.Get(f); err != nil {
 		return "", err
 	} else if ok {
-		return ff, nil
+		return f, nil
 	}
 
 	bs, err := b.buildModuleWithoutCache(f)
