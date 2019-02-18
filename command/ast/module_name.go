@@ -1,6 +1,9 @@
 package ast
 
-import "path/filepath"
+import (
+	"path/filepath"
+	"strings"
+)
 
 // ModuleName is a unique module name.
 type ModuleName (string)
@@ -17,6 +20,10 @@ func NewModuleName(f, rootDir string) (ModuleName, error) {
 
 	if err != nil {
 		return "", err
+	}
+
+	if !strings.HasPrefix(f, d) {
+		return ModuleName(filepath.ToSlash(f)), nil
 	}
 
 	p, err := filepath.Rel(d, f)

@@ -7,7 +7,13 @@ import (
 )
 
 func TestNewModuleName(t *testing.T) {
-	s, err := NewModuleName("/dir/foo", "/dir")
+	s, err := NewModuleName("/foo/bar", "/foo")
 	assert.Nil(t, err)
-	assert.Equal(t, ModuleName("foo"), s)
+	assert.Equal(t, ModuleName("bar"), s)
+}
+
+func TestNewModuleNameWithModulesOutsideOfRootDirectories(t *testing.T) {
+	s, err := NewModuleName("/bar/baz", "/foo")
+	assert.Nil(t, err)
+	assert.Equal(t, ModuleName("/bar/baz"), s)
 }
