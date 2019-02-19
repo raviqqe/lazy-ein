@@ -1,7 +1,6 @@
 package build
 
 import (
-	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -77,12 +76,6 @@ func (b builder) buildModuleWithoutCache(f string) ([]byte, error) {
 		return nil, err
 	}
 
-	if m.IsMainModule() {
-		if err := b.renameMainFunction(mm); err != nil {
-			return nil, err
-		}
-	}
-
 	return b.generateModule(mm)
 }
 
@@ -112,18 +105,6 @@ func (b builder) generateModule(m llvm.Module) ([]byte, error) {
 
 func (b builder) resolveRuntimeLibrary(f string) string {
 	return filepath.Join(b.runtimeDirectory, filepath.FromSlash(f))
-}
-
-func (b builder) renameMainFunction(m llvm.Module) error {
-	v := m.NamedGlobal("main")
-
-	if v.IsNil() {
-		return errors.New("main function not found")
-	}
-
-	v.SetName("ein_main")
-
-	return nil
 }
 
 func (b builder) isMainModule(f string) (bool, error) {

@@ -17,7 +17,7 @@ func Compile(m ast.Module) (llvm.Module, error) {
 		return llvm.Module{}, err
 	}
 
-	return corecompile.Compile(mm)
+	return corecompile.Compile(renameGlobalVariables(m, mm))
 }
 
 func compileToCore(m ast.Module) (coreast.Module, error) {
@@ -28,4 +28,23 @@ func compileToCore(m ast.Module) (coreast.Module, error) {
 	}
 
 	return newCompiler().Compile(desugar.WithTypes(m))
+}
+
+func renameGlobalVariables(m ast.Module, mm coreast.Module) coreast.Module {
+	vs := make(map[string]string, len(mm.Binds()))
+	bs := make([]coreast.Bind, 0, len(mm.Binds()))
+
+	for _, b := range mm.Binds() {
+		s := string(m.Name()) + "." + b.Name()
+
+		vs[b.Name()] = s
+
+		if b.Name() == ast.MainFunctionName {
+			bs = append(bs, coreast.NewBind("ein_main", b.Lambda()))
+		} else {
+			bs = append(bs, coreast.NewBind(s, b.Lambda()))
+		}
+	}
+
+	return coreast.NewModule(mm.Declarations(), bs).RenameVariables(vs)
 }

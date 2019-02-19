@@ -38,7 +38,7 @@ func (m Module) Binds() []Bind {
 // IsMainModule checks if it is a main module.
 func (m Module) IsMainModule() bool {
 	for _, b := range m.binds {
-		if b.Name() == "main" {
+		if b.Name() == MainFunctionName {
 			return true
 		}
 	}
