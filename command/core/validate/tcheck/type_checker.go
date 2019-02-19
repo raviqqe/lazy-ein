@@ -33,7 +33,7 @@ func (c typeChecker) checkBinds(bs []ast.Bind) (typeChecker, error) {
 }
 
 func (c typeChecker) checkLambda(l ast.Lambda) error {
-	t, err := c.addArguments(l.Arguments()).checkExpression(l.Body())
+	t, err := c.addArguments(l).checkExpression(l.Body())
 
 	if err != nil {
 		return err
@@ -264,15 +264,15 @@ func (c typeChecker) checkVariable(v ast.Variable) (types.Type, error) {
 	return t, nil
 }
 
-func (c typeChecker) addArguments(as []ast.Argument) typeChecker {
-	vs := make(map[string]types.Type, len(c.variables)+len(as))
+func (c typeChecker) addArguments(l ast.Lambda) typeChecker {
+	vs := make(map[string]types.Type, len(c.variables)+len(l.ArgumentNames()))
 
 	for k, v := range c.variables {
 		vs[k] = v
 	}
 
-	for _, a := range as {
-		vs[a.Name()] = a.Type()
+	for i, s := range l.ArgumentNames() {
+		vs[s] = l.ArgumentTypes()[i]
 	}
 
 	return typeChecker{vs}

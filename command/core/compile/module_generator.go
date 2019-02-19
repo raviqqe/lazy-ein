@@ -68,7 +68,7 @@ func (g *moduleGenerator) Generate(m ast.Module) (llvm.Module, error) {
 	for _, b := range m.Binds() {
 		g.globalVariables[b.Name()] = llvm.AddGlobal(
 			g.module,
-			g.typeGenerator.GenerateSizedClosure(b.Lambda()),
+			g.typeGenerator.GenerateSizedClosure(b.Lambda().ToDeclaration()),
 			b.Name(),
 		)
 	}
@@ -109,7 +109,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 	f := llir.AddFunction(
 		g.module,
 		names.ToEntry(n),
-		g.typeGenerator.GenerateLambdaEntryFunction(l),
+		g.typeGenerator.GenerateLambdaEntryFunction(l.ToDeclaration()),
 	)
 
 	b := llvm.NewBuilder()
@@ -182,7 +182,7 @@ func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, 
 
 	e := b.CreateBitCast(
 		f.FirstParam(),
-		llir.PointerType(g.typeGenerator.GenerateEnvironment(l)),
+		llir.PointerType(g.typeGenerator.GenerateEnvironment(l.ToDeclaration())),
 		"",
 	)
 

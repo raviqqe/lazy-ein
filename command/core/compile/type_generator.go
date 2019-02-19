@@ -85,7 +85,7 @@ func (g typeGenerator) generateFunctionCloure(t types.Function) llvm.Type {
 	)
 }
 
-func (g typeGenerator) GenerateSizedClosure(l ast.Lambda) llvm.Type {
+func (g typeGenerator) GenerateSizedClosure(l ast.LambdaDeclaration) llvm.Type {
 	return g.generateClosure(g.GenerateLambdaEntryFunction(l), g.generateSizedPayload(l))
 }
 
@@ -97,7 +97,7 @@ func (g typeGenerator) generateClosure(f llvm.Type, p llvm.Type) llvm.Type {
 	return llir.StructType([]llvm.Type{llir.PointerType(f), p})
 }
 
-func (g typeGenerator) GenerateLambdaEntryFunction(l ast.Lambda) llvm.Type {
+func (g typeGenerator) GenerateLambdaEntryFunction(l ast.LambdaDeclaration) llvm.Type {
 	r := l.ResultType()
 
 	if l.IsThunk() {
@@ -117,7 +117,7 @@ func (g typeGenerator) generateEntryFunction(as []types.Type, r types.Type) llvm
 	)
 }
 
-func (g typeGenerator) generateSizedPayload(l ast.Lambda) llvm.Type {
+func (g typeGenerator) generateSizedPayload(l ast.LambdaDeclaration) llvm.Type {
 	n := g.GetSize(g.GenerateEnvironment(l))
 
 	if m := g.GetSize(g.Generate(types.Unbox(l.ResultType()))); l.IsUpdatable() && m > n {
@@ -135,7 +135,7 @@ func (g typeGenerator) generatePayload(n int) llvm.Type {
 	return llvm.ArrayType(llvm.Int8Type(), n)
 }
 
-func (g typeGenerator) GenerateEnvironment(l ast.Lambda) llvm.Type {
+func (g typeGenerator) GenerateEnvironment(l ast.LambdaDeclaration) llvm.Type {
 	return llir.StructType(g.generateMany(l.FreeVariableTypes()))
 }
 

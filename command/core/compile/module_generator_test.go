@@ -620,20 +620,7 @@ func TestModuleGeneratorGenerateWithDeclarations(t *testing.T) {
 	tt := types.NewBoxed(a)
 
 	m := ast.NewModule(
-		[]ast.Bind{
-			ast.NewBind(
-				"x",
-				ast.NewVariableLambda(
-					nil,
-					true,
-					ast.NewConstructorApplication(
-						ast.NewConstructor(a, 0),
-						[]ast.Atom{ast.NewFloat64(42)},
-					),
-					tt,
-				),
-			),
-		},
+		[]ast.Declaration{ast.NewDeclaration("x", ast.NewLambdaDeclaration(nil, true, nil, tt))},
 		[]ast.Bind{
 			ast.NewBind(
 				"y",
