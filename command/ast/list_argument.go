@@ -23,7 +23,7 @@ func (a ListArgument) Expanded() bool {
 	return a.expanded
 }
 
-// ConvertExpressions visits expressions.
+// ConvertExpressions converts expressions.
 func (a ListArgument) ConvertExpressions(f func(Expression) Expression) Node {
 	return ListArgument{a.expression.ConvertExpressions(f).(Expression), a.expanded}
 }

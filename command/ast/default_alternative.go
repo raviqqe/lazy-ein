@@ -23,7 +23,7 @@ func (a DefaultAlternative) Expression() Expression {
 	return a.expression
 }
 
-// ConvertExpressions visits expressions.
+// ConvertExpressions converts expressions.
 func (a DefaultAlternative) ConvertExpressions(f func(Expression) Expression) Node {
 	return NewDefaultAlternative(a.variable, a.expression.ConvertExpressions(f).(Expression))
 }

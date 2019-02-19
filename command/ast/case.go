@@ -44,7 +44,7 @@ func (c Case) DefaultAlternative() (DefaultAlternative, bool) {
 	return c.defaultAlternative, true
 }
 
-// ConvertExpressions visits expressions.
+// ConvertExpressions converts expressions.
 func (c Case) ConvertExpressions(f func(Expression) Expression) Node {
 	as := make([]Alternative, 0, len(c.alternatives))
 

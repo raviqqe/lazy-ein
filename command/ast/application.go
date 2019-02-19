@@ -23,7 +23,7 @@ func (a Application) Arguments() []Expression {
 	return a.arguments
 }
 
-// ConvertExpressions visits expressions.
+// ConvertExpressions converts expressions.
 func (a Application) ConvertExpressions(f func(Expression) Expression) Node {
 	as := make([]Expression, 0, len(a.arguments))
 

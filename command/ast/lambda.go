@@ -23,7 +23,7 @@ func (l Lambda) Expression() Expression {
 	return l.expression
 }
 
-// ConvertExpressions visits expressions.
+// ConvertExpressions converts expressions.
 func (l Lambda) ConvertExpressions(f func(Expression) Expression) Node {
 	return f(NewLambda(l.arguments, l.expression.ConvertExpressions(f).(Expression)))
 }

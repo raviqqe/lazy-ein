@@ -22,7 +22,7 @@ func (a Alternative) Expression() Expression {
 	return a.expression
 }
 
-// ConvertExpressions visits expressions.
+// ConvertExpressions converts expressions.
 func (a Alternative) ConvertExpressions(f func(Expression) Expression) Node {
 	return NewAlternative(a.pattern, a.expression.ConvertExpressions(f).(Expression))
 }

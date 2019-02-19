@@ -46,7 +46,7 @@ func (m Module) IsMainModule() bool {
 	return false
 }
 
-// ConvertExpressions visits expressions.
+// ConvertExpressions converts expressions.
 func (m Module) ConvertExpressions(f func(Expression) Expression) Node {
 	bs := make([]Bind, 0, len(m.binds))
 

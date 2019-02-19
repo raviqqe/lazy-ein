@@ -17,7 +17,7 @@ func (u Unboxed) Content() Literal {
 	return u.content
 }
 
-// ConvertExpressions visits expressions.
+// ConvertExpressions converts expressions.
 func (u Unboxed) ConvertExpressions(f func(Expression) Expression) Node {
 	return f(u)
 }

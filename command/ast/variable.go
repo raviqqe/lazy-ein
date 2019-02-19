@@ -17,7 +17,7 @@ func (v Variable) Name() string {
 	return v.name
 }
 
-// ConvertExpressions visits expressions.
+// ConvertExpressions converts expressions.
 func (v Variable) ConvertExpressions(f func(Expression) Expression) Node {
 	return f(v)
 }

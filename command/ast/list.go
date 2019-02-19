@@ -23,7 +23,7 @@ func (l List) Arguments() []ListArgument {
 	return l.arguments
 }
 
-// ConvertExpressions visits expressions.
+// ConvertExpressions converts expressions.
 func (l List) ConvertExpressions(f func(Expression) Expression) Node {
 	as := make([]ListArgument, 0, len(l.arguments))
 
