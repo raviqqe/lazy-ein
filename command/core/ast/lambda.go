@@ -101,6 +101,29 @@ func (l Lambda) ConvertTypes(f func(types.Type) types.Type) Lambda {
 	return Lambda{vs, l.updatable, as, l.body.ConvertTypes(f), l.resultType.ConvertTypes(f)}
 }
 
+// RenameVariables renames variables.
+func (l Lambda) RenameVariables(vs map[string]string) Lambda {
+	fvs := make([]Argument, 0, len(l.freeVariables))
+
+	for _, v := range l.freeVariables {
+		fvs = append(fvs, v.RenameVariables(vs))
+	}
+
+	ss := make([]string, 0, len(l.arguments))
+
+	for _, a := range l.arguments {
+		ss = append(ss, a.Name())
+	}
+
+	return Lambda{
+		fvs,
+		l.updatable,
+		l.arguments,
+		l.body.RenameVariables(removeVariables(vs, ss...)),
+		l.resultType,
+	}
+}
+
 func argumentsToNames(as []Argument) []string {
 	ss := make([]string, 0, len(as))
 

@@ -51,3 +51,14 @@ func (m Module) ConvertTypes(f func(types.Type) types.Type) Module {
 
 	return Module{m.declarations, bs}
 }
+
+// RenameVariables renames variables.
+func (m Module) RenameVariables(vs map[string]string) Module {
+	bs := make([]Bind, 0, len(m.binds))
+
+	for _, b := range m.binds {
+		bs = append(bs, b.RenameVariables(vs))
+	}
+
+	return NewModule(m.declarations, bs)
+}

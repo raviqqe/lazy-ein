@@ -27,3 +27,11 @@ func (a DefaultAlternative) Expression() Expression {
 func (a DefaultAlternative) ConvertTypes(f func(types.Type) types.Type) DefaultAlternative {
 	return DefaultAlternative{a.variable, a.expression.ConvertTypes(f)}
 }
+
+// RenameVariables renames variables.
+func (a DefaultAlternative) RenameVariables(vs map[string]string) DefaultAlternative {
+	return DefaultAlternative{
+		a.variable,
+		a.expression.RenameVariables(removeVariables(vs, a.variable)),
+	}
+}

@@ -33,3 +33,12 @@ func (a AlgebraicAlternative) Expression() Expression {
 func (a AlgebraicAlternative) ConvertTypes(f func(types.Type) types.Type) AlgebraicAlternative {
 	return AlgebraicAlternative{a.constructor, a.elementNames, a.expression.ConvertTypes(f)}
 }
+
+// RenameVariables renames variables.
+func (a AlgebraicAlternative) RenameVariables(vs map[string]string) AlgebraicAlternative {
+	return AlgebraicAlternative{
+		a.constructor,
+		a.elementNames,
+		a.expression.RenameVariables(removeVariables(vs, a.elementNames...)),
+	}
+}

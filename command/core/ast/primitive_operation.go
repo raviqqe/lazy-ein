@@ -42,4 +42,15 @@ func (o PrimitiveOperation) ConvertTypes(func(types.Type) types.Type) Expression
 	return o
 }
 
+// RenameVariables renames variables.
+func (o PrimitiveOperation) RenameVariables(vs map[string]string) Expression {
+	as := make([]Atom, 0, len(o.arguments))
+
+	for _, a := range o.arguments {
+		as = append(as, a.RenameVariablesInAtom(vs))
+	}
+
+	return PrimitiveOperation{o.primitiveOperator, as}
+}
+
 func (o PrimitiveOperation) isExpression() {}

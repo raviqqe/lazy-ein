@@ -43,3 +43,14 @@ func (c PrimitiveCase) ConvertTypes(f func(types.Type) types.Type) Expression {
 		as,
 	}
 }
+
+// RenameVariables renames variables.
+func (c PrimitiveCase) RenameVariables(vs map[string]string) Expression {
+	as := make([]PrimitiveAlternative, 0, len(c.alternatives))
+
+	for _, a := range c.alternatives {
+		as = append(as, a.RenameVariables(vs))
+	}
+
+	return PrimitiveCase{c.abstractCase.RenameVariables(vs), c.typ, as}
+}

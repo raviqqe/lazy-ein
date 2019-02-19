@@ -27,3 +27,8 @@ func (b Bind) Lambda() Lambda {
 func (b Bind) ConvertTypes(f func(types.Type) types.Type) Bind {
 	return Bind{b.name, b.lambda.ConvertTypes(f)}
 }
+
+// RenameVariables renames variables.
+func (b Bind) RenameVariables(vs map[string]string) Bind {
+	return Bind{b.name, b.lambda.RenameVariables(vs)}
+}

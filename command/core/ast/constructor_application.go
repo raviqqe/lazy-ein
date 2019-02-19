@@ -28,4 +28,15 @@ func (a ConstructorApplication) ConvertTypes(func(types.Type) types.Type) Expres
 	return a
 }
 
+// RenameVariables renames variables.
+func (a ConstructorApplication) RenameVariables(vs map[string]string) Expression {
+	as := make([]Atom, 0, len(a.arguments))
+
+	for _, a := range a.arguments {
+		as = append(as, a.RenameVariablesInAtom(vs))
+	}
+
+	return ConstructorApplication{a.constructor, as}
+}
+
 func (ConstructorApplication) isExpression() {}

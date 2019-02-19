@@ -15,4 +15,9 @@ func (v Variable) Name() string {
 	return v.name
 }
 
+// RenameVariablesInAtom renames variables.
+func (v Variable) RenameVariablesInAtom(vs map[string]string) Atom {
+	return Variable{replaceVariable(v.name, vs)}
+}
+
 func (Variable) isAtom() {}

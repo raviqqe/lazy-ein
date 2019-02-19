@@ -33,4 +33,14 @@ func (c abstractCase) ConvertTypes(f func(types.Type) types.Type) abstractCase {
 	return abstractCase{c.argument.ConvertTypes(f), d}
 }
 
+func (c abstractCase) RenameVariables(vs map[string]string) abstractCase {
+	d, ok := c.DefaultAlternative()
+
+	if ok {
+		d = c.defaultAlternative.RenameVariables(vs)
+	}
+
+	return abstractCase{c.argument.RenameVariables(vs), d}
+}
+
 func (abstractCase) isExpression() {}

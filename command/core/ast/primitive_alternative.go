@@ -27,3 +27,8 @@ func (a PrimitiveAlternative) Expression() Expression {
 func (a PrimitiveAlternative) ConvertTypes(f func(types.Type) types.Type) PrimitiveAlternative {
 	return PrimitiveAlternative{a.literal, a.expression.ConvertTypes(f)}
 }
+
+// RenameVariables renames variables.
+func (a PrimitiveAlternative) RenameVariables(vs map[string]string) PrimitiveAlternative {
+	return PrimitiveAlternative{a.literal, a.expression.RenameVariables(vs)}
+}

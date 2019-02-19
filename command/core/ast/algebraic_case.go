@@ -33,3 +33,14 @@ func (c AlgebraicCase) ConvertTypes(f func(types.Type) types.Type) Expression {
 
 	return AlgebraicCase{c.abstractCase.ConvertTypes(f), as}
 }
+
+// RenameVariables renames variables.
+func (c AlgebraicCase) RenameVariables(vs map[string]string) Expression {
+	as := make([]AlgebraicAlternative, 0, len(c.alternatives))
+
+	for _, a := range c.alternatives {
+		as = append(as, a.RenameVariables(vs))
+	}
+
+	return AlgebraicCase{c.abstractCase.RenameVariables(vs), as}
+}

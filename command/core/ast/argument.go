@@ -27,3 +27,8 @@ func (a Argument) Type() types.Type {
 func (a Argument) ConvertTypes(f func(types.Type) types.Type) Argument {
 	return Argument{a.name, a.typ.ConvertTypes(f)}
 }
+
+// RenameVariables renames variables.
+func (a Argument) RenameVariables(vs map[string]string) Argument {
+	return Argument{replaceVariable(a.name, vs), a.typ}
+}

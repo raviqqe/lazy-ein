@@ -22,5 +22,15 @@ func (f Float64) ConvertTypes(func(types.Type) types.Type) Expression {
 	return f
 }
 
+// RenameVariables renames variables.
+func (f Float64) RenameVariables(map[string]string) Expression {
+	return f
+}
+
+// RenameVariablesInAtom renames variables.
+func (f Float64) RenameVariablesInAtom(map[string]string) Atom {
+	return f
+}
+
 func (Float64) isAtom()       {}
 func (Float64) isExpression() {}
