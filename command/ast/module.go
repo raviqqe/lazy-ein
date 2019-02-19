@@ -35,6 +35,24 @@ func (m Module) Binds() []Bind {
 	return m.binds
 }
 
+// ExportedBinds returns binds.
+func (m Module) ExportedBinds() []Bind {
+	ss := make(map[string]struct{}, len(m.export.Names()))
+	bs := []Bind{}
+
+	for _, s := range m.export.Names() {
+		ss[s] = struct{}{}
+	}
+
+	for _, b := range m.binds {
+		if _, ok := ss[b.Name()]; ok {
+			bs = append(bs, b)
+		}
+	}
+
+	return bs
+}
+
 // IsMainModule checks if it is a main module.
 func (m Module) IsMainModule() bool {
 	for _, b := range m.binds {

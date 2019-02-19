@@ -370,6 +370,7 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 				nil,
 				[]ast.Bind{ast.NewBind("bar", types.NewNumber(nil), ls[0])},
 			),
+			nil,
 		)
 
 		assert.Nil(t, err)
@@ -390,7 +391,7 @@ func TestInferTypesWithArguments(t *testing.T) {
 			),
 		},
 	)
-	mm, err := tinfer.InferTypes(m)
+	mm, err := tinfer.InferTypes(m, nil)
 
 	assert.Nil(t, err)
 	assert.Equal(t, m, mm)
@@ -428,7 +429,7 @@ func TestInferTypesWithFunctionApplications(t *testing.T) {
 			),
 		},
 	)
-	mm, err := tinfer.InferTypes(m)
+	mm, err := tinfer.InferTypes(m, nil)
 
 	assert.Nil(t, err)
 	assert.Equal(
@@ -460,6 +461,28 @@ func TestInferTypesWithLambda(t *testing.T) {
 				),
 			},
 		),
+		nil,
+	)
+
+	assert.Nil(t, err)
+}
+
+func TestInferTypesWithImportedModules(t *testing.T) {
+	_, err := tinfer.InferTypes(
+		ast.NewModule(
+			"",
+			ast.NewExport(),
+			[]ast.Import{ast.NewImport("foo/bar")},
+			[]ast.Bind{ast.NewBind("y", types.NewNumber(nil), ast.NewVariable("bar.x"))},
+		),
+		[]ast.Module{
+			ast.NewModule(
+				"foo/bar",
+				ast.NewExport("x"),
+				nil,
+				[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
+			),
+		},
 	)
 
 	assert.Nil(t, err)
@@ -484,6 +507,28 @@ func TestInferTypesErrorWithUnknownVarabiles(t *testing.T) {
 				),
 			},
 		),
+		nil,
+	)
+
+	assert.Error(t, err)
+}
+
+func TestInferTypesErrorWithImportedModules(t *testing.T) {
+	_, err := tinfer.InferTypes(
+		ast.NewModule(
+			"",
+			ast.NewExport(),
+			[]ast.Import{ast.NewImport("foo/bar")},
+			[]ast.Bind{ast.NewBind("y", types.NewNumber(nil), ast.NewVariable("bar.x"))},
+		),
+		[]ast.Module{
+			ast.NewModule(
+				"foo/bar",
+				ast.NewExport(),
+				nil,
+				[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
+			),
+		},
 	)
 
 	assert.Error(t, err)

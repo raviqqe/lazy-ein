@@ -27,3 +27,26 @@ func TestModuleIsMainModule(t *testing.T) {
 		).IsMainModule(),
 	)
 }
+
+func TestModuleExportedBinds(t *testing.T) {
+	assert.Equal(
+		t,
+		[]Bind{NewBind("x", types.NewNumber(nil), NewNumber(42))},
+		NewModule(
+			"",
+			NewExport("x"),
+			nil,
+			[]Bind{NewBind("x", types.NewNumber(nil), NewNumber(42))},
+		).ExportedBinds(),
+	)
+	assert.Equal(
+		t,
+		[]Bind{},
+		NewModule(
+			"",
+			NewExport(),
+			nil,
+			[]Bind{NewBind("x", types.NewNumber(nil), NewNumber(42))},
+		).ExportedBinds(),
+	)
+}

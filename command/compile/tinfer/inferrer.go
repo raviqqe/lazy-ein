@@ -2,6 +2,7 @@ package tinfer
 
 import (
 	"fmt"
+	"path"
 
 	"github.com/ein-lang/ein/command/ast"
 	"github.com/ein-lang/ein/command/types"
@@ -12,10 +13,18 @@ type inferrer struct {
 	typeVariableCount *int
 }
 
-func newInferrer(m ast.Module) inferrer {
+func newInferrer(m ast.Module, ms []ast.Module) inferrer {
+	vs := map[string]types.Type{}
+
+	for _, m := range ms {
+		for _, b := range m.ExportedBinds() {
+			vs[path.Base(string(m.Name()))+"."+b.Name()] = b.Type()
+		}
+	}
+
 	c := 0
-	i := inferrer{map[string]types.Type{}, &c}
-	return i.addVariablesFromBinds(m.Binds())
+
+	return inferrer{map[string]types.Type{}, &c}.addVariables(vs).addVariablesFromBinds(m.Binds())
 }
 
 func (i inferrer) Infer(m ast.Module) (ast.Module, error) {
