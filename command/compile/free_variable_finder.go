@@ -66,6 +66,8 @@ func (f freeVariableFinder) Find(e ast.Expression) []string {
 		}
 
 		return ss
+	case ast.Number:
+		break
 	case ast.Unboxed:
 		return nil
 	case ast.Variable:

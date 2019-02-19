@@ -113,6 +113,8 @@ func (c compiler) compileExpression(e ast.Expression) (coreast.Expression, error
 		return c.compileLet(e)
 	case ast.List:
 		return c.compileList(e)
+	case ast.Number:
+		break
 	case ast.Unboxed:
 		return c.compileUnboxed(e)
 	case ast.Variable:
