@@ -64,29 +64,19 @@ func (c objectCache) generateModuleHash(h hash.Hash, f string) error {
 		return err
 	}
 
-	n, err := ast.NewModuleName(f, c.moduleRootDirectory)
+	m, err := parse.Parse(f, c.moduleRootDirectory)
 
-	if err != nil {
-		return err
-	}
-
-	h.Write([]byte(n))
+	h.Write([]byte(m.Name()))
 	h.Write(bs)
 
-	if err := c.generateSubmodulesHash(h, n, string(bs)); err != nil {
+	if err := c.generateSubmodulesHash(h, m); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c objectCache) generateSubmodulesHash(h hash.Hash, n ast.ModuleName, s string) error {
-	m, err := parse.Parse(s, n)
-
-	if err != nil {
-		return err
-	}
-
+func (c objectCache) generateSubmodulesHash(h hash.Hash, m ast.Module) error {
 	for _, i := range m.Imports() {
 		if err := c.generateModuleHash(h, i.Path()); err != nil {
 			return err

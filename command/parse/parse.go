@@ -3,6 +3,7 @@ package parse
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"strconv"
 	"strings"
 
@@ -53,8 +54,24 @@ var keywords = map[keyword]struct{}{
 	ofKeyword:     {},
 }
 
-// Parse parses a module into an AST.
-func Parse(s string, n ast.ModuleName) (ast.Module, error) {
+// Parse parses a module file.
+func Parse(f, rootDir string) (ast.Module, error) {
+	bs, err := ioutil.ReadFile(f)
+
+	if err != nil {
+		return ast.Module{}, err
+	}
+
+	n, err := ast.NewModuleName(f, rootDir)
+
+	if err != nil {
+		return ast.Module{}, err
+	}
+
+	return parse(string(bs), n)
+}
+
+func parse(s string, n ast.ModuleName) (ast.Module, error) {
 	x, err := newState(s, n).module(n)()
 
 	switch err := err.(type) {

@@ -2,12 +2,10 @@ package build
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 
-	"github.com/ein-lang/ein/command/ast"
 	"github.com/ein-lang/ein/command/compile"
 	"github.com/ein-lang/ein/command/parse"
 	"llvm.org/llvm/bindings/go/llvm"
@@ -67,19 +65,7 @@ func (b builder) BuildModule(f string) (string, error) {
 }
 
 func (b builder) buildModuleWithoutCache(f string) ([]byte, error) {
-	bs, err := ioutil.ReadFile(f)
-
-	if err != nil {
-		return nil, err
-	}
-
-	n, err := ast.NewModuleName(f, b.moduleRootDirectory)
-
-	if err != nil {
-		return nil, err
-	}
-
-	m, err := parse.Parse(string(bs), n)
+	m, err := parse.Parse(f, b.moduleRootDirectory)
 
 	if err != nil {
 		return nil, err
@@ -141,19 +127,7 @@ func (b builder) renameMainFunction(m llvm.Module) error {
 }
 
 func (b builder) isMainModule(f string) (bool, error) {
-	bs, err := ioutil.ReadFile(f)
-
-	if err != nil {
-		return false, err
-	}
-
-	n, err := ast.NewModuleName(f, b.moduleRootDirectory)
-
-	if err != nil {
-		return false, err
-	}
-
-	m, err := parse.Parse(string(bs), n)
+	m, err := parse.Parse(f, b.moduleRootDirectory)
 
 	if err != nil {
 		return false, err
