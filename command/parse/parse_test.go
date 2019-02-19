@@ -139,21 +139,14 @@ func TestStateBind(t *testing.T) {
 }
 
 func TestStateBindWithVariableBind(t *testing.T) {
-	x, err := parse("x : Number\nx = 42", "")
+	x, err := newState("x : Number\nx = 42", "").bind()()
 
 	assert.Equal(
 		t,
-		ast.NewModule(
-			"",
-			ast.NewExport(),
-			[]ast.Import{},
-			[]ast.Bind{
-				ast.NewBind(
-					"x",
-					types.NewNumber(debug.NewInformation("", 1, 5, "x : Number")),
-					ast.NewNumber(42),
-				),
-			},
+		ast.NewBind(
+			"x",
+			types.NewNumber(debug.NewInformation("", 1, 5, "x : Number")),
+			ast.NewNumber(42),
 		),
 		x,
 	)
