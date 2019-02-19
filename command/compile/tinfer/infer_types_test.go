@@ -467,27 +467,6 @@ func TestInferTypesWithLambda(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestInferTypesWithImportedModules(t *testing.T) {
-	_, err := tinfer.InferTypes(
-		ast.NewModule(
-			"",
-			ast.NewExport(),
-			[]ast.Import{ast.NewImport("foo/bar")},
-			[]ast.Bind{ast.NewBind("y", types.NewNumber(nil), ast.NewVariable("bar.x"))},
-		),
-		[]ast.Module{
-			ast.NewModule(
-				"foo/bar",
-				ast.NewExport("x"),
-				nil,
-				[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
-			),
-		},
-	)
-
-	assert.Nil(t, err)
-}
-
 func TestInferTypesErrorWithUnknownVarabiles(t *testing.T) {
 	_, err := tinfer.InferTypes(
 		ast.NewModule(
@@ -511,6 +490,54 @@ func TestInferTypesErrorWithUnknownVarabiles(t *testing.T) {
 	)
 
 	assert.Error(t, err)
+}
+
+func TestInferTypesWithImportedModules(t *testing.T) {
+	_, err := tinfer.InferTypes(
+		ast.NewModule(
+			"",
+			ast.NewExport(),
+			[]ast.Import{ast.NewImport("foo/bar")},
+			[]ast.Bind{ast.NewBind("y", types.NewNumber(nil), ast.NewVariable("bar.x"))},
+		),
+		[]ast.Module{
+			ast.NewModule(
+				"foo/bar",
+				ast.NewExport("x"),
+				nil,
+				[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
+			),
+		},
+	)
+
+	assert.Nil(t, err)
+}
+
+func TestInferTypesWithUnboxedTypesImportedModules(t *testing.T) {
+	_, err := tinfer.InferTypes(
+		ast.NewModule(
+			"",
+			ast.NewExport(),
+			[]ast.Import{ast.NewImport("foo/bar")},
+			[]ast.Bind{ast.NewBind("y", types.NewNumber(nil), ast.NewVariable("bar.x"))},
+		),
+		[]ast.Module{
+			ast.NewModule(
+				"foo/bar",
+				ast.NewExport("x"),
+				nil,
+				[]ast.Bind{
+					ast.NewBind(
+						"x",
+						types.NewUnboxed(types.NewNumber(nil), nil),
+						ast.NewUnboxed(ast.NewNumber(42)),
+					),
+				},
+			),
+		},
+	)
+
+	assert.Nil(t, err)
 }
 
 func TestInferTypesErrorWithImportedModules(t *testing.T) {

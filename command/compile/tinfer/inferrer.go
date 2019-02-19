@@ -18,7 +18,7 @@ func newInferrer(m ast.Module, ms []ast.Module) inferrer {
 
 	for _, m := range ms {
 		for _, b := range m.ExportedBinds() {
-			vs[path.Base(string(m.Name()))+"."+b.Name()] = b.Type()
+			vs[path.Base(string(m.Name()))+"."+b.Name()] = types.Box(b.Type())
 		}
 	}
 
