@@ -70,7 +70,7 @@ func (b builder) buildModuleWithoutCache(f string) ([]byte, error) {
 		return nil, err
 	}
 
-	mm, err := compile.Compile(m)
+	mm, err := compile.Compile(m, nil)
 
 	if err != nil {
 		return nil, err

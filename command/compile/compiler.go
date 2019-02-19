@@ -2,6 +2,7 @@ package compile
 
 import (
 	"fmt"
+	"path"
 
 	"github.com/ein-lang/ein/command/ast"
 	coreast "github.com/ein-lang/ein/command/core/ast"
@@ -18,7 +19,7 @@ func newCompiler() compiler {
 	return compiler{}
 }
 
-func (c *compiler) initialize(m ast.Module) {
+func (c *compiler) initialize(m ast.Module, ms []ast.Module) {
 	c.variables = make(map[string]coretypes.Type, len(m.Binds()))
 	gs := make(map[string]struct{}, len(m.Binds()))
 
@@ -27,11 +28,40 @@ func (c *compiler) initialize(m ast.Module) {
 		gs[b.Name()] = struct{}{}
 	}
 
+	for _, m := range ms {
+		for _, b := range m.ExportedBinds() {
+			s := path.Base(string(m.Name())) + "." + b.Name()
+
+			c.variables[s] = b.Type().ToCore()
+			gs[s] = struct{}{}
+		}
+	}
+
 	c.freeVariableFinder = newFreeVariableFinder(gs)
 }
 
-func (c compiler) Compile(m ast.Module) (coreast.Module, error) {
-	c.initialize(m)
+func (c compiler) Compile(m ast.Module, ms []ast.Module) (coreast.Module, error) {
+	c.initialize(m, ms)
+
+	ds := []coreast.Declaration(nil)
+
+	for _, m := range ms {
+		for _, b := range m.ExportedBinds() {
+			b, err := c.compileBind(b)
+
+			if err != nil {
+				return coreast.Module{}, err
+			}
+
+			ds = append(
+				ds,
+				coreast.NewDeclaration(
+					path.Base(string(m.Name()))+"."+b.Name(),
+					b.Lambda().ToDeclaration(),
+				),
+			)
+		}
+	}
 
 	bs := make([]coreast.Bind, 0, len(m.Binds()))
 
@@ -45,7 +75,7 @@ func (c compiler) Compile(m ast.Module) (coreast.Module, error) {
 		bs = append(bs, coreast.NewBind(b.Name(), b.Lambda().ClearFreeVariables()))
 	}
 
-	return coreast.NewModule(nil, bs), nil
+	return coreast.NewModule(ds, bs), nil
 }
 
 func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {

@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/ein-lang/ein/command/ast"
+	"github.com/ein-lang/ein/command/compile/desugar"
+	"github.com/ein-lang/ein/command/compile/tinfer"
 	coreast "github.com/ein-lang/ein/command/core/ast"
 	coretypes "github.com/ein-lang/ein/command/core/types"
 	"github.com/ein-lang/ein/command/types"
@@ -19,7 +21,7 @@ var consConstructor = coreast.NewConstructor(listAlgebraic, 0)
 var nilConstructor = coreast.NewConstructor(listAlgebraic, 1)
 
 func TestCompileWithEmptySource(t *testing.T) {
-	_, err := Compile(ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}))
+	_, err := Compile(ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}), nil)
 	assert.Nil(t, err)
 }
 
@@ -45,6 +47,7 @@ func TestCompileWithFunctionApplications(t *testing.T) {
 				),
 			},
 		),
+		nil,
 	)
 
 	assert.Nil(t, err)
@@ -77,6 +80,7 @@ func TestCompileWithNestedFunctionApplications(t *testing.T) {
 				),
 			},
 		),
+		nil,
 	)
 
 	assert.Nil(t, err)
@@ -117,6 +121,7 @@ func TestCompileWithDeeplyNestedFunctionApplicationsInLambdaExpressions(t *testi
 				),
 			},
 		),
+		nil,
 	)
 
 	assert.Nil(t, err)
@@ -139,6 +144,7 @@ func TestCompileWithLists(t *testing.T) {
 				),
 			},
 		),
+		nil,
 	)
 
 	assert.Nil(t, err)
@@ -150,7 +156,9 @@ func TestCompileErrorWithUnknownVariables(t *testing.T) {
 			"",
 			ast.NewExport(),
 			nil,
-			[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewVariable("y"))}),
+			[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewVariable("y"))},
+		),
+		nil,
 	)
 	assert.Error(t, err)
 }
@@ -164,12 +172,13 @@ func TestCompilePanicWithUntypedGlobals(t *testing.T) {
 				nil,
 				[]ast.Bind{ast.NewBind("x", types.NewUnknown(nil), ast.NewNumber(42))},
 			),
+			nil,
 		)
 	})
 }
 
 func TestCompileToCoreWithEmptySource(t *testing.T) {
-	m, err := compileToCore(ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}))
+	m, err := compileToCore(ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}), nil)
 	assert.Nil(t, err)
 
 	assert.Equal(t, coreast.NewModule(nil, []coreast.Bind{}), m)
@@ -183,6 +192,7 @@ func TestCompileToCoreWithVariableBinds(t *testing.T) {
 			nil,
 			[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
 		),
+		nil,
 	)
 	assert.Nil(t, err)
 
@@ -228,6 +238,7 @@ func TestCompileToCoreWithFunctionBinds(t *testing.T) {
 				),
 			},
 		),
+		nil,
 	)
 	assert.Nil(t, err)
 
@@ -280,6 +291,7 @@ func TestCompileToCoreWithLetExpressions(t *testing.T) {
 				),
 			},
 		),
+		nil,
 	)
 	assert.Nil(t, err)
 
@@ -345,6 +357,7 @@ func TestCompileToCoreWithLetExpressionsAndFreeVariables(t *testing.T) {
 				),
 			},
 		),
+		nil,
 	)
 	assert.Nil(t, err)
 
@@ -412,6 +425,7 @@ func TestCompileToCoreWithNestedLetExpressionsInLambdaExpressions(t *testing.T) 
 				),
 			},
 		),
+		nil,
 	)
 	assert.Nil(t, err)
 
@@ -484,6 +498,7 @@ func TestCompileToCoreWithLists(t *testing.T) {
 				),
 			},
 		),
+		nil,
 	)
 	assert.Nil(t, err)
 
@@ -583,6 +598,7 @@ func TestCompileToCoreWithListCaseExpressionsWithoutDefaultAlternatives(t *testi
 				),
 			},
 		),
+		nil,
 	)
 	assert.Nil(t, err)
 
@@ -724,6 +740,7 @@ func TestCompileToCoreWithBinaryOperations(t *testing.T) {
 				),
 			},
 		),
+		nil,
 	)
 	assert.Nil(t, err)
 
@@ -838,6 +855,7 @@ func TestCompileWithComplexBinaryOperations(t *testing.T) {
 				),
 			},
 		),
+		nil,
 	)
 
 	assert.Nil(t, err)
@@ -897,10 +915,51 @@ func TestCompileWithCaseExpressions(t *testing.T) {
 					),
 				},
 			),
+			nil,
 		)
 
 		assert.Nil(t, err)
 	}
+}
+
+func TestCompileWithImportedModules(t *testing.T) {
+	m, err := desugarModule(
+		ast.NewModule(
+			"foo/bar",
+			ast.NewExport("x"),
+			nil,
+			[]ast.Bind{
+				ast.NewBind(
+					"x",
+					types.NewNumber(nil),
+					ast.NewNumber(42),
+				),
+			},
+		),
+	)
+	assert.Nil(t, err)
+
+	_, err = Compile(
+		ast.NewModule(
+			"",
+			ast.NewExport(),
+			[]ast.Import{ast.NewImport("foo/bar")},
+			[]ast.Bind{ast.NewBind("y", types.NewNumber(nil), ast.NewVariable("bar.x"))},
+		),
+		[]ast.Module{m},
+	)
+
+	assert.Nil(t, err)
+}
+
+func desugarModule(m ast.Module) (ast.Module, error) {
+	m, err := tinfer.InferTypes(desugar.WithoutTypes(m), nil)
+
+	if err != nil {
+		return ast.Module{}, err
+	}
+
+	return desugar.WithTypes(m), nil
 }
 
 func numberConstructorApplication(a coreast.Atom) coreast.Expression {
