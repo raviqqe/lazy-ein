@@ -40,15 +40,6 @@ func newLambda(vs []Argument, u bool, as []Argument, e Expression, t types.Type)
 	}
 }
 
-// Type returns a type.
-func (l Lambda) Type() types.Type {
-	if len(l.arguments) == 0 {
-		return types.Box(l.ResultType())
-	}
-
-	return types.NewFunction(l.ArgumentTypes(), l.ResultType())
-}
-
 // ArgumentNames returns argument names.
 func (l Lambda) ArgumentNames() []string {
 	return l.arguments

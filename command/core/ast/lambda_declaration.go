@@ -42,6 +42,15 @@ func (l LambdaDeclaration) IsThunk() bool {
 	return len(l.arguments) == 0
 }
 
+// Type returns a type.
+func (l LambdaDeclaration) Type() types.Type {
+	if len(l.arguments) == 0 {
+		return types.Box(l.ResultType())
+	}
+
+	return types.NewFunction(l.ArgumentTypes(), l.ResultType())
+}
+
 // ConvertTypes converts types.
 func (l LambdaDeclaration) ConvertTypes(f func(types.Type) types.Type) LambdaDeclaration {
 	vs := make([]types.Type, 0, len(l.freeVariables))

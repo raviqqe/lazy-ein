@@ -16,7 +16,7 @@ func newTypeChecker() typeChecker {
 }
 
 func (c typeChecker) Check(m ast.Module) error {
-	_, err := c.checkBinds(m.Binds())
+	_, err := c.addDeclarations(m.Declarations()).checkBinds(m.Binds())
 	return err
 }
 
@@ -273,6 +273,20 @@ func (c typeChecker) addArguments(l ast.Lambda) typeChecker {
 
 	for i, s := range l.ArgumentNames() {
 		vs[s] = l.ArgumentTypes()[i]
+	}
+
+	return typeChecker{vs}
+}
+
+func (c typeChecker) addDeclarations(ds []ast.Declaration) typeChecker {
+	vs := make(map[string]types.Type, len(c.variables)+len(ds))
+
+	for k, v := range c.variables {
+		vs[k] = v
+	}
+
+	for _, d := range ds {
+		vs[d.Name()] = d.Lambda().Type()
 	}
 
 	return typeChecker{vs}

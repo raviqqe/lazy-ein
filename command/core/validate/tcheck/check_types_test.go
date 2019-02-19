@@ -403,3 +403,30 @@ func TestCheckTypesError(t *testing.T) {
 		assert.Error(t, tcheck.CheckTypes(ast.NewModule(nil, bs)))
 	}
 }
+
+func TestCheckTypesWithDeclarations(t *testing.T) {
+	assert.Nil(
+		t,
+		tcheck.CheckTypes(
+			ast.NewModule(
+				[]ast.Declaration{
+					ast.NewDeclaration(
+						"x",
+						ast.NewLambdaDeclaration(nil, true, nil, algebraicType),
+					),
+				},
+				[]ast.Bind{
+					ast.NewBind(
+						"y",
+						ast.NewVariableLambda(
+							nil,
+							true,
+							ast.NewFunctionApplication(ast.NewVariable("x"), nil),
+							types.NewBoxed(algebraicType),
+						),
+					),
+				},
+			),
+		),
+	)
+}
