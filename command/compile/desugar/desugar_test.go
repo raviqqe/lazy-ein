@@ -11,8 +11,8 @@ import (
 func TestWithoutTypes(t *testing.T) {
 	for _, ms := range [][2]ast.Module{
 		{
-			ast.NewModule(ast.NewExport(), nil, []ast.Bind{}),
-			ast.NewModule(ast.NewExport(), nil, []ast.Bind{}),
+			ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}),
+			ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}),
 		},
 		// TODO: Add more test cases to check interation of desugar functions.
 	} {

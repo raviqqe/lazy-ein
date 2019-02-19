@@ -12,12 +12,13 @@ func TestDesugarBinaryOperations(t *testing.T) {
 	for _, ms := range [][2]ast.Module{
 		// Empty modules
 		{
-			ast.NewModule(ast.NewExport(), nil, []ast.Bind{}),
-			ast.NewModule(ast.NewExport(), nil, []ast.Bind{}),
+			ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}),
+			ast.NewModule("", ast.NewExport(), nil, []ast.Bind{}),
 		},
 		// Arguments
 		{
 			ast.NewModule(
+				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{
@@ -41,6 +42,7 @@ func TestDesugarBinaryOperations(t *testing.T) {
 				},
 			),
 			ast.NewModule(
+				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{

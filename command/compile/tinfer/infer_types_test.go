@@ -365,6 +365,7 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 	} {
 		m, err := tinfer.InferTypes(
 			ast.NewModule(
+				"",
 				ast.NewExport(),
 				nil,
 				[]ast.Bind{ast.NewBind("bar", types.NewNumber(nil), ls[0])},
@@ -378,6 +379,7 @@ func TestInferTypesWithLetExpressions(t *testing.T) {
 
 func TestInferTypesWithArguments(t *testing.T) {
 	m := ast.NewModule(
+		"",
 		ast.NewExport(),
 		nil,
 		[]ast.Bind{
@@ -396,6 +398,7 @@ func TestInferTypesWithArguments(t *testing.T) {
 
 func TestInferTypesWithFunctionApplications(t *testing.T) {
 	m := ast.NewModule(
+		"",
 		ast.NewExport(),
 		nil,
 		[]ast.Bind{
@@ -438,6 +441,7 @@ func TestInferTypesWithFunctionApplications(t *testing.T) {
 func TestInferTypesWithLambda(t *testing.T) {
 	_, err := tinfer.InferTypes(
 		ast.NewModule(
+			"",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{
@@ -464,6 +468,7 @@ func TestInferTypesWithLambda(t *testing.T) {
 func TestInferTypesErrorWithUnknownVarabiles(t *testing.T) {
 	_, err := tinfer.InferTypes(
 		ast.NewModule(
+			"",
 			ast.NewExport(),
 			nil,
 			[]ast.Bind{

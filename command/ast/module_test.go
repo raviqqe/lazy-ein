@@ -11,6 +11,7 @@ func TestModuleIsMainModule(t *testing.T) {
 	assert.True(
 		t,
 		NewModule(
+			"",
 			NewExport(),
 			nil,
 			[]Bind{NewBind("main", types.NewNumber(nil), NewNumber(42))},
@@ -19,6 +20,7 @@ func TestModuleIsMainModule(t *testing.T) {
 	assert.False(
 		t,
 		NewModule(
+			"",
 			NewExport(),
 			nil,
 			[]Bind{NewBind("x", types.NewNumber(nil), NewNumber(42))},

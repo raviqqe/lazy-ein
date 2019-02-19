@@ -956,6 +956,7 @@ func TestDesugarListCasesWithDesugaredCases(t *testing.T) {
 
 func newModuleWithExpression(e ast.Expression) ast.Module {
 	return ast.NewModule(
+		"",
 		ast.NewExport(),
 		nil,
 		[]ast.Bind{ast.NewBind("x", types.NewUnknown(nil), e)},

@@ -55,7 +55,7 @@ var keywords = map[keyword]struct{}{
 
 // Parse parses a module into an AST.
 func Parse(s string, n ast.ModuleName) (ast.Module, error) {
-	x, err := newState(s, n).module()()
+	x, err := newState(s, n).module(n)()
 
 	switch err := err.(type) {
 	case parcom.Error:
@@ -75,7 +75,7 @@ func Parse(s string, n ast.ModuleName) (ast.Module, error) {
 	return x.(ast.Module), nil
 }
 
-func (s *state) module() parcom.Parser {
+func (s *state) module(n ast.ModuleName) parcom.Parser {
 	return s.App(
 		func(x interface{}) (interface{}, error) {
 			xs := x.([]interface{})
@@ -99,7 +99,7 @@ func (s *state) module() parcom.Parser {
 				bs = append(bs, z.(ast.Bind))
 			}
 
-			return ast.NewModule(e, is, bs), nil
+			return ast.NewModule(n, e, is, bs), nil
 		},
 		s.Exhaust(
 			s.HeteroBlock(
