@@ -5,6 +5,7 @@ import (
 
 	"github.com/ein-lang/ein/command/ast"
 	"github.com/ein-lang/ein/command/compile/desugar"
+	"github.com/ein-lang/ein/command/compile/metadata"
 	"github.com/ein-lang/ein/command/compile/tinfer"
 	coreast "github.com/ein-lang/ein/command/core/ast"
 	coretypes "github.com/ein-lang/ein/command/core/types"
@@ -922,7 +923,7 @@ func TestCompileWithCaseExpressions(t *testing.T) {
 	}
 }
 
-func TestCompileWithImportedModules(t *testing.T) {
+func TestCompileWithVariablesInImportedModules(t *testing.T) {
 	m, err := desugarModule(
 		ast.NewModule(
 			"foo/bar",
@@ -946,7 +947,43 @@ func TestCompileWithImportedModules(t *testing.T) {
 			[]ast.Import{ast.NewImport("foo/bar")},
 			[]ast.Bind{ast.NewBind("y", types.NewNumber(nil), ast.NewVariable("bar.x"))},
 		),
-		[]ast.Module{m},
+		[]metadata.Module{metadata.NewModule(m)},
+	)
+
+	assert.Nil(t, err)
+}
+
+func TestCompileWithFunctionsInImportedModules(t *testing.T) {
+	m, err := desugarModule(
+		ast.NewModule(
+			"foo/bar",
+			ast.NewExport("f"),
+			nil,
+			[]ast.Bind{
+				ast.NewBind(
+					"f",
+					types.NewFunction(types.NewNumber(nil), types.NewNumber(nil), nil),
+					ast.NewLambda([]string{"x"}, ast.NewVariable("x")),
+				),
+			},
+		),
+	)
+	assert.Nil(t, err)
+
+	_, err = Compile(
+		ast.NewModule(
+			"",
+			ast.NewExport(),
+			[]ast.Import{ast.NewImport("foo/bar")},
+			[]ast.Bind{
+				ast.NewBind(
+					"y",
+					types.NewNumber(nil),
+					ast.NewApplication(ast.NewVariable("bar.f"), []ast.Expression{ast.NewNumber(42)}),
+				),
+			},
+		),
+		[]metadata.Module{metadata.NewModule(m)},
 	)
 
 	assert.Nil(t, err)

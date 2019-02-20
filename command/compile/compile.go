@@ -5,6 +5,7 @@ import (
 
 	"github.com/ein-lang/ein/command/ast"
 	"github.com/ein-lang/ein/command/compile/desugar"
+	"github.com/ein-lang/ein/command/compile/metadata"
 	"github.com/ein-lang/ein/command/compile/tinfer"
 	coreast "github.com/ein-lang/ein/command/core/ast"
 	corecompile "github.com/ein-lang/ein/command/core/compile"
@@ -12,7 +13,7 @@ import (
 )
 
 // Compile compiles a module into a module in the core language with imported modules.
-func Compile(m ast.Module, ms []ast.Module) (llvm.Module, error) {
+func Compile(m ast.Module, ms []metadata.Module) (llvm.Module, error) {
 	mm, err := compileToCore(m, ms)
 
 	if err != nil {
@@ -22,7 +23,7 @@ func Compile(m ast.Module, ms []ast.Module) (llvm.Module, error) {
 	return corecompile.Compile(renameGlobalVariables(mm, m, ms))
 }
 
-func compileToCore(m ast.Module, ms []ast.Module) (coreast.Module, error) {
+func compileToCore(m ast.Module, ms []metadata.Module) (coreast.Module, error) {
 	m, err := tinfer.InferTypes(desugar.WithoutTypes(m), ms)
 
 	if err != nil {
@@ -32,12 +33,12 @@ func compileToCore(m ast.Module, ms []ast.Module) (coreast.Module, error) {
 	return newCompiler().Compile(desugar.WithTypes(m), ms)
 }
 
-func renameGlobalVariables(m coreast.Module, mm ast.Module, ms []ast.Module) coreast.Module {
+func renameGlobalVariables(m coreast.Module, mm ast.Module, ms []metadata.Module) coreast.Module {
 	vs := make(map[string]string, len(m.Binds()))
 
 	for _, m := range ms {
-		for _, b := range m.ExportedBinds() {
-			vs[path.Base(string(m.Name()))+"."+b.Name()] = string(m.Name()) + "." + b.Name()
+		for n := range m.ExportedBinds() {
+			vs[path.Base(string(m.Name()))+"."+n] = string(m.Name()) + "." + n
 		}
 	}
 

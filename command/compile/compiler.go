@@ -5,6 +5,7 @@ import (
 	"path"
 
 	"github.com/ein-lang/ein/command/ast"
+	"github.com/ein-lang/ein/command/compile/metadata"
 	coreast "github.com/ein-lang/ein/command/core/ast"
 	coretypes "github.com/ein-lang/ein/command/core/types"
 	"github.com/ein-lang/ein/command/types"
@@ -19,47 +20,56 @@ func newCompiler() compiler {
 	return compiler{}
 }
 
-func (c *compiler) initialize(m ast.Module, ms []ast.Module) {
+func (c *compiler) initialize(m ast.Module, ms []metadata.Module) {
 	c.variables = make(map[string]coretypes.Type, len(m.Binds()))
 	gs := make(map[string]struct{}, len(m.Binds()))
+
+	for _, m := range ms {
+		for n, t := range m.ExportedBinds() {
+			s := path.Base(string(m.Name())) + "." + n
+
+			c.variables[s] = t.ToCore()
+			gs[s] = struct{}{}
+		}
+	}
 
 	for _, b := range m.Binds() {
 		c.variables[b.Name()] = types.Box(b.Type()).ToCore()
 		gs[b.Name()] = struct{}{}
 	}
 
-	for _, m := range ms {
-		for _, b := range m.ExportedBinds() {
-			s := path.Base(string(m.Name())) + "." + b.Name()
-
-			c.variables[s] = b.Type().ToCore()
-			gs[s] = struct{}{}
-		}
-	}
-
 	c.freeVariableFinder = newFreeVariableFinder(gs)
 }
 
-func (c compiler) Compile(m ast.Module, ms []ast.Module) (coreast.Module, error) {
+func (c compiler) Compile(m ast.Module, ms []metadata.Module) (coreast.Module, error) {
 	c.initialize(m, ms)
 
 	ds := []coreast.Declaration(nil)
 
 	for _, m := range ms {
-		for _, b := range m.ExportedBinds() {
-			b, err := c.compileBind(b)
+		for n, t := range m.ExportedBinds() {
+			n = path.Base(string(m.Name())) + "." + n
 
-			if err != nil {
-				return coreast.Module{}, err
+			switch t := t.(type) {
+			case types.Function:
+				f := t.ToCore().(coretypes.Function)
+
+				ds = append(
+					ds,
+					coreast.NewDeclaration(
+						n,
+						coreast.NewLambdaDeclaration(nil, false, f.Arguments(), f.Result()),
+					),
+				)
+			default:
+				ds = append(
+					ds,
+					coreast.NewDeclaration(
+						n,
+						coreast.NewLambdaDeclaration(nil, true, nil, coretypes.Unbox(t.ToCore())),
+					),
+				)
 			}
-
-			ds = append(
-				ds,
-				coreast.NewDeclaration(
-					path.Base(string(m.Name()))+"."+b.Name(),
-					b.Lambda().ToDeclaration(),
-				),
-			)
 		}
 	}
 

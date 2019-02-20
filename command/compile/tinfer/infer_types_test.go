@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/ein-lang/ein/command/ast"
+	"github.com/ein-lang/ein/command/compile/metadata"
 	"github.com/ein-lang/ein/command/compile/tinfer"
 	"github.com/ein-lang/ein/command/types"
 	"github.com/stretchr/testify/assert"
@@ -500,12 +501,14 @@ func TestInferTypesWithImportedModules(t *testing.T) {
 			[]ast.Import{ast.NewImport("foo/bar")},
 			[]ast.Bind{ast.NewBind("y", types.NewNumber(nil), ast.NewVariable("bar.x"))},
 		),
-		[]ast.Module{
-			ast.NewModule(
-				"foo/bar",
-				ast.NewExport("x"),
-				nil,
-				[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
+		[]metadata.Module{
+			metadata.NewModule(
+				ast.NewModule(
+					"foo/bar",
+					ast.NewExport("x"),
+					nil,
+					[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
+				),
 			),
 		},
 	)
@@ -521,18 +524,20 @@ func TestInferTypesWithUnboxedTypesImportedModules(t *testing.T) {
 			[]ast.Import{ast.NewImport("foo/bar")},
 			[]ast.Bind{ast.NewBind("y", types.NewNumber(nil), ast.NewVariable("bar.x"))},
 		),
-		[]ast.Module{
-			ast.NewModule(
-				"foo/bar",
-				ast.NewExport("x"),
-				nil,
-				[]ast.Bind{
-					ast.NewBind(
-						"x",
-						types.NewUnboxed(types.NewNumber(nil), nil),
-						ast.NewUnboxed(ast.NewNumber(42)),
-					),
-				},
+		[]metadata.Module{
+			metadata.NewModule(
+				ast.NewModule(
+					"foo/bar",
+					ast.NewExport("x"),
+					nil,
+					[]ast.Bind{
+						ast.NewBind(
+							"x",
+							types.NewUnboxed(types.NewNumber(nil), nil),
+							ast.NewUnboxed(ast.NewNumber(42)),
+						),
+					},
+				),
 			),
 		},
 	)
@@ -548,12 +553,14 @@ func TestInferTypesErrorWithImportedModules(t *testing.T) {
 			[]ast.Import{ast.NewImport("foo/bar")},
 			[]ast.Bind{ast.NewBind("y", types.NewNumber(nil), ast.NewVariable("bar.x"))},
 		),
-		[]ast.Module{
-			ast.NewModule(
-				"foo/bar",
-				ast.NewExport(),
-				nil,
-				[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
+		[]metadata.Module{
+			metadata.NewModule(
+				ast.NewModule(
+					"foo/bar",
+					ast.NewExport(),
+					nil,
+					[]ast.Bind{ast.NewBind("x", types.NewNumber(nil), ast.NewNumber(42))},
+				),
 			),
 		},
 	)

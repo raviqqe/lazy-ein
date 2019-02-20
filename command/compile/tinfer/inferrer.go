@@ -5,6 +5,7 @@ import (
 	"path"
 
 	"github.com/ein-lang/ein/command/ast"
+	"github.com/ein-lang/ein/command/compile/metadata"
 	"github.com/ein-lang/ein/command/types"
 )
 
@@ -13,12 +14,12 @@ type inferrer struct {
 	typeVariableCount *int
 }
 
-func newInferrer(m ast.Module, ms []ast.Module) inferrer {
+func newInferrer(m ast.Module, ms []metadata.Module) inferrer {
 	vs := map[string]types.Type{}
 
 	for _, m := range ms {
-		for _, b := range m.ExportedBinds() {
-			vs[path.Base(string(m.Name()))+"."+b.Name()] = types.Box(b.Type())
+		for n, t := range m.ExportedBinds() {
+			vs[path.Base(string(m.Name()))+"."+n] = t
 		}
 	}
 

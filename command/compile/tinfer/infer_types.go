@@ -2,12 +2,13 @@ package tinfer
 
 import (
 	"github.com/ein-lang/ein/command/ast"
+	"github.com/ein-lang/ein/command/compile/metadata"
 	"github.com/ein-lang/ein/command/debug"
 	"github.com/ein-lang/ein/command/types"
 )
 
 // InferTypes infers types in a module with imported modules.
-func InferTypes(m ast.Module, ms []ast.Module) (ast.Module, error) {
+func InferTypes(m ast.Module, ms []metadata.Module) (ast.Module, error) {
 	m, err := newInferrer(m, ms).Infer(m)
 
 	if err != nil {
