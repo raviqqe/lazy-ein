@@ -1,7 +1,6 @@
 package build
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -14,27 +13,24 @@ func TestObjectCacheStore(t *testing.T) {
 	cacheDir, rootDir, clean := setUpEnvironmentDirectories(t)
 	defer clean()
 
-	f, err := ioutil.TempFile(rootDir, "")
-	defer os.Remove(f.Name())
-	assert.Nil(t, err)
-
-	_, err = f.WriteString("main : Number -> Number\nmain x = 42")
-	assert.Nil(t, err)
+	n := filepath.Join(rootDir, "main.ein")
+	assert.Nil(t, ioutil.WriteFile(n, []byte("main : Number -> Number\nmain x = 42"), 0644))
+	defer os.Remove(n)
 
 	c := newObjectCache(cacheDir, rootDir)
 
-	s, ok, err := c.Get(f.Name())
+	s, ok, err := c.Get(n)
 
 	assert.Nil(t, err)
 	assert.False(t, ok)
 	assert.Equal(t, "", s)
 
-	s, err = c.Store(f.Name(), []byte("baz"))
+	s, err = c.Store(n, []byte("baz"))
 
 	assert.Nil(t, err)
 	assert.NotEqual(t, "", s)
 
-	ss, ok, err := c.Get(f.Name())
+	ss, ok, err := c.Get(n)
 
 	assert.Nil(t, err)
 	assert.True(t, ok)
@@ -45,32 +41,26 @@ func TestObjectCacheGeneratePath(t *testing.T) {
 	cacheDir, rootDir, clean := setUpEnvironmentDirectories(t)
 	defer clean()
 
-	f, err := ioutil.TempFile(rootDir, "")
-	defer os.Remove(f.Name())
-	assert.Nil(t, err)
+	n := filepath.Join(rootDir, "foo.ein")
+	assert.Nil(t, ioutil.WriteFile(n, []byte("export { x }\nx : Number\nx = 42"), 0644))
+	defer os.Remove(n)
 
-	_, err = f.WriteString("export { x }\nx : Number\nx = 42")
-	assert.Nil(t, err)
-
-	ff, err := ioutil.TempFile(rootDir, "")
-	defer os.Remove(f.Name())
-	assert.Nil(t, err)
-
-	_, err = ff.WriteString(
-		fmt.Sprintf("import \"%s\"\nmain : Number -> Number\nmain x = 42", f.Name()),
+	n = filepath.Join(rootDir, "main.ein")
+	assert.Nil(
+		t,
+		ioutil.WriteFile(n, []byte("import \"foo\"\nmain : Number -> Number\nmain x = 42"), 0644),
 	)
-	assert.Nil(t, err)
+	defer os.Remove(n)
 
 	c := newObjectCache(cacheDir, rootDir)
-	s, err := c.generatePath(ff.Name())
+	s, err := c.generatePath(n)
 
 	assert.Nil(t, err)
 	assert.NotEqual(t, "", s)
 
-	_, err = f.WriteAt([]byte("export { y }\ny : Number\ny = 42"), 0)
-	assert.Nil(t, err)
+	assert.Nil(t, ioutil.WriteFile(n, []byte("export { x }\nx : Number\nx = 123"), 0644))
 
-	ss, err := c.generatePath(ff.Name())
+	ss, err := c.generatePath(n)
 
 	assert.Nil(t, err)
 	assert.NotEqual(t, s, ss)
@@ -80,21 +70,18 @@ func TestObjectCacheGeneratePathWithUnnormalizedModulePaths(t *testing.T) {
 	cacheDir, rootDir, clean := setUpEnvironmentDirectories(t)
 	defer clean()
 
-	f, err := ioutil.TempFile(rootDir, "")
-	defer os.Remove(f.Name())
-	assert.Nil(t, err)
-
-	_, err = f.WriteString("export { x }\nx : Number\nx = 42")
-	assert.Nil(t, err)
+	n := filepath.Join(rootDir, "foo.ein")
+	assert.Nil(t, ioutil.WriteFile(n, []byte("export { x }\nx : Number\nx = 42"), 0644))
+	defer os.Remove(n)
 
 	c := newObjectCache(cacheDir, rootDir)
-	s, err := c.generatePath(f.Name())
+	s, err := c.generatePath(n)
 	assert.Nil(t, err)
 	assert.NotEqual(t, "", s)
 
-	assert.Nil(t, os.Chdir(filepath.Dir(f.Name())))
+	assert.Nil(t, os.Chdir(filepath.Dir(n)))
 
-	ss, err := c.generatePath(filepath.Base(f.Name()))
+	ss, err := c.generatePath(filepath.Base(n))
 	assert.Nil(t, err)
 	assert.Equal(t, s, ss)
 }

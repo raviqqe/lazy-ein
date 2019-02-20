@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+const fileExtension = ".ein"
+
 // ModuleName is a unique module name.
 type ModuleName (string)
 
@@ -17,7 +19,7 @@ func NewModuleName(f, rootDir string) (ModuleName, error) {
 		return "", err
 	}
 
-	f, err = filepath.Abs(f)
+	f, err = filepath.Abs(strings.TrimSuffix(f, filepath.Ext(f)))
 
 	if err != nil {
 		return "", err
@@ -53,7 +55,7 @@ func (n ModuleName) FullyQualify(s string) string {
 
 // ToPath converts a module name to a path.
 func (n ModuleName) ToPath(rootDir string) string {
-	s := string(n)
+	s := string(n) + fileExtension
 
 	if path.IsAbs(s) {
 		return s

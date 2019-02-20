@@ -15,16 +15,13 @@ func TestBuildWithMainModules(t *testing.T) {
 	cacheDir, rootDir, clean := setUpEnvironmentDirectories(t)
 	defer clean()
 
-	f, err := ioutil.TempFile(rootDir, "")
-	defer os.Remove(f.Name())
-	assert.Nil(t, err)
+	n := filepath.Join(rootDir, "main.ein")
+	assert.Nil(t, ioutil.WriteFile(n, []byte(source), 0644))
+	defer os.Remove(n)
 
-	_, err = f.WriteString(source)
-	assert.Nil(t, err)
+	assert.Nil(t, Build(n, "../..", rootDir, cacheDir))
 
-	assert.Nil(t, Build(f.Name(), "../..", rootDir, cacheDir))
-
-	_, err = os.Stat("a.out")
+	_, err := os.Stat("a.out")
 	assert.Nil(t, err)
 
 	os.Remove("a.out")
@@ -34,13 +31,13 @@ func TestBuildWithSubmodules(t *testing.T) {
 	cacheDir, rootDir, clean := setUpEnvironmentDirectories(t)
 	defer clean()
 
-	f, err := ioutil.TempFile(rootDir, "")
-	defer os.Remove(f.Name())
-	assert.Nil(t, err)
+	n := filepath.Join(rootDir, "foo.ein")
+	assert.Nil(t, ioutil.WriteFile(n, nil, 0644))
+	defer os.Remove(n)
 
-	assert.Nil(t, Build(f.Name(), "../..", rootDir, cacheDir))
+	assert.Nil(t, Build(n, "../..", rootDir, cacheDir))
 
-	_, err = os.Stat("a.out")
+	_, err := os.Stat("a.out")
 	assert.Error(t, err)
 }
 
@@ -48,20 +45,20 @@ func TestBuildWithMainModulesImportingOtherModules(t *testing.T) {
 	cacheDir, rootDir, clean := setUpEnvironmentDirectories(t)
 	defer clean()
 
-	n := filepath.Join(rootDir, "bar")
+	n := filepath.Join(rootDir, "foo.ein")
 	assert.Nil(t, ioutil.WriteFile(n, []byte("export { y }\ny : Number\ny = 42"), 0644))
 	defer os.Remove(n)
 
-	f, err := ioutil.TempFile(rootDir, "")
-	defer os.Remove(f.Name())
-	assert.Nil(t, err)
+	n = filepath.Join(rootDir, "main.ein")
+	assert.Nil(
+		t,
+		ioutil.WriteFile(n, []byte("import \"foo\"\nmain : Number -> Number\nmain x = foo.y"), 0644),
+	)
+	defer os.Remove(n)
 
-	_, err = f.WriteString("import \"bar\"\nmain : Number -> Number\nmain x = bar.y")
-	assert.Nil(t, err)
+	assert.Nil(t, Build(n, "../..", rootDir, cacheDir))
 
-	assert.Nil(t, Build(f.Name(), "../..", rootDir, cacheDir))
-
-	_, err = os.Stat("a.out")
+	_, err := os.Stat("a.out")
 	assert.Nil(t, err)
 
 	os.Remove("a.out")
