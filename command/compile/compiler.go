@@ -2,7 +2,6 @@ package compile
 
 import (
 	"fmt"
-	"path"
 
 	"github.com/ein-lang/ein/command/ast"
 	"github.com/ein-lang/ein/command/compile/metadata"
@@ -47,30 +46,7 @@ func (c compiler) Compile(m ast.Module, ms []metadata.Module) (coreast.Module, e
 	ds := []coreast.Declaration(nil)
 
 	for _, m := range ms {
-		for n, t := range m.ExportedBinds() {
-			n = path.Base(string(m.Name())) + "." + n
-
-			switch t := t.(type) {
-			case types.Function:
-				f := t.ToCore().(coretypes.Function)
-
-				ds = append(
-					ds,
-					coreast.NewDeclaration(
-						n,
-						coreast.NewLambdaDeclaration(nil, false, f.Arguments(), f.Result()),
-					),
-				)
-			default:
-				ds = append(
-					ds,
-					coreast.NewDeclaration(
-						n,
-						coreast.NewLambdaDeclaration(nil, true, nil, coretypes.Unbox(t.ToCore())),
-					),
-				)
-			}
-		}
+		ds = append(ds, m.Declarations()...)
 	}
 
 	bs := make([]coreast.Bind, 0, len(m.Binds()))

@@ -2,6 +2,8 @@ package metadata
 
 import (
 	"github.com/ein-lang/ein/command/ast"
+	coreast "github.com/ein-lang/ein/command/core/ast"
+	coretypes "github.com/ein-lang/ein/command/core/types"
 	"github.com/ein-lang/ein/command/types"
 )
 
@@ -9,6 +11,7 @@ import (
 type Module struct {
 	name          ast.ModuleName
 	exportedBinds map[string]types.Type
+	declarations  []coreast.Declaration
 }
 
 // NewModule returns a module metadata.
@@ -19,7 +22,34 @@ func NewModule(m ast.Module) Module {
 		ts[b.Name()] = types.Box(b.Type())
 	}
 
-	return Module{m.Name(), ts}
+	ds := make([]coreast.Declaration, 0, len(ts))
+
+	for n, t := range ts {
+		n := m.Name().Qualify(n)
+
+		switch t := t.(type) {
+		case types.Function:
+			f := t.ToCore().(coretypes.Function)
+
+			ds = append(
+				ds,
+				coreast.NewDeclaration(
+					n,
+					coreast.NewLambdaDeclaration(nil, false, f.Arguments(), f.Result()),
+				),
+			)
+		default:
+			ds = append(
+				ds,
+				coreast.NewDeclaration(
+					n,
+					coreast.NewLambdaDeclaration(nil, true, nil, coretypes.Unbox(t.ToCore())),
+				),
+			)
+		}
+	}
+
+	return Module{m.Name(), ts, ds}
 }
 
 // Name returns a name.
@@ -30,4 +60,9 @@ func (m Module) Name() ast.ModuleName {
 // ExportedBinds returns exported binds.
 func (m Module) ExportedBinds() map[string]types.Type {
 	return m.exportedBinds
+}
+
+// Declarations reutrns declarations.
+func (m Module) Declarations() []coreast.Declaration {
+	return m.declarations
 }
