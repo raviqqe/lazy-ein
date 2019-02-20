@@ -66,6 +66,10 @@ func (c objectCache) generateModuleHash(h hash.Hash, f string) error {
 
 	m, err := parse.Parse(f, c.moduleRootDirectory)
 
+	if err != nil {
+		return err
+	}
+
 	h.Write([]byte(m.Name()))
 	h.Write(bs)
 
