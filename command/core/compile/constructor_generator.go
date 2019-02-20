@@ -42,6 +42,7 @@ func (g constructorGenerator) generateUnionifyFunction(c ast.Constructor) error 
 		names.ToUnionify(c.ID()),
 		g.typeGenerator.GenerateConstructorUnionifyFunction(c.AlgebraicType(), c.ConstructorType()),
 	)
+	f.SetLinkage(llvm.LinkOnceODRLinkage)
 
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
@@ -83,6 +84,7 @@ func (g constructorGenerator) generateStructifyFunction(
 			c.ConstructorType(),
 		),
 	)
+	f.SetLinkage(llvm.LinkOnceODRLinkage)
 
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
@@ -118,7 +120,10 @@ func (g constructorGenerator) generateStructifyFunction(
 
 func (g constructorGenerator) GenerateTag(c ast.Constructor) {
 	t := g.typeGenerator.GenerateConstructorTag()
+
 	v := llvm.AddGlobal(g.module, t, names.ToTag(c.ID()))
+	v.SetLinkage(llvm.LinkOnceODRLinkage)
+
 	v.SetInitializer(llvm.ConstInt(t, uint64(c.Index()), false))
 	v.SetGlobalConstant(true)
 	v.SetUnnamedAddr(true)
