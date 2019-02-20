@@ -611,8 +611,10 @@ func (s *state) parenthesesed(p parcom.Parser) parcom.Parser {
 }
 
 func (s *state) identifier() parcom.Parser {
+	p := s.And(s.alphabet(), s.Many(s.Or(s.alphabet(), s.number())))
+
 	return s.withDebugInformation(
-		s.token(s.Stringify(s.And(s.alphabet(), s.Many(s.Or(s.alphabet(), s.number()))))),
+		s.token(s.Stringify(s.And(s.Maybe(s.And(p, s.Str("."))), p))),
 		func(x interface{}, i *debug.Information) (interface{}, error) {
 			if _, ok := keywords[keyword(x.(string))]; ok {
 				return nil, newError(fmt.Sprintf("'%v' is a keyword", x), i)

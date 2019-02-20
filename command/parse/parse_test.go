@@ -164,7 +164,7 @@ func TestStateBindErrorWithInconsistentIdentifiers(t *testing.T) {
 }
 
 func TestStateIdentifier(t *testing.T) {
-	for _, s := range []string{"x", "az", "a09"} {
+	for _, s := range []string{"x", "az", "a09", "x.y"} {
 		_, err := newState(s, "").identifier()()
 		assert.Nil(t, err)
 	}
