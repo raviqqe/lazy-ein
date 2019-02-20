@@ -2,7 +2,6 @@ package tinfer
 
 import (
 	"fmt"
-	"path"
 
 	"github.com/ein-lang/ein/command/ast"
 	"github.com/ein-lang/ein/command/compile/metadata"
@@ -19,7 +18,7 @@ func newInferrer(m ast.Module, ms []metadata.Module) inferrer {
 
 	for _, m := range ms {
 		for n, t := range m.ExportedBinds() {
-			vs[path.Base(string(m.Name()))+"."+n] = t
+			vs[m.Name().Qualify(n)] = t
 		}
 	}
 

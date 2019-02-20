@@ -26,7 +26,7 @@ func (c *compiler) initialize(m ast.Module, ms []metadata.Module) {
 
 	for _, m := range ms {
 		for n, t := range m.ExportedBinds() {
-			s := path.Base(string(m.Name())) + "." + n
+			s := m.Name().Qualify(n)
 
 			c.variables[s] = t.ToCore()
 			gs[s] = struct{}{}

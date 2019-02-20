@@ -78,7 +78,7 @@ func (c objectCache) generateModuleHash(h hash.Hash, f string) error {
 
 func (c objectCache) generateSubmodulesHash(h hash.Hash, m ast.Module) error {
 	for _, i := range m.Imports() {
-		if err := c.generateModuleHash(h, i.Path()); err != nil {
+		if err := c.generateModuleHash(h, i.Name().ToPath(c.moduleRootDirectory)); err != nil {
 			return err
 		}
 	}

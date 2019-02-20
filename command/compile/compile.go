@@ -1,8 +1,6 @@
 package compile
 
 import (
-	"path"
-
 	"github.com/ein-lang/ein/command/ast"
 	"github.com/ein-lang/ein/command/compile/desugar"
 	"github.com/ein-lang/ein/command/compile/metadata"
@@ -38,7 +36,7 @@ func renameGlobalVariables(m coreast.Module, mm ast.Module, ms []metadata.Module
 
 	for _, m := range ms {
 		for n := range m.ExportedBinds() {
-			vs[path.Base(string(m.Name()))+"."+n] = string(m.Name()) + "." + n
+			vs[m.Name().Qualify(n)] = m.Name().FullyQualify(n)
 		}
 	}
 
@@ -51,7 +49,7 @@ func renameGlobalVariables(m coreast.Module, mm ast.Module, ms []metadata.Module
 	bs := make([]coreast.Bind, 0, len(m.Binds()))
 
 	for _, b := range m.Binds() {
-		s := string(mm.Name()) + "." + b.Name()
+		s := mm.Name().FullyQualify(b.Name())
 
 		vs[b.Name()] = s
 

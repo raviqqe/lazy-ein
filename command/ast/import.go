@@ -2,15 +2,15 @@ package ast
 
 // Import is a module import.
 type Import struct {
-	path string
+	name ModuleName
 }
 
 // NewImport creates a module import.
-func NewImport(s string) Import {
-	return Import{s}
+func NewImport(n ModuleName) Import {
+	return Import{n}
 }
 
-// Path returns a path.
-func (i Import) Path() string {
-	return i.path
+// Name returns a name.
+func (i Import) Name() ModuleName {
+	return i.name
 }

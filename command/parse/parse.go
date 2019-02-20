@@ -156,7 +156,7 @@ func (s *state) export() parcom.Parser {
 func (s *state) importModule() parcom.Parser {
 	return s.App(
 		func(x interface{}) (interface{}, error) {
-			return ast.NewImport(x.(string)), nil
+			return ast.NewImport(ast.ModuleName(x.(string))), nil
 		},
 		s.WithPosition(s.Prefix(s.keyword(importKeyword), s.rawStringLiteral())),
 	)
