@@ -1,6 +1,7 @@
 package build
 
 import (
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -21,29 +22,45 @@ func newBuilder(runtimeDir, rootDir, cacheDir string) builder {
 	return builder{runtimeDir, rootDir, newObjectCache(cacheDir, rootDir)}
 }
 
-func (b builder) Build(f string) error {
-	ss, _, err := b.buildModule(f)
+func (b builder) Build(fname string) error {
+	m, _, err := b.buildModule(fname)
 
 	if err != nil {
 		return err
 	}
 
-	if ok, err := b.isMainModule(f); err != nil {
+	if ok, err := b.isMainModule(fname); err != nil {
 		return err
 	} else if !ok {
 		return nil
 	}
 
-	bs, err := exec.Command(
+	bs, err := b.generateModule(m)
+
+	if err != nil {
+		return err
+	}
+
+	f, err := ioutil.TempFile("", "")
+
+	if err != nil {
+		return err
+	}
+
+	if _, err := f.Write(bs); err != nil {
+		return err
+	}
+
+	defer os.Remove(f.Name())
+
+	bs, err = exec.Command(
 		"cc",
-		append(
-			ss,
-			b.resolveRuntimeLibrary("runtime/target/release/libio.a"),
-			b.resolveRuntimeLibrary("runtime/target/release/libcore.a"),
-			"-ldl",
-			"-lgc",
-			"-lpthread",
-		)...,
+		f.Name(),
+		b.resolveRuntimeLibrary("runtime/target/release/libio.a"),
+		b.resolveRuntimeLibrary("runtime/target/release/libcore.a"),
+		"-ldl",
+		"-lgc",
+		"-lpthread",
 	).CombinedOutput()
 
 	os.Stderr.Write(bs)
@@ -51,46 +68,42 @@ func (b builder) Build(f string) error {
 	return err
 }
 
-func (b builder) buildModule(f string) ([]string, metadata.Module, error) {
+func (b builder) buildModule(f string) (llvm.Module, metadata.Module, error) {
 	m, err := parse.Parse(f, b.moduleRootDirectory)
 
 	if err != nil {
-		return nil, metadata.Module{}, err
+		return llvm.Module{}, metadata.Module{}, err
 	}
 
-	ss, mds, err := b.buildSubmodules(m)
+	ms, mds, err := b.buildSubmodules(m)
 
 	if err != nil {
-		return nil, metadata.Module{}, err
+		return llvm.Module{}, metadata.Module{}, err
 	}
 
-	s, ok, err := b.objectCache.Get(f)
+	mm, ok, err := b.objectCache.Get(f)
 
 	if err != nil {
-		return nil, metadata.Module{}, err
+		return llvm.Module{}, metadata.Module{}, err
 	} else if ok {
-		return append(ss, s), metadata.NewModule(m), nil
+		return mm, metadata.NewModule(m), nil
 	}
 
-	mm, err := compile.Compile(m, mds)
+	mm, err = compile.Compile(m, mds)
 
 	if err != nil {
-		return nil, metadata.Module{}, err
+		return llvm.Module{}, metadata.Module{}, err
 	}
 
-	bs, err := b.generateModule(mm)
-
-	if err != nil {
-		return nil, metadata.Module{}, err
+	if err := b.linkLLVMModules(mm, ms); err != nil {
+		return llvm.Module{}, metadata.Module{}, err
 	}
 
-	s, err = b.objectCache.Store(f, bs)
-
-	if err != nil {
-		return nil, metadata.Module{}, err
+	if err = b.objectCache.Store(f, mm); err != nil {
+		return llvm.Module{}, metadata.Module{}, err
 	}
 
-	return append(ss, s), metadata.NewModule(m), nil
+	return mm, metadata.NewModule(m), nil
 }
 
 func (b builder) generateModule(m llvm.Module) ([]byte, error) {
@@ -117,22 +130,22 @@ func (b builder) generateModule(m llvm.Module) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (b builder) buildSubmodules(m ast.Module) ([]string, []metadata.Module, error) {
-	ss := make([]string, 0, len(m.Imports()))
+func (b builder) buildSubmodules(m ast.Module) ([]llvm.Module, []metadata.Module, error) {
+	ms := make([]llvm.Module, 0, len(m.Imports()))
 	mds := make([]metadata.Module, 0, len(m.Imports()))
 
 	for _, i := range m.Imports() {
-		sss, md, err := b.buildModule(i.Name().ToPath(b.moduleRootDirectory))
+		m, md, err := b.buildModule(i.Name().ToPath(b.moduleRootDirectory))
 
 		if err != nil {
 			return nil, nil, err
 		}
 
-		ss = append(ss, sss...)
+		ms = append(ms, m)
 		mds = append(mds, md)
 	}
 
-	return ss, mds, nil
+	return ms, mds, nil
 }
 
 func (b builder) resolveRuntimeLibrary(f string) string {
@@ -147,4 +160,14 @@ func (b builder) isMainModule(f string) (bool, error) {
 	}
 
 	return m.IsMainModule(), err
+}
+
+func (builder) linkLLVMModules(m llvm.Module, ms []llvm.Module) error {
+	for _, mm := range ms {
+		if err := llvm.LinkModules(m, mm); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

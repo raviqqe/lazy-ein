@@ -10,6 +10,7 @@ import (
 
 	"github.com/ein-lang/ein/command/ast"
 	"github.com/ein-lang/ein/command/parse"
+	"llvm.org/llvm/bindings/go/llvm"
 )
 
 type objectCache struct {
@@ -20,28 +21,40 @@ func newObjectCache(cacheDir, rootDir string) objectCache {
 	return objectCache{cacheDir, rootDir}
 }
 
-func (c objectCache) Store(f string, bs []byte) (string, error) {
-	p, err := c.generatePath(f)
+func (c objectCache) Store(fname string, m llvm.Module) error {
+	p, err := c.generatePath(fname)
 
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return p, ioutil.WriteFile(p, bs, 0644)
-}
-
-func (c objectCache) Get(f string) (string, bool, error) {
-	p, err := c.generatePath(f)
+	f, err := os.Create(p)
 
 	if err != nil {
-		return "", false, err
+		return err
+	}
+
+	return llvm.WriteBitcodeToFile(m, f)
+}
+
+func (c objectCache) Get(fname string) (llvm.Module, bool, error) {
+	p, err := c.generatePath(fname)
+
+	if err != nil {
+		return llvm.Module{}, false, err
 	}
 
 	if _, err := os.Stat(p); err != nil {
-		return "", false, nil
+		return llvm.Module{}, false, nil
 	}
 
-	return p, true, nil
+	m, err := llvm.ParseBitcodeFile(p)
+
+	if err != nil {
+		return llvm.Module{}, false, err
+	}
+
+	return m, true, nil
 }
 
 func (c objectCache) generatePath(f string) (string, error) {

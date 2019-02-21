@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"llvm.org/llvm/bindings/go/llvm"
 )
 
 func TestObjectCacheStore(t *testing.T) {
@@ -19,22 +20,19 @@ func TestObjectCacheStore(t *testing.T) {
 
 	c := newObjectCache(cacheDir, rootDir)
 
-	s, ok, err := c.Get(n)
+	m, ok, err := c.Get(n)
 
 	assert.Nil(t, err)
 	assert.False(t, ok)
-	assert.Equal(t, "", s)
+	assert.True(t, m.IsNil())
 
-	s, err = c.Store(n, []byte("baz"))
+	assert.Nil(t, c.Store(n, llvm.NewModule("main")))
 
-	assert.Nil(t, err)
-	assert.NotEqual(t, "", s)
-
-	ss, ok, err := c.Get(n)
+	m, ok, err = c.Get(n)
 
 	assert.Nil(t, err)
 	assert.True(t, ok)
-	assert.Equal(t, s, ss)
+	assert.False(t, m.IsNil())
 }
 
 func TestObjectCacheGeneratePath(t *testing.T) {
