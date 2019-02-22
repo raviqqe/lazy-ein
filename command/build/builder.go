@@ -13,6 +13,11 @@ import (
 	"llvm.org/llvm/bindings/go/llvm"
 )
 
+const (
+	maxCodeOptimizationLevel = 3
+	maxSizeOptimizationLevel = 2
+)
+
 type builder struct {
 	runtimeDirectory, moduleRootDirectory string
 	objectCache                           objectCache
@@ -162,12 +167,26 @@ func (b builder) isMainModule(f string) (bool, error) {
 	return m.IsMainModule(), err
 }
 
-func (builder) linkLLVMModules(m llvm.Module, ms []llvm.Module) error {
+func (b builder) linkLLVMModules(m llvm.Module, ms []llvm.Module) error {
 	for _, mm := range ms {
 		if err := llvm.LinkModules(m, mm); err != nil {
 			return err
 		}
 	}
 
-	return nil
+	b.optimize(m)
+
+	return llvm.VerifyModule(m, llvm.AbortProcessAction)
+}
+
+func (builder) optimize(m llvm.Module) {
+	b := llvm.NewPassManagerBuilder()
+	b.SetOptLevel(maxCodeOptimizationLevel)
+	b.SetSizeLevel(maxSizeOptimizationLevel)
+
+	p := llvm.NewPassManager()
+	b.PopulateFunc(p)
+	b.Populate(p)
+
+	p.Run(m)
 }
