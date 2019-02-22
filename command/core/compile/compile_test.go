@@ -65,27 +65,22 @@ func TestGlobalThunkForce(t *testing.T) {
 	e, err := llvm.NewExecutionEngine(m)
 	assert.Nil(t, err)
 
-	g := e.PointerToGlobal(m.NamedGlobal("x"))
-	p := unsafe.Pointer(uintptr(g) + payloadOffset)
+	p := unsafe.Pointer(uintptr(e.PointerToGlobal(m.NamedGlobal("x"))) + payloadOffset)
 
-	assert.NotEqual(t, 42.0, *(*float64)(unsafe.Pointer(uintptr(g) + payloadOffset)))
+	assert.NotEqual(t, 42.0, *(*float64)(p))
 
 	// TODO: Check return values in some way.
 	e.RunFunction(
 		e.FindFunction(names.ToEntry("x")),
-		[]llvm.GenericValue{
-			llvm.NewGenericValueFromPointer(p),
-		},
+		[]llvm.GenericValue{llvm.NewGenericValueFromPointer(p)},
 	)
 
-	assert.Equal(t, 42.0, *(*float64)(unsafe.Pointer(uintptr(g) + payloadOffset)))
+	assert.Equal(t, 42.0, *(*float64)(p))
 
 	e.RunFunction(
 		e.FindFunction(names.ToNormalFormEntry("x")),
-		[]llvm.GenericValue{
-			llvm.NewGenericValueFromPointer(p),
-		},
+		[]llvm.GenericValue{llvm.NewGenericValueFromPointer(p)},
 	)
 
-	assert.Equal(t, 42.0, *(*float64)(unsafe.Pointer(uintptr(g) + payloadOffset)))
+	assert.Equal(t, 42.0, *(*float64)(p))
 }
