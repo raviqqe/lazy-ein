@@ -62,6 +62,8 @@ func TestGlobalThunkForce(t *testing.T) {
 	)
 	assert.Nil(t, err)
 
+	optimizeLLVMModule(m) // Remove struct store.
+
 	e, err := llvm.NewExecutionEngine(m)
 	assert.Nil(t, err)
 
@@ -83,4 +85,16 @@ func TestGlobalThunkForce(t *testing.T) {
 	)
 
 	assert.Equal(t, 42.0, *(*float64)(p))
+}
+
+func optimizeLLVMModule(m llvm.Module) {
+	b := llvm.NewPassManagerBuilder()
+	b.SetOptLevel(3)
+	b.SetSizeLevel(2)
+
+	p := llvm.NewPassManager()
+	b.PopulateFunc(p)
+	b.Populate(p)
+
+	p.Run(m)
 }
