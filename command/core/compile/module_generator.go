@@ -31,6 +31,15 @@ func (g *moduleGenerator) initialize(m ast.Module) error {
 	)
 	llvm.AddFunction(
 		g.module,
+		blackHoleFunctionName,
+		llvm.FunctionType(
+			llir.PointerType(llvm.VoidType()),
+			[]llvm.Type{llir.PointerType(llvm.Int8Type())},
+			false,
+		),
+	)
+	llvm.AddFunction(
+		g.module,
 		panicFunctionName,
 		llvm.FunctionType(llvm.VoidType(), nil, false),
 	)
