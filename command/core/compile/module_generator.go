@@ -27,7 +27,7 @@ func (g *moduleGenerator) initialize(m ast.Module) error {
 	llvm.AddFunction(
 		g.module,
 		allocFunctionName,
-		llvm.FunctionType(llir.PointerType(llvm.VoidType()), []llvm.Type{llir.WordType()}, false),
+		llvm.FunctionType(llir.PointerType(llvm.Int8Type()), []llvm.Type{llir.WordType()}, false),
 	).SetLinkage(llvm.ExternalLinkage)
 	llvm.AddFunction(
 		g.module,
