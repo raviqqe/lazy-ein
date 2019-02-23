@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/llvm-mirror/llvm/bindings/go/llvm"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestObjectCacheStore(t *testing.T) {

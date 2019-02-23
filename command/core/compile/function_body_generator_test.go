@@ -5,8 +5,8 @@ import (
 
 	"github.com/ein-lang/ein/command/core/ast"
 	"github.com/ein-lang/ein/command/core/compile/llir"
-	"github.com/stretchr/testify/assert"
 	"github.com/llvm-mirror/llvm/bindings/go/llvm"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFunctionBodyGeneratorGenerate(t *testing.T) {
