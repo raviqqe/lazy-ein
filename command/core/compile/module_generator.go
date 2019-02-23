@@ -5,7 +5,7 @@ import (
 	"github.com/ein-lang/ein/command/core/compile/llir"
 	"github.com/ein-lang/ein/command/core/compile/names"
 	"github.com/ein-lang/ein/command/core/types"
-	"llvm.org/llvm/bindings/go/llvm"
+	"github.com/llvm-mirror/llvm/bindings/go/llvm"
 )
 
 const environmentArgumentName = "environment"

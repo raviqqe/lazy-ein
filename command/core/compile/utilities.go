@@ -2,7 +2,7 @@ package compile
 
 import (
 	"github.com/ein-lang/ein/command/core/compile/llir"
-	"llvm.org/llvm/bindings/go/llvm"
+	"github.com/llvm-mirror/llvm/bindings/go/llvm"
 )
 
 func forceThunk(b llvm.Builder, v llvm.Value, g typeGenerator) llvm.Value {

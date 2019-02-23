@@ -1,7 +1,7 @@
 package compile
 
 import (
-	"llvm.org/llvm/bindings/go/llvm"
+	"github.com/llvm-mirror/llvm/bindings/go/llvm"
 )
 
 type phiGenerator struct {

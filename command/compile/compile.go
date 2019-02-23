@@ -7,7 +7,7 @@ import (
 	"github.com/ein-lang/ein/command/compile/tinfer"
 	coreast "github.com/ein-lang/ein/command/core/ast"
 	corecompile "github.com/ein-lang/ein/command/core/compile"
-	"llvm.org/llvm/bindings/go/llvm"
+	"github.com/llvm-mirror/llvm/bindings/go/llvm"
 )
 
 // Compile compiles a module into a module in the core language with imported modules.

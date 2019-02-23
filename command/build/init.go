@@ -1,6 +1,6 @@
 package build
 
-import "llvm.org/llvm/bindings/go/llvm"
+import "github.com/llvm-mirror/llvm/bindings/go/llvm"
 
 // nolint: gochecknoinits
 func init() {

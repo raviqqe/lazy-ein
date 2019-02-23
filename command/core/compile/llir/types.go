@@ -1,6 +1,6 @@
 package llir
 
-import "llvm.org/llvm/bindings/go/llvm"
+import "github.com/llvm-mirror/llvm/bindings/go/llvm"
 
 // PointerType creates a pointer type.
 func PointerType(t llvm.Type) llvm.Type {

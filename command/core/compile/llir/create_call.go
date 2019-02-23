@@ -1,6 +1,6 @@
 package llir
 
-import "llvm.org/llvm/bindings/go/llvm"
+import "github.com/llvm-mirror/llvm/bindings/go/llvm"
 
 // CreateCall creates a common call.
 func CreateCall(b llvm.Builder, f llvm.Value, as []llvm.Value) llvm.Value {

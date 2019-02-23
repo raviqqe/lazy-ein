@@ -10,7 +10,7 @@ import (
 
 	"github.com/ein-lang/ein/command/ast"
 	"github.com/ein-lang/ein/command/parse"
-	"llvm.org/llvm/bindings/go/llvm"
+	"github.com/llvm-mirror/llvm/bindings/go/llvm"
 )
 
 type objectCache struct {

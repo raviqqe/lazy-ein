@@ -7,7 +7,7 @@ import (
 	"github.com/ein-lang/ein/command/core/ast"
 	"github.com/ein-lang/ein/command/core/compile/llir"
 	"github.com/ein-lang/ein/command/core/compile/names"
-	"llvm.org/llvm/bindings/go/llvm"
+	"github.com/llvm-mirror/llvm/bindings/go/llvm"
 )
 
 type functionBodyGenerator struct {

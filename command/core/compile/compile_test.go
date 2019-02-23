@@ -10,7 +10,7 @@ import (
 	"github.com/ein-lang/ein/command/core/compile/names"
 	"github.com/ein-lang/ein/command/core/types"
 	"github.com/stretchr/testify/assert"
-	"llvm.org/llvm/bindings/go/llvm"
+	"github.com/llvm-mirror/llvm/bindings/go/llvm"
 )
 
 var payloadOffset = reflect.PtrTo(reflect.TypeOf(42)).Size()
