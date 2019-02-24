@@ -7,7 +7,11 @@ import (
 
 // Validate validates a module.
 func Validate(m ast.Module) error {
-	for _, f := range []func(ast.Module) error{checkFreeVariables, tcheck.CheckTypes} {
+	for _, f := range []func(ast.Module) error{
+		checkFreeVariables,
+		checkRecursiveBinds,
+		tcheck.CheckTypes,
+	} {
 		if err := f(m); err != nil {
 			return err
 		}
