@@ -23,6 +23,11 @@ func (a ConstructorApplication) Arguments() []Atom {
 	return a.arguments
 }
 
+// VisitExpressions visits expressions.
+func (a ConstructorApplication) VisitExpressions(f func(Expression) error) error {
+	return f(a)
+}
+
 // ConvertTypes converts types.
 func (a ConstructorApplication) ConvertTypes(func(types.Type) types.Type) Expression {
 	return a

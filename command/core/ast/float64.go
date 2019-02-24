@@ -17,6 +17,11 @@ func (f Float64) Value() float64 {
 	return f.value
 }
 
+// VisitExpressions visits expressions.
+func (f Float64) VisitExpressions(ff func(Expression) error) error {
+	return ff(f)
+}
+
 // ConvertTypes converts types.
 func (f Float64) ConvertTypes(func(types.Type) types.Type) Expression {
 	return f

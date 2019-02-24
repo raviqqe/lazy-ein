@@ -41,6 +41,17 @@ func (m Module) Types() []types.Type {
 	return tts
 }
 
+// VisitExpressions visits expressions.
+func (m Module) VisitExpressions(f func(Expression) error) error {
+	for _, b := range m.binds {
+		if err := b.VisitExpressions(f); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ConvertTypes converts types.
 func (m Module) ConvertTypes(f func(types.Type) types.Type) Module {
 	ds := make([]Declaration, 0, len(m.declarations))

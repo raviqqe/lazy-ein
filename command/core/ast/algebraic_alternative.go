@@ -29,6 +29,11 @@ func (a AlgebraicAlternative) Expression() Expression {
 	return a.expression
 }
 
+// VisitExpressions visits expressions.
+func (a AlgebraicAlternative) VisitExpressions(f func(Expression) error) error {
+	return a.expression.VisitExpressions(f)
+}
+
 // ConvertTypes converts types.
 func (a AlgebraicAlternative) ConvertTypes(f func(types.Type) types.Type) AlgebraicAlternative {
 	return AlgebraicAlternative{a.constructor, a.elementNames, a.expression.ConvertTypes(f)}

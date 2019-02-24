@@ -23,6 +23,11 @@ func (a FunctionApplication) Arguments() []Atom {
 	return a.arguments
 }
 
+// VisitExpressions visits expressions.
+func (a FunctionApplication) VisitExpressions(f func(Expression) error) error {
+	return f(a)
+}
+
 // ConvertTypes converts types.
 func (a FunctionApplication) ConvertTypes(func(types.Type) types.Type) Expression {
 	return a

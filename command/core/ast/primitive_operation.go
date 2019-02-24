@@ -37,6 +37,11 @@ func (o PrimitiveOperation) Arguments() []Atom {
 	return o.arguments
 }
 
+// VisitExpressions visits expressions.
+func (o PrimitiveOperation) VisitExpressions(f func(Expression) error) error {
+	return f(o)
+}
+
 // ConvertTypes converts types.
 func (o PrimitiveOperation) ConvertTypes(func(types.Type) types.Type) Expression {
 	return o

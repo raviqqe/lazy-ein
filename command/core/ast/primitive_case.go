@@ -29,6 +29,23 @@ func (c PrimitiveCase) Alternatives() []PrimitiveAlternative {
 	return c.alternatives
 }
 
+// VisitExpressions visits expressions.
+func (c PrimitiveCase) VisitExpressions(f func(Expression) error) error {
+	for _, a := range c.alternatives {
+		if err := a.VisitExpressions(f); err != nil {
+			return err
+		}
+	}
+
+	if d, ok := c.DefaultAlternative(); ok {
+		if err := d.VisitExpressions(f); err != nil {
+			return err
+		}
+	}
+
+	return f(c)
+}
+
 // ConvertTypes converts types.
 func (c PrimitiveCase) ConvertTypes(f func(types.Type) types.Type) Expression {
 	as := make([]PrimitiveAlternative, 0, len(c.alternatives))

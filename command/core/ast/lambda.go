@@ -70,6 +70,11 @@ func (l Lambda) ClearFreeVariables() Lambda {
 	}
 }
 
+// VisitExpressions visits expressions.
+func (l Lambda) VisitExpressions(f func(Expression) error) error {
+	return l.body.VisitExpressions(f)
+}
+
 // ConvertTypes converts types.
 func (l Lambda) ConvertTypes(f func(types.Type) types.Type) Lambda {
 	return Lambda{

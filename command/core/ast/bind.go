@@ -23,6 +23,11 @@ func (b Bind) Lambda() Lambda {
 	return b.lambda
 }
 
+// VisitExpressions visits expressions.
+func (b Bind) VisitExpressions(f func(Expression) error) error {
+	return b.lambda.VisitExpressions(f)
+}
+
 // ConvertTypes converts types.
 func (b Bind) ConvertTypes(f func(types.Type) types.Type) Bind {
 	return Bind{b.name, b.lambda.ConvertTypes(f)}

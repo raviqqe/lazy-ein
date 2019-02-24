@@ -23,6 +23,21 @@ func (l Let) Expression() Expression {
 	return l.expression
 }
 
+// VisitExpressions visits expressions.
+func (l Let) VisitExpressions(f func(Expression) error) error {
+	for _, b := range l.binds {
+		if err := b.VisitExpressions(f); err != nil {
+			return err
+		}
+	}
+
+	if err := l.expression.VisitExpressions(f); err != nil {
+		return err
+	}
+
+	return f(l)
+}
+
 // ConvertTypes converts types.
 func (l Let) ConvertTypes(f func(types.Type) types.Type) Expression {
 	bs := make([]Bind, 0, len(l.binds))

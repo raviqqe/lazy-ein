@@ -23,6 +23,11 @@ func (a DefaultAlternative) Expression() Expression {
 	return a.expression
 }
 
+// VisitExpressions visits expressions.
+func (a DefaultAlternative) VisitExpressions(f func(Expression) error) error {
+	return a.expression.VisitExpressions(f)
+}
+
 // ConvertTypes converts types.
 func (a DefaultAlternative) ConvertTypes(f func(types.Type) types.Type) DefaultAlternative {
 	return DefaultAlternative{a.variable, a.expression.ConvertTypes(f)}
