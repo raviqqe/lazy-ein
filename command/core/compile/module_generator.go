@@ -28,12 +28,12 @@ func (g *moduleGenerator) initialize(m ast.Module) error {
 		g.module,
 		allocFunctionName,
 		llvm.FunctionType(llir.PointerType(llvm.Int8Type()), []llvm.Type{llir.WordType()}, false),
-	).SetLinkage(llvm.ExternalLinkage)
+	)
 	llvm.AddFunction(
 		g.module,
 		panicFunctionName,
 		llvm.FunctionType(llvm.VoidType(), nil, false),
-	).SetLinkage(llvm.ExternalLinkage)
+	)
 
 	for _, d := range m.Declarations() {
 		g.globalVariables[d.Name()] = llvm.AddGlobal(
