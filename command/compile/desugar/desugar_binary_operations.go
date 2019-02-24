@@ -35,5 +35,5 @@ func desugarBinaryOperations(m ast.Module) ast.Module {
 		}
 
 		return ast.NewLet(bs, ast.NewBinaryOperation(o.Operator(), es[0], es[1]))
-	}).(ast.Module)
+	})
 }

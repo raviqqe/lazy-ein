@@ -34,7 +34,7 @@ func (b Bind) Expression() Expression {
 }
 
 // ConvertExpressions converts expressions.
-func (b Bind) ConvertExpressions(f func(Expression) Expression) Node {
+func (b Bind) ConvertExpressions(f func(Expression) Expression) Bind {
 	return NewBind(b.name, b.typ, b.expression.ConvertExpressions(f).(Expression))
 }
 

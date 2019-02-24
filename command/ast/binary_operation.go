@@ -29,7 +29,7 @@ func (o BinaryOperation) RHS() Expression {
 }
 
 // ConvertExpressions converts expressions.
-func (o BinaryOperation) ConvertExpressions(f func(Expression) Expression) Node {
+func (o BinaryOperation) ConvertExpressions(f func(Expression) Expression) Expression {
 	return f(
 		NewBinaryOperation(
 			o.operator,

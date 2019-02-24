@@ -37,5 +37,5 @@ func desugarLists(m ast.Module) ast.Module {
 		}
 
 		return ast.NewLet(bs, ast.NewList(l.Type(), as))
-	}).(ast.Module)
+	})
 }

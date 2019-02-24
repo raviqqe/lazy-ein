@@ -45,17 +45,17 @@ func (c Case) DefaultAlternative() (DefaultAlternative, bool) {
 }
 
 // ConvertExpressions converts expressions.
-func (c Case) ConvertExpressions(f func(Expression) Expression) Node {
+func (c Case) ConvertExpressions(f func(Expression) Expression) Expression {
 	as := make([]Alternative, 0, len(c.alternatives))
 
 	for _, a := range c.alternatives {
-		as = append(as, a.ConvertExpressions(f).(Alternative))
+		as = append(as, a.ConvertExpressions(f))
 	}
 
 	d, ok := c.DefaultAlternative()
 
 	if ok {
-		d = c.defaultAlternative.ConvertExpressions(f).(DefaultAlternative)
+		d = c.defaultAlternative.ConvertExpressions(f)
 	}
 
 	return f(Case{c.argument.ConvertExpressions(f).(Expression), c.typ, as, d})

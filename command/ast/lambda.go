@@ -24,7 +24,7 @@ func (l Lambda) Expression() Expression {
 }
 
 // ConvertExpressions converts expressions.
-func (l Lambda) ConvertExpressions(f func(Expression) Expression) Node {
+func (l Lambda) ConvertExpressions(f func(Expression) Expression) Expression {
 	return f(NewLambda(l.arguments, l.expression.ConvertExpressions(f).(Expression)))
 }
 

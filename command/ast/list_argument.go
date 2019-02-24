@@ -24,7 +24,7 @@ func (a ListArgument) Expanded() bool {
 }
 
 // ConvertExpressions converts expressions.
-func (a ListArgument) ConvertExpressions(f func(Expression) Expression) Node {
+func (a ListArgument) ConvertExpressions(f func(Expression) Expression) ListArgument {
 	return ListArgument{a.expression.ConvertExpressions(f).(Expression), a.expanded}
 }
 

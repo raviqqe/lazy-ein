@@ -24,7 +24,7 @@ func (a Application) Arguments() []Expression {
 }
 
 // ConvertExpressions converts expressions.
-func (a Application) ConvertExpressions(f func(Expression) Expression) Node {
+func (a Application) ConvertExpressions(f func(Expression) Expression) Expression {
 	as := make([]Expression, 0, len(a.arguments))
 
 	for _, a := range a.arguments {

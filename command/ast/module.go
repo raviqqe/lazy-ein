@@ -65,11 +65,11 @@ func (m Module) IsMainModule() bool {
 }
 
 // ConvertExpressions converts expressions.
-func (m Module) ConvertExpressions(f func(Expression) Expression) Node {
+func (m Module) ConvertExpressions(f func(Expression) Expression) Module {
 	bs := make([]Bind, 0, len(m.binds))
 
 	for _, b := range m.binds {
-		bs = append(bs, b.ConvertExpressions(f).(Bind))
+		bs = append(bs, b.ConvertExpressions(f))
 	}
 
 	return NewModule(m.name, m.export, m.imports, bs)

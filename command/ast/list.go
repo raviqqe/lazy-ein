@@ -24,11 +24,11 @@ func (l List) Arguments() []ListArgument {
 }
 
 // ConvertExpressions converts expressions.
-func (l List) ConvertExpressions(f func(Expression) Expression) Node {
+func (l List) ConvertExpressions(f func(Expression) Expression) Expression {
 	as := make([]ListArgument, 0, len(l.arguments))
 
 	for _, a := range l.arguments {
-		as = append(as, a.ConvertExpressions(f).(ListArgument))
+		as = append(as, a.ConvertExpressions(f))
 	}
 
 	return f(NewList(l.typ, as))

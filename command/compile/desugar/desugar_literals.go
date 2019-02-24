@@ -44,7 +44,7 @@ func desugarLiterals(m ast.Module) ast.Module {
 			}
 
 			panic("unreachable")
-		}).(ast.Bind))
+		}))
 	}
 
 	return ast.NewModule(m.Name(), m.Export(), m.Imports(), bs)

@@ -26,11 +26,11 @@ func (l Let) Expression() Expression {
 func (Let) isExpression() {}
 
 // ConvertExpressions converts expressions.
-func (l Let) ConvertExpressions(f func(Expression) Expression) Node {
+func (l Let) ConvertExpressions(f func(Expression) Expression) Expression {
 	bs := make([]Bind, 0, len(l.binds))
 
 	for _, b := range l.binds {
-		bs = append(bs, b.ConvertExpressions(f).(Bind))
+		bs = append(bs, b.ConvertExpressions(f))
 	}
 
 	return f(NewLet(bs, l.expression.ConvertExpressions(f).(Expression)))

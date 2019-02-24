@@ -4,7 +4,7 @@ import "github.com/ein-lang/ein/command/ast"
 
 // desugarListCases converts all elements of list patterns into variables.
 func desugarListCases(m ast.Module) ast.Module {
-	return m.ConvertExpressions(mayDesugarListCase).(ast.Module)
+	return m.ConvertExpressions(mayDesugarListCase)
 }
 
 func mayDesugarListCase(e ast.Expression) ast.Expression {

@@ -42,5 +42,5 @@ func desugarApplications(m ast.Module) ast.Module {
 		}
 
 		return ast.NewLet(bs, ast.NewApplication(f, as))
-	}).(ast.Module)
+	})
 }

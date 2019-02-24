@@ -439,7 +439,7 @@ func (i inferrer) substituteVariablesInModule(m ast.Module, ss map[int]types.Typ
 		}
 
 		return e
-	}).(ast.Module)
+	})
 }
 
 func (inferrer) substituteVariable(t types.Type, ss map[int]types.Type) types.Type {
@@ -557,5 +557,5 @@ func (i inferrer) insertTypeVariables(m ast.Module) ast.Module {
 		}
 
 		return e
-	}).(ast.Module)
+	})
 }

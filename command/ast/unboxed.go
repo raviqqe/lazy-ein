@@ -18,7 +18,7 @@ func (u Unboxed) Content() Literal {
 }
 
 // ConvertExpressions converts expressions.
-func (u Unboxed) ConvertExpressions(f func(Expression) Expression) Node {
+func (u Unboxed) ConvertExpressions(f func(Expression) Expression) Expression {
 	return f(u)
 }
 
