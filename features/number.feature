@@ -56,3 +56,19 @@ Feature: Number
     When I successfully run `ein build main.ein`
     And I successfully run `sh -c ./a.out`
     Then the stdout from "sh -c ./a.out" should contain exactly "42"
+
+  Scenario: Sum numbers up to 100
+    Given a file named "main.ein" with:
+    """
+    sum : Number -> Number
+    sum x =
+      case x of
+        0 -> 0
+        x -> x + sum (x - 1)
+
+    main : Number -> Number
+    main x = sum 100
+    """
+    When I successfully run `ein build main.ein`
+    And I successfully run `sh -c ./a.out`
+    Then the stdout from "sh -c ./a.out" should contain exactly "5050"

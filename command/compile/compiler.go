@@ -272,6 +272,17 @@ func (c compiler) compilePrimitiveCase(cc ast.Case) (coreast.Expression, error) 
 		return nil, err
 	}
 
+	if v, ok := cc.Argument().(ast.Variable); ok && d.Variable() == v.Name() {
+		return coreast.NewPrimitiveCase(
+			c.extractNumberPrimitive(
+				coreast.NewFunctionApplication(coreast.NewVariable(d.Variable()), nil),
+			),
+			coretypes.NewFloat64(),
+			as,
+			coreast.NewDefaultAlternative("", de),
+		), nil
+	}
+
 	return coreast.NewLet(
 		[]coreast.Bind{
 			coreast.NewBind(
