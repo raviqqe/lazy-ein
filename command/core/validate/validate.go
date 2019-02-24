@@ -1,8 +1,6 @@
 package validate
 
 import (
-	"errors"
-
 	"github.com/ein-lang/ein/command/core/ast"
 	"github.com/ein-lang/ein/command/core/validate/tcheck"
 )
@@ -16,16 +14,6 @@ func Validate(m ast.Module) error {
 	}
 
 	// TODO: Check duplicate top-level names including constructors.
-
-	return nil
-}
-
-func checkFreeVariables(m ast.Module) error {
-	for _, b := range m.Binds() {
-		if len(b.Lambda().FreeVariableNames()) != 0 {
-			return errors.New("globals must not have free variables")
-		}
-	}
 
 	return nil
 }
