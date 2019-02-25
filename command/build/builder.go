@@ -59,10 +59,14 @@ func (b builder) Build(fname string) error {
 	defer os.Remove(f.Name())
 
 	bs, err = exec.Command(
-		"cc",
+		"clang",
+		"-Wno-override-module",
+		"-O3",
+		"-flto",
 		f.Name(),
 		b.resolveRuntimeLibrary("runtime/target/release/libio.a"),
 		b.resolveRuntimeLibrary("runtime/target/release/libcore.a"),
+		b.resolveRuntimeLibrary("runtime/llvm/atomic.ll"),
 		"-ldl",
 		"-lgc",
 		"-lpthread",

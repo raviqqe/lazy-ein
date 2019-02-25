@@ -44,6 +44,38 @@ func (g *moduleGenerator) initialize(m ast.Module) error {
 		llvm.FunctionType(llvm.VoidType(), nil, false),
 	)
 
+	llvm.AddFunction(
+		g.module,
+		atomicLoadFunctionName,
+		llir.FunctionType(
+			llir.PointerType(llvm.Int8Type()),
+			[]llvm.Type{llir.PointerType(llir.PointerType(llvm.Int8Type()))},
+		),
+	)
+	llvm.AddFunction(
+		g.module,
+		atomicStoreFunctionName,
+		llir.FunctionType(
+			llvm.VoidType(),
+			[]llvm.Type{
+				llir.PointerType(llvm.Int8Type()),
+				llir.PointerType(llir.PointerType(llvm.Int8Type())),
+			},
+		),
+	)
+	llvm.AddFunction(
+		g.module,
+		atomicCmpxchgFunctionName,
+		llir.FunctionType(
+			llir.StructType([]llvm.Type{llir.PointerType(llvm.Int8Type()), llvm.Int1Type()}),
+			[]llvm.Type{
+				llir.PointerType(llir.PointerType(llvm.Int8Type())),
+				llir.PointerType(llvm.Int8Type()),
+				llir.PointerType(llvm.Int8Type()),
+			},
+		),
+	)
+
 	for _, d := range m.Declarations() {
 		g.globalVariables[d.Name()] = llvm.AddGlobal(
 			g.module,
