@@ -156,7 +156,7 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 	if err != nil {
 		return llvm.Value{}, err
 	} else if _, ok := l.ResultType().(types.Boxed); ok && l.IsThunk() {
-		// TODO: Steal child thunks in a thread-safe way.
+		// TODO: Steal child thunks.
 		// TODO: Use loop to unbox children recursively.
 		v = forceThunk(b, v, g.typeGenerator)
 	}

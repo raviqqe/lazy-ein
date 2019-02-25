@@ -6,9 +6,23 @@ import (
 )
 
 func forceThunk(b llvm.Builder, v llvm.Value, g typeGenerator) llvm.Value {
+	f := llir.CreateCall(
+		b,
+		b.GetInsertBlock().Parent().GlobalParent().NamedFunction(atomicLoadFunctionName),
+		[]llvm.Value{
+			b.CreateBitCast(
+				b.CreateStructGEP(v, 0, ""),
+				llir.PointerType(llir.PointerType(llvm.Int8Type())),
+				"",
+			),
+		},
+	)
+
+	// TODO: Throw thunks into a black hole if f is null.
+
 	return llir.CreateCall(
 		b,
-		b.CreateLoad(b.CreateStructGEP(v, 0, ""), ""),
+		b.CreateBitCast(f, v.Type().ElementType().StructElementTypes()[0], ""),
 		[]llvm.Value{
 			b.CreateBitCast(
 				b.CreateStructGEP(v, 1, ""),
