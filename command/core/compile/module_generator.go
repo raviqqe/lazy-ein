@@ -33,7 +33,7 @@ func (g *moduleGenerator) initialize(m ast.Module) error {
 		g.module,
 		blackHoleFunctionName,
 		llvm.FunctionType(
-			llir.PointerType(llvm.VoidType()),
+			llvm.VoidType(),
 			[]llvm.Type{llir.PointerType(llvm.Int8Type())},
 			false,
 		),
