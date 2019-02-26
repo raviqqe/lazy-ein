@@ -8,7 +8,8 @@ define void @atomic.store(i8*, i8**) {
   ret void
 }
 
-define { i8*, i1 } @atomic.cmpxchg(i8**, i8*, i8*) {
+define i1 @atomic.cmpxchg(i8**, i8*, i8*) {
   %4 = cmpxchg i8** %0, i8* %1, i8* %2 seq_cst seq_cst
-  ret { i8*, i1 } %4
+  %5 = extractvalue { i8*, i1 } %4, 1
+  ret i1 %5
 }

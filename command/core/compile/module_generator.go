@@ -67,7 +67,7 @@ func (g *moduleGenerator) initialize(m ast.Module) error {
 		g.module,
 		atomicCmpxchgFunctionName,
 		llir.FunctionType(
-			llir.StructType([]llvm.Type{llir.PointerType(llvm.Int8Type()), llvm.Int1Type()}),
+			llvm.Int1Type(),
 			[]llvm.Type{
 				llir.PointerType(llir.PointerType(llvm.Int8Type())),
 				llir.PointerType(llvm.Int8Type()),
