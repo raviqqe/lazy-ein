@@ -163,13 +163,27 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 
 	if l.IsUpdatable() {
 		b.CreateStore(v, b.CreateBitCast(f.FirstParam(), llir.PointerType(v.Type()), ""))
-		b.CreateStore(
-			g.createUpdatedEntryFunction(n, f.Type().ElementType()),
-			b.CreateGEP(
-				b.CreateBitCast(f.FirstParam(), llir.PointerType(f.Type()), ""),
-				[]llvm.Value{llvm.ConstIntFromString(g.typeGenerator.GenerateConstructorTag(), "-1", 10)},
-				"",
-			),
+		b.CreateCall(
+			b.GetInsertBlock().Parent().GlobalParent().NamedFunction(atomicStoreFunctionName),
+			[]llvm.Value{
+				b.CreateBitCast(
+					g.createUpdatedEntryFunction(n, f.Type().ElementType()),
+					llir.PointerType(llvm.Int8Type()),
+					"",
+				),
+				b.CreateBitCast(
+					b.CreateGEP(
+						b.CreateBitCast(f.FirstParam(), llir.PointerType(f.Type()), ""),
+						[]llvm.Value{
+							llvm.ConstIntFromString(g.typeGenerator.GenerateConstructorTag(), "-1", 10),
+						},
+						"",
+					),
+					llir.PointerType(llir.PointerType(llvm.Int8Type())),
+					"",
+				),
+			},
+			"",
 		)
 	}
 
