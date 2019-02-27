@@ -143,6 +143,22 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 		g.typeGenerator.GenerateLambdaEntryFunction(l.ToDeclaration()),
 	)
 
+	if l.IsThunk() {
+		if err := g.createVariableLambda(f, l, n); err != nil {
+			return llvm.Value{}, err
+		}
+
+		return f, nil
+	}
+
+	if err := g.createFunctionLambda(f, l); err != nil {
+		return llvm.Value{}, err
+	}
+
+	return f, nil
+}
+
+func (g *moduleGenerator) createFunctionLambda(f llvm.Value, l ast.Lambda) error {
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
 
@@ -154,8 +170,30 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 	).Generate(l.Body())
 
 	if err != nil {
-		return llvm.Value{}, err
-	} else if _, ok := l.ResultType().(types.Boxed); ok && l.IsThunk() {
+		return err
+	}
+
+	b.CreateRet(v)
+
+	return nil
+}
+
+func (g *moduleGenerator) createVariableLambda(f llvm.Value, l ast.Lambda, n string) error {
+	b := llvm.NewBuilder()
+	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
+
+	thunk := g.getSelfThunk(b)
+
+	v, err := newFunctionBodyGenerator(
+		b,
+		g.createLogicalEnvironment(f, b, l),
+		g.createLambda,
+		g.typeGenerator,
+	).Generate(l.Body())
+
+	if err != nil {
+		return err
+	} else if _, ok := l.ResultType().(types.Boxed); ok {
 		// TODO: Steal child thunks.
 		// TODO: Use loop to unbox children recursively.
 		v = forceThunk(b, v, g.typeGenerator)
@@ -167,21 +205,11 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 			b.GetInsertBlock().Parent().GlobalParent().NamedFunction(atomicStoreFunctionName),
 			[]llvm.Value{
 				b.CreateBitCast(
-					g.createUpdatedEntryFunction(n, f.Type().ElementType()),
+					g.createNormalFormEntryFunction(n, f.Type().ElementType()),
 					llir.PointerType(llvm.Int8Type()),
 					"",
 				),
-				b.CreateBitCast(
-					b.CreateGEP(
-						b.CreateBitCast(f.FirstParam(), llir.PointerType(f.Type()), ""),
-						[]llvm.Value{
-							llvm.ConstIntFromString(g.typeGenerator.GenerateConstructorTag(), "-1", 10),
-						},
-						"",
-					),
-					llir.PointerType(llir.PointerType(llvm.Int8Type())),
-					"",
-				),
+				b.CreateBitCast(thunk, llir.PointerType(llir.PointerType(llvm.Int8Type())), ""),
 			},
 			"",
 		)
@@ -189,10 +217,10 @@ func (g *moduleGenerator) createLambda(n string, l ast.Lambda) (llvm.Value, erro
 
 	b.CreateRet(v)
 
-	return f, nil
+	return nil
 }
 
-func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm.Value {
+func (g *moduleGenerator) createNormalFormEntryFunction(n string, t llvm.Type) llvm.Value {
 	f := llir.AddFunction(g.module, names.ToNormalFormEntry(n), t)
 	f.FirstParam().SetName(environmentArgumentName)
 
@@ -200,14 +228,22 @@ func (g *moduleGenerator) createUpdatedEntryFunction(n string, t llvm.Type) llvm
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
 	b.CreateRet(
 		b.CreateLoad(
-			b.CreateBitCast(
-				f.FirstParam(), llir.PointerType(f.Type().ElementType().ReturnType()),
-				""),
+			b.CreateBitCast(f.FirstParam(), llir.PointerType(f.Type().ElementType().ReturnType()), ""),
 			"",
 		),
 	)
 
 	return f
+}
+
+func (moduleGenerator) getSelfThunk(b llvm.Builder) llvm.Value {
+	f := b.GetInsertBlock().Parent()
+
+	return b.CreateGEP(
+		b.CreateBitCast(f.FirstParam(), llir.PointerType(f.Type()), ""),
+		[]llvm.Value{llvm.ConstIntFromString(llir.WordType(), "-1", 10)},
+		"",
+	)
 }
 
 func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, l ast.Lambda) map[string]llvm.Value {
