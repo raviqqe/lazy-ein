@@ -6,7 +6,8 @@ import (
 )
 
 func forceThunk(b llvm.Builder, thunk llvm.Value, g typeGenerator) llvm.Value {
-	return b.CreateCall(
+	return llir.CreateCall(
+		b,
 		b.CreateBitCast(
 			b.CreateCall(
 				b.GetInsertBlock().Parent().GlobalParent().NamedFunction(atomicLoadFunctionName),
@@ -29,6 +30,5 @@ func forceThunk(b llvm.Builder, thunk llvm.Value, g typeGenerator) llvm.Value {
 				"",
 			),
 		},
-		"",
 	)
 }
