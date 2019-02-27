@@ -182,8 +182,6 @@ func (g *moduleGenerator) createVariableLambda(f llvm.Value, l ast.Lambda, n str
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
 
-	thunk := g.getSelfThunk(b)
-
 	v, err := newFunctionBodyGenerator(
 		b,
 		g.createLogicalEnvironment(f, b, l),
@@ -202,14 +200,18 @@ func (g *moduleGenerator) createVariableLambda(f llvm.Value, l ast.Lambda, n str
 	if l.IsUpdatable() {
 		b.CreateStore(v, b.CreateBitCast(f.FirstParam(), llir.PointerType(v.Type()), ""))
 		b.CreateCall(
-			b.GetInsertBlock().Parent().GlobalParent().NamedFunction(atomicStoreFunctionName),
+			g.module.NamedFunction(atomicStoreFunctionName),
 			[]llvm.Value{
 				b.CreateBitCast(
 					g.createNormalFormEntryFunction(n, f.Type().ElementType()),
 					llir.PointerType(llvm.Int8Type()),
 					"",
 				),
-				b.CreateBitCast(thunk, llir.PointerType(llir.PointerType(llvm.Int8Type())), ""),
+				b.CreateBitCast(
+					g.getSelfThunk(b),
+					llir.PointerType(llir.PointerType(llvm.Int8Type())),
+					"",
+				),
 			},
 			"",
 		)
