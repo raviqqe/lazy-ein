@@ -11,16 +11,17 @@ pub struct Closure<E, P> {
 #[repr(C)]
 pub struct Payload;
 
-pub type Input = Closure<extern "fastcall" fn(&Payload) -> f64, Payload>;
-pub type Output = Closure<extern "fastcall" fn(&Payload) -> f64, Payload>;
-pub type Main = Closure<extern "fastcall" fn(&Payload, &Input) -> &'static Output, Payload>;
+pub type Input = Closure<extern "fastcall" fn(&mut Payload) -> f64, Payload>;
+pub type Output = Closure<extern "fastcall" fn(&mut Payload) -> f64, Payload>;
+pub type Main =
+    Closure<extern "fastcall" fn(&mut Payload, &mut Input) -> &'static mut Output, Payload>;
 
 extern "C" {
     #[allow(improper_ctypes)]
     static mut ein_main: Main;
 }
 
-extern "fastcall" fn input_entry(_: &Payload) -> f64 {
+extern "fastcall" fn input_entry(_: &mut Payload) -> f64 {
     42.0
 }
 
@@ -33,15 +34,15 @@ pub extern "C" fn main() {
 
     let output = unsafe {
         (ein_main.entry)(
-            &ein_main.payload,
-            &Input {
+            &mut ein_main.payload,
+            &mut Input {
                 entry: input_entry,
                 payload: Payload,
             },
         )
     };
 
-    println!("{}", (output.entry)(&output.payload));
+    println!("{}", (output.entry)(&mut output.payload));
 
     std::process::exit(0)
 }

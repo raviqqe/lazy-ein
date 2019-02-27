@@ -22,8 +22,9 @@ func forceThunk(b llvm.Builder, thunk llvm.Value, g typeGenerator) llvm.Value {
 		"",
 	)
 
-	then := llvm.AddBasicBlock(b.GetInsertBlock().Parent(), "force.then")
-	els := llvm.AddBasicBlock(b.GetInsertBlock().Parent(), "force.else")
+	wait := llvm.AddBasicBlock(b.GetInsertBlock().Parent(), "force.wait")
+	lock := llvm.AddBasicBlock(b.GetInsertBlock().Parent(), "force.lock")
+	update := llvm.AddBasicBlock(b.GetInsertBlock().Parent(), "force.update")
 	end := llvm.AddBasicBlock(b.GetInsertBlock().Parent(), "force.end")
 
 	b.CreateCondBr(
@@ -33,11 +34,11 @@ func forceThunk(b llvm.Builder, thunk llvm.Value, g typeGenerator) llvm.Value {
 			b.CreatePtrToInt(llvm.ConstNull(f.Type()), llir.WordType(), ""),
 			"",
 		),
-		then,
-		els,
+		wait,
+		lock,
 	)
 
-	b.SetInsertPointAtEnd(then)
+	b.SetInsertPointAtEnd(wait)
 	b.CreateCall(
 		b.GetInsertBlock().Parent().GlobalParent().NamedFunction(blackHoleFunctionName),
 		[]llvm.Value{b.CreateBitCast(thunk, llir.PointerType(llvm.Int8Type()), "")},
@@ -46,26 +47,46 @@ func forceThunk(b llvm.Builder, thunk llvm.Value, g typeGenerator) llvm.Value {
 	result1 := callEntryFunction(b, g, b.CreateLoad(b.CreateStructGEP(thunk, 0, ""), ""), thunk)
 	b.CreateBr(end)
 
-	b.SetInsertPointAtEnd(els)
-	// b.CreateCall(
-	// 	b.GetInsertBlock().Parent().GlobalParent().NamedFunction(atomicCmpxchgFunctionName),
-	// 	[]llvm.Value{
-	// 		b.CreateBitCast(
-	// 			b.CreateStructGEP(thunk, 0, ""),
-	// 			llir.PointerType(llir.PointerType(llvm.Int8Type())),
-	// 			"",
-	// 		),
-	// 		b.CreateBitCast(f, llir.PointerType(llvm.Int8Type()), ""),
-	// 		llvm.ConstNull(llir.PointerType(llvm.Int8Type())),
-	// 	},
-	// 	"",
-	// )
+	b.SetInsertPointAtEnd(lock)
+	b.CreateCondBr(
+		b.CreateCall(
+			b.GetInsertBlock().Parent().GlobalParent().NamedFunction(atomicCmpxchgFunctionName),
+			[]llvm.Value{
+				b.CreateBitCast(
+					b.CreateStructGEP(thunk, 0, ""),
+					llir.PointerType(llir.PointerType(llvm.Int8Type())),
+					"",
+				),
+				b.CreateBitCast(f, llir.PointerType(llvm.Int8Type()), ""),
+				llvm.ConstNull(llir.PointerType(llvm.Int8Type())),
+			},
+			"",
+		),
+		update,
+		wait,
+	)
+
+	b.SetInsertPointAtEnd(update)
 	result2 := callEntryFunction(b, g, f, thunk)
+	// for cases that entry functions are not updated
+	b.CreateCall(
+		b.GetInsertBlock().Parent().GlobalParent().NamedFunction(atomicCmpxchgFunctionName),
+		[]llvm.Value{
+			b.CreateBitCast(
+				b.CreateStructGEP(thunk, 0, ""),
+				llir.PointerType(llir.PointerType(llvm.Int8Type())),
+				"",
+			),
+			llvm.ConstNull(llir.PointerType(llvm.Int8Type())),
+			b.CreateBitCast(f, llir.PointerType(llvm.Int8Type()), ""),
+		},
+		"",
+	)
 	b.CreateBr(end)
 
 	b.SetInsertPointAtEnd(end)
 	p := b.CreatePHI(f.Type().ElementType().ReturnType(), "")
-	p.AddIncoming([]llvm.Value{result1, result2}, []llvm.BasicBlock{then, els})
+	p.AddIncoming([]llvm.Value{result1, result2}, []llvm.BasicBlock{wait, update})
 	return p
 }
 
