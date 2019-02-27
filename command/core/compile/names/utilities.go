@@ -10,6 +10,11 @@ func ToNormalFormEntry(s string) string {
 	return s + ".normal-form.entry"
 }
 
+// ToBlackHoleEntry converts a function name into its black hole entry name.
+func ToBlackHoleEntry(s string) string {
+	return s + ".black-hole.entry"
+}
+
 // ToTag converts a constructor name into its tag name.
 func ToTag(s string) string {
 	return s + ".tag"
