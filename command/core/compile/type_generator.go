@@ -89,8 +89,12 @@ func (g typeGenerator) GenerateSizedClosure(l ast.LambdaDeclaration) llvm.Type {
 	return g.generateClosure(g.GenerateLambdaEntryFunction(l), g.generateSizedPayload(l))
 }
 
+func (g typeGenerator) GenerateUnsizedClosureFromSized(t llvm.Type) llvm.Type {
+	return g.GenerateUnsizedClosure(t.StructElementTypes()[0].ElementType())
+}
+
 func (g typeGenerator) GenerateUnsizedClosure(t llvm.Type) llvm.Type {
-	return g.generateClosure(t.StructElementTypes()[0].ElementType(), g.GenerateUnsizedPayload())
+	return g.generateClosure(t, g.GenerateUnsizedPayload())
 }
 
 func (g typeGenerator) generateClosure(f llvm.Type, p llvm.Type) llvm.Type {

@@ -182,6 +182,38 @@ func (g *moduleGenerator) createVariableLambda(f llvm.Value, l ast.Lambda, n str
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
 
+	if l.IsUpdatable() {
+		force := llvm.AddBasicBlock(f, "force")
+		wait := llvm.AddBasicBlock(f, "wait")
+
+		b.CreateCondBr(
+			b.CreateCall(
+				g.module.NamedFunction(atomicCmpxchgFunctionName),
+				[]llvm.Value{
+					b.CreateBitCast(
+						g.getSelfThunk(b),
+						llir.PointerType(llir.PointerType(llvm.Int8Type())),
+						"",
+					),
+					b.CreateBitCast(f, llir.PointerType(llvm.Int8Type()), ""),
+					b.CreateBitCast(
+						g.createBlackHoleEntryFunction(n, f.Type().ElementType()),
+						llir.PointerType(llvm.Int8Type()),
+						"",
+					),
+				},
+				"",
+			),
+			force,
+			wait,
+		)
+
+		b.SetInsertPointAtEnd(wait)
+		b.CreateRet(forceThunk(b, g.getSelfThunk(b), g.typeGenerator))
+
+		b.SetInsertPointAtEnd(force)
+	}
+
 	v, err := newFunctionBodyGenerator(
 		b,
 		g.createLogicalEnvironment(f, b, l),
@@ -238,12 +270,32 @@ func (g *moduleGenerator) createNormalFormEntryFunction(n string, t llvm.Type) l
 	return f
 }
 
-func (moduleGenerator) getSelfThunk(b llvm.Builder) llvm.Value {
+func (g *moduleGenerator) createBlackHoleEntryFunction(n string, t llvm.Type) llvm.Value {
+	f := llir.AddFunction(g.module, names.ToBlackHoleEntry(n), t)
+	f.FirstParam().SetName(environmentArgumentName)
+
+	b := llvm.NewBuilder()
+	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
+	b.CreateCall(
+		g.module.NamedFunction(blackHoleFunctionName),
+		[]llvm.Value{b.CreateBitCast(g.getSelfThunk(b), llir.PointerType(llvm.Int8Type()), "")},
+		"",
+	)
+	b.CreateRet(forceThunk(b, g.getSelfThunk(b), g.typeGenerator))
+
+	return f
+}
+
+func (g *moduleGenerator) getSelfThunk(b llvm.Builder) llvm.Value {
 	f := b.GetInsertBlock().Parent()
 
-	return b.CreateGEP(
-		b.CreateBitCast(f.FirstParam(), llir.PointerType(f.Type()), ""),
-		[]llvm.Value{llvm.ConstIntFromString(llir.WordType(), "-1", 10)},
+	return b.CreateBitCast(
+		b.CreateGEP(
+			b.CreateBitCast(f.FirstParam(), llir.PointerType(f.Type()), ""),
+			[]llvm.Value{llvm.ConstIntFromString(llir.WordType(), "-1", 10)},
+			"",
+		),
+		llir.PointerType(g.typeGenerator.GenerateUnsizedClosure(f.Type().ElementType())),
 		"",
 	)
 }
@@ -255,7 +307,7 @@ func (g moduleGenerator) createLogicalEnvironment(f llvm.Value, b llvm.Builder, 
 		if v.Type().ElementType().StructElementTypes()[1].ArrayLength() != 0 {
 			v = b.CreateBitCast(
 				v,
-				llir.PointerType(g.typeGenerator.GenerateUnsizedClosure(v.Type().ElementType())),
+				llir.PointerType(g.typeGenerator.GenerateUnsizedClosureFromSized(v.Type().ElementType())),
 				"",
 			)
 		}

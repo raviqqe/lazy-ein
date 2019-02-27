@@ -242,7 +242,7 @@ func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
 
 		vs[b.Name()] = g.builder.CreateBitCast(
 			g.allocateHeap(t),
-			llir.PointerType(g.typeGenerator.GenerateUnsizedClosure(t)),
+			llir.PointerType(g.typeGenerator.GenerateUnsizedClosureFromSized(t)),
 			"",
 		)
 	}
