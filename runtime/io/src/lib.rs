@@ -1,28 +1,21 @@
 extern crate gc;
 
+#[macro_use]
+mod core;
+
+use core::algebraic;
+use core::{Closure, Number, UnsizedPayload};
+
 #[global_allocator]
 static mut GLOBAL_ALLOCATOR: gc::Allocator = gc::Allocator;
 
-#[repr(C)]
-pub struct Closure<E, P> {
-    pub entry: E,
-    pub payload: P,
-}
-#[repr(C)]
-pub struct Payload;
-
-pub type Input = Closure<extern "fastcall" fn(&mut Payload) -> f64, Payload>;
-pub type Output = Closure<extern "fastcall" fn(&mut Payload) -> f64, Payload>;
-pub type Main =
-    Closure<extern "fastcall" fn(&mut Payload, &mut Input) -> &'static mut Output, Payload>;
-
 extern "C" {
     #[allow(improper_ctypes)]
-    static mut ein_main: Main;
+    static mut ein_main: closure!(&'static mut Number, &mut Number);
 }
 
-extern "fastcall" fn input_entry(_: &mut Payload) -> f64 {
-    42.0
+extern "fastcall" fn input_entry(_: &mut UnsizedPayload) -> algebraic::Number {
+    42.0.into()
 }
 
 #[no_mangle]
@@ -32,17 +25,10 @@ pub extern "C" fn main() {
         gc::Allocator::enable_gc();
     }
 
-    let output = unsafe {
-        (ein_main.entry)(
-            &mut ein_main.payload,
-            &mut Input {
-                entry: input_entry,
-                payload: Payload,
-            },
-        )
-    };
+    let output: f64 =
+        eval!(unsafe { eval!(ein_main, &mut Number::new(input_entry, UnsizedPayload)) }).into();
 
-    println!("{}", (output.entry)(&mut output.payload));
+    println!("{}", output);
 
     std::process::exit(0)
 }
