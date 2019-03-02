@@ -7,10 +7,10 @@ macro_rules! eval {
 
 macro_rules! closure {
     ($result:ty) => {
-        Closure<extern "fastcall" fn(&mut UnsizedPayload) -> $result, UnsizedPayload>
+        ::core::Closure<extern "fastcall" fn(&mut $result) -> $result, $result>
     };
     ($result:ty, $($arg:ty),+) => {
-        Closure<extern "fastcall" fn(&mut UnsizedPayload, $($arg),+) -> $result, UnsizedPayload>
+        ::core::Closure<extern "fastcall" fn(&mut ::core::Environment, $($arg),+) -> $result, ::core::Environment>
     };
 }
 
@@ -20,18 +20,26 @@ pub struct Closure<E, P> {
     pub payload: P,
 }
 
-impl<E, P> Closure<E, P> {
-    pub fn new(entry: E, payload: P) -> Closure<E, P> {
-        Closure { entry, payload }
+impl From<f64> for Number {
+    fn from(n: f64) -> Number {
+        Closure {
+            entry: number_entry,
+            payload: n.into(),
+        }
     }
 }
 
 #[repr(C)]
-pub struct UnsizedPayload;
+pub struct Environment(i8); // avoid zero-sized type for compatibility with C
 
 pub type Number = closure!(algebraic::Number);
 
+extern "fastcall" fn number_entry(number: &mut algebraic::Number) -> algebraic::Number {
+    *number
+}
+
 pub mod algebraic {
+    #[derive(Clone, Copy)]
     #[repr(C)]
     pub struct Number(f64);
 
