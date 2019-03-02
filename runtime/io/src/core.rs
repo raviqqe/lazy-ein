@@ -86,9 +86,9 @@ pub mod algebraic {
         }
     }
 
-    impl Into<f64> for Number {
-        fn into(self) -> f64 {
-            self.0
+    impl From<Number> for f64 {
+        fn from(n: Number) -> f64 {
+            n.0
         }
     }
 }
