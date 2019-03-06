@@ -7,10 +7,10 @@ macro_rules! eval {
 
 macro_rules! closure {
     ($result:ty) => {
-        ::core::Closure<extern "fastcall" fn(&mut $result) -> $result, $result>
+        crate::core::Closure<extern "fastcall" fn(&mut $result) -> $result, $result>
     };
     ($result:ty, $($arg:ty),+) => {
-        ::core::Closure<extern "fastcall" fn(&mut ::core::Environment, $($arg),+) -> $result, ::core::Environment>
+        crate::core::Closure<extern "fastcall" fn(&mut crate::core::Environment, $($arg),+) -> $result, crate::core::Environment>
     };
 }
 

@@ -3,7 +3,7 @@ extern crate gc;
 #[macro_use]
 mod core;
 
-use core::Number;
+use crate::core::Number;
 
 #[global_allocator]
 static mut GLOBAL_ALLOCATOR: gc::Allocator = gc::Allocator;
