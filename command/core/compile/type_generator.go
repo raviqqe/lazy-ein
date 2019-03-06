@@ -45,13 +45,13 @@ func (g typeGenerator) Generate(t types.Type) llvm.Type {
 			g.cache[t.String()] = s
 
 			s.StructSetBody(
-				g.pushType(llir.PointerType(s)).generateFunctionCloure(t).StructElementTypes(),
+				g.pushType(llir.PointerType(s)).generateFunctionClosure(t).StructElementTypes(),
 				false,
 			)
 			return llir.PointerType(s)
 		}
 
-		return llir.PointerType(g.pushDummyType().generateFunctionCloure(t))
+		return llir.PointerType(g.pushDummyType().generateFunctionClosure(t))
 	case types.Index:
 		return g.stack[len(g.stack)-1-t.Value()]
 	}
@@ -78,7 +78,7 @@ func (g typeGenerator) generateAlgebraicBody(t types.Algebraic) []llvm.Type {
 	}
 }
 
-func (g typeGenerator) generateFunctionCloure(t types.Function) llvm.Type {
+func (g typeGenerator) generateFunctionClosure(t types.Function) llvm.Type {
 	return g.generateClosure(
 		g.generateEntryFunction(t.Arguments(), t.Result()),
 		g.GenerateUnsizedPayload(),
