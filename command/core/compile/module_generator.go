@@ -182,37 +182,35 @@ func (g *moduleGenerator) createVariableLambda(f llvm.Value, l ast.Lambda, n str
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
 
-	if l.IsUpdatable() {
-		force := llvm.AddBasicBlock(f, "force")
-		wait := llvm.AddBasicBlock(f, "wait")
+	update := llvm.AddBasicBlock(f, "update")
+	wait := llvm.AddBasicBlock(f, "wait")
 
-		b.CreateCondBr(
-			b.CreateCall(
-				g.module.NamedFunction(atomicCmpxchgFunctionName),
-				[]llvm.Value{
-					b.CreateBitCast(
-						g.getSelfThunk(b),
-						llir.PointerType(llir.PointerType(llvm.Int8Type())),
-						"",
-					),
-					b.CreateBitCast(f, llir.PointerType(llvm.Int8Type()), ""),
-					b.CreateBitCast(
-						g.createBlackHoleEntryFunction(n, f.Type().ElementType()),
-						llir.PointerType(llvm.Int8Type()),
-						"",
-					),
-				},
-				"",
-			),
-			force,
-			wait,
-		)
+	b.CreateCondBr(
+		b.CreateCall(
+			g.module.NamedFunction(atomicCmpxchgFunctionName),
+			[]llvm.Value{
+				b.CreateBitCast(
+					g.getSelfThunk(b),
+					llir.PointerType(llir.PointerType(llvm.Int8Type())),
+					"",
+				),
+				b.CreateBitCast(f, llir.PointerType(llvm.Int8Type()), ""),
+				b.CreateBitCast(
+					g.createBlackHoleEntryFunction(n, f.Type().ElementType()),
+					llir.PointerType(llvm.Int8Type()),
+					"",
+				),
+			},
+			"",
+		),
+		update,
+		wait,
+	)
 
-		b.SetInsertPointAtEnd(wait)
-		b.CreateRet(forceThunk(b, g.getSelfThunk(b), g.typeGenerator))
+	b.SetInsertPointAtEnd(wait)
+	b.CreateRet(forceThunk(b, g.getSelfThunk(b), g.typeGenerator))
 
-		b.SetInsertPointAtEnd(force)
-	}
+	b.SetInsertPointAtEnd(update)
 
 	v, err := newFunctionBodyGenerator(
 		b,
@@ -229,30 +227,27 @@ func (g *moduleGenerator) createVariableLambda(f llvm.Value, l ast.Lambda, n str
 		v = forceThunk(b, v, g.typeGenerator)
 	}
 
-	if l.IsUpdatable() {
-		p := b.CreateBitCast(f.FirstParam(), v.Type(), "")
-		b.CreateStore(b.CreateLoad(v, ""), p)
-		v = p
+	p := b.CreateBitCast(f.FirstParam(), v.Type(), "")
+	b.CreateStore(b.CreateLoad(v, ""), p)
 
-		b.CreateCall(
-			g.module.NamedFunction(atomicStoreFunctionName),
-			[]llvm.Value{
-				b.CreateBitCast(
-					g.createNormalFormEntryFunction(n, f.Type().ElementType()),
-					llir.PointerType(llvm.Int8Type()),
-					"",
-				),
-				b.CreateBitCast(
-					g.getSelfThunk(b),
-					llir.PointerType(llir.PointerType(llvm.Int8Type())),
-					"",
-				),
-			},
-			"",
-		)
-	}
+	b.CreateCall(
+		g.module.NamedFunction(atomicStoreFunctionName),
+		[]llvm.Value{
+			b.CreateBitCast(
+				g.createNormalFormEntryFunction(n, f.Type().ElementType()),
+				llir.PointerType(llvm.Int8Type()),
+				"",
+			),
+			b.CreateBitCast(
+				g.getSelfThunk(b),
+				llir.PointerType(llir.PointerType(llvm.Int8Type())),
+				"",
+			),
+		},
+		"",
+	)
 
-	b.CreateRet(v)
+	b.CreateRet(p)
 
 	return nil
 }

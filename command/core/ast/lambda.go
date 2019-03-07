@@ -13,8 +13,8 @@ type Lambda struct {
 }
 
 // NewVariableLambda creates a lambda form.
-func NewVariableLambda(vs []Argument, u bool, e Expression, t types.Bindable) Lambda {
-	return newLambda(vs, u, nil, e, t)
+func NewVariableLambda(vs []Argument, e Expression, t types.Bindable) Lambda {
+	return newLambda(vs, nil, e, t)
 }
 
 // NewFunctionLambda creates a lambda form.
@@ -23,14 +23,13 @@ func NewFunctionLambda(vs []Argument, as []Argument, e Expression, t types.Type)
 		panic("no argument for function lambda")
 	}
 
-	return newLambda(vs, false, as, e, t)
+	return newLambda(vs, as, e, t)
 }
 
-func newLambda(vs []Argument, u bool, as []Argument, e Expression, t types.Type) Lambda {
+func newLambda(vs []Argument, as []Argument, e Expression, t types.Type) Lambda {
 	return Lambda{
 		NewLambdaDeclaration(
 			argumentsToTypes(vs),
-			u,
 			argumentsToTypes(as),
 			t,
 		),
@@ -63,7 +62,7 @@ func (l Lambda) ToDeclaration() LambdaDeclaration {
 // ClearFreeVariables clears free variables.
 func (l Lambda) ClearFreeVariables() Lambda {
 	return Lambda{
-		NewLambdaDeclaration(nil, l.IsUpdatable(), l.ArgumentTypes(), l.ResultType()),
+		NewLambdaDeclaration(nil, l.ArgumentTypes(), l.ResultType()),
 		nil,
 		l.arguments,
 		l.body,

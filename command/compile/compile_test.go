@@ -206,7 +206,6 @@ func TestCompileToCoreWithVariableBinds(t *testing.T) {
 					"x",
 					coreast.NewVariableLambda(
 						nil,
-						true,
 						numberConstructorApplication(coreast.NewFloat64(42)),
 						numberAlgebraic,
 					),
@@ -252,7 +251,6 @@ func TestCompileToCoreWithFunctionBinds(t *testing.T) {
 					"$literal-0",
 					coreast.NewVariableLambda(
 						nil,
-						true,
 						numberConstructorApplication(coreast.NewFloat64(42)),
 						numberAlgebraic,
 					),
@@ -305,7 +303,6 @@ func TestCompileToCoreWithLetExpressions(t *testing.T) {
 					"$literal-0",
 					coreast.NewVariableLambda(
 						nil,
-						true,
 						numberConstructorApplication(coreast.NewFloat64(42)),
 						numberAlgebraic,
 					),
@@ -314,14 +311,12 @@ func TestCompileToCoreWithLetExpressions(t *testing.T) {
 					"x",
 					coreast.NewVariableLambda(
 						nil,
-						true,
 						coreast.NewLet(
 							[]coreast.Bind{
 								coreast.NewBind(
 									"y",
 									coreast.NewVariableLambda(
 										nil,
-										true,
 										coreast.NewFunctionApplication(coreast.NewVariable("$literal-0"), nil),
 										coretypes.NewBoxed(numberAlgebraic),
 									),
@@ -382,7 +377,6 @@ func TestCompileToCoreWithLetExpressionsAndFreeVariables(t *testing.T) {
 										[]coreast.Argument{
 											coreast.NewArgument("x", coretypes.NewBoxed(numberAlgebraic)),
 										},
-										true,
 										coreast.NewFunctionApplication(coreast.NewVariable("x"), nil),
 										coretypes.NewBoxed(numberAlgebraic),
 									),
@@ -450,7 +444,6 @@ func TestCompileToCoreWithNestedLetExpressionsInLambdaExpressions(t *testing.T) 
 										[]coreast.Argument{
 											coreast.NewArgument("x", coretypes.NewBoxed(numberAlgebraic)),
 										},
-										true,
 										coreast.NewLet(
 											[]coreast.Bind{
 												coreast.NewBind(
@@ -459,7 +452,6 @@ func TestCompileToCoreWithNestedLetExpressionsInLambdaExpressions(t *testing.T) 
 														[]coreast.Argument{
 															coreast.NewArgument("x", coretypes.NewBoxed(numberAlgebraic)),
 														},
-														true,
 														coreast.NewFunctionApplication(coreast.NewVariable("x"), nil),
 														coretypes.NewBoxed(numberAlgebraic),
 													),
@@ -512,7 +504,6 @@ func TestCompileToCoreWithLists(t *testing.T) {
 					"$literal-0",
 					coreast.NewVariableLambda(
 						nil,
-						true,
 						numberConstructorApplication(coreast.NewFloat64(42)),
 						numberAlgebraic,
 					),
@@ -521,14 +512,12 @@ func TestCompileToCoreWithLists(t *testing.T) {
 					"x",
 					coreast.NewVariableLambda(
 						nil,
-						true,
 						coreast.NewLet(
 							[]coreast.Bind{
 								coreast.NewBind(
 									"$nil",
 									coreast.NewVariableLambda(
 										nil,
-										true,
 										coreast.NewConstructorApplication(
 											coreast.NewConstructor(listAlgebraic, 1),
 											nil,
@@ -542,7 +531,6 @@ func TestCompileToCoreWithLists(t *testing.T) {
 										[]coreast.Argument{
 											coreast.NewArgument("$nil", coretypes.NewBoxed(listAlgebraic)),
 										},
-										true,
 										coreast.NewConstructorApplication(
 											coreast.NewConstructor(listAlgebraic, 0),
 											[]coreast.Atom{
@@ -612,7 +600,6 @@ func TestCompileToCoreWithListCaseExpressionsWithoutDefaultAlternatives(t *testi
 					"$literal-0",
 					coreast.NewVariableLambda(
 						nil,
-						true,
 						numberConstructorApplication(coreast.NewFloat64(42)),
 						numberAlgebraic,
 					),
@@ -621,7 +608,6 @@ func TestCompileToCoreWithListCaseExpressionsWithoutDefaultAlternatives(t *testi
 					"$literal-1",
 					coreast.NewVariableLambda(
 						nil,
-						true,
 						numberConstructorApplication(coreast.NewFloat64(42)),
 						numberAlgebraic,
 					),
@@ -630,7 +616,6 @@ func TestCompileToCoreWithListCaseExpressionsWithoutDefaultAlternatives(t *testi
 					"$literal-2",
 					coreast.NewVariableLambda(
 						nil,
-						true,
 						numberConstructorApplication(coreast.NewFloat64(42)),
 						numberAlgebraic,
 					),
@@ -639,7 +624,6 @@ func TestCompileToCoreWithListCaseExpressionsWithoutDefaultAlternatives(t *testi
 					"x",
 					coreast.NewVariableLambda(
 						nil,
-						true,
 						coreast.NewAlgebraicCaseWithoutDefault(
 							coreast.NewLet(
 								[]coreast.Bind{
@@ -647,7 +631,6 @@ func TestCompileToCoreWithListCaseExpressionsWithoutDefaultAlternatives(t *testi
 										"$nil",
 										coreast.NewVariableLambda(
 											nil,
-											true,
 											coreast.NewConstructorApplication(nilConstructor, nil),
 											listAlgebraic,
 										),
@@ -658,7 +641,6 @@ func TestCompileToCoreWithListCaseExpressionsWithoutDefaultAlternatives(t *testi
 											[]coreast.Argument{
 												coreast.NewArgument("$nil", coretypes.NewBoxed(listAlgebraic)),
 											},
-											true,
 											listConstructorApplication(
 												coreast.NewVariable("$literal-2"),
 												coreast.NewVariable("$nil"),
@@ -754,7 +736,6 @@ func TestCompileToCoreWithBinaryOperations(t *testing.T) {
 					"$literal-0",
 					coreast.NewVariableLambda(
 						nil,
-						true,
 						numberConstructorApplication(coreast.NewFloat64(1)),
 						numberAlgebraic,
 					),
@@ -763,7 +744,6 @@ func TestCompileToCoreWithBinaryOperations(t *testing.T) {
 					"$literal-1",
 					coreast.NewVariableLambda(
 						nil,
-						true,
 						numberConstructorApplication(coreast.NewFloat64(1)),
 						numberAlgebraic,
 					),
@@ -772,14 +752,12 @@ func TestCompileToCoreWithBinaryOperations(t *testing.T) {
 					"x",
 					coreast.NewVariableLambda(
 						nil,
-						true,
 						coreast.NewLet(
 							[]coreast.Bind{
 								coreast.NewBind(
 									"$boxedResult",
 									coreast.NewVariableLambda(
 										nil,
-										true,
 										coreast.NewAlgebraicCaseWithoutDefault(
 											coreast.NewFunctionApplication(
 												coreast.NewVariable("$literal-0"),

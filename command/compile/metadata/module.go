@@ -35,7 +35,7 @@ func NewModule(m ast.Module) Module {
 				ds,
 				coreast.NewDeclaration(
 					n,
-					coreast.NewLambdaDeclaration(nil, false, f.Arguments(), f.Result()),
+					coreast.NewLambdaDeclaration(nil, f.Arguments(), f.Result()),
 				),
 			)
 		default:
@@ -43,7 +43,7 @@ func NewModule(m ast.Module) Module {
 				ds,
 				coreast.NewDeclaration(
 					n,
-					coreast.NewLambdaDeclaration(nil, true, nil, coretypes.Unbox(t.ToCore())),
+					coreast.NewLambdaDeclaration(nil, nil, coretypes.Unbox(t.ToCore())),
 				),
 			)
 		}

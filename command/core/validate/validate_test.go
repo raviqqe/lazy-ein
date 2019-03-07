@@ -28,7 +28,6 @@ func TestValidateError(t *testing.T) {
 						"x",
 						ast.NewVariableLambda(
 							[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
-							true,
 							ast.NewConstructorApplication(ast.NewConstructor(tt, 0), nil),
 							tt,
 						),

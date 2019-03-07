@@ -23,7 +23,6 @@ func TestCompile(t *testing.T) {
 					"foo",
 					ast.NewVariableLambda(
 						nil,
-						true,
 						ast.NewConstructorApplication(ast.NewConstructor(algebraicType, 0), nil),
 						algebraicType,
 					),

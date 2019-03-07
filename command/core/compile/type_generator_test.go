@@ -19,7 +19,6 @@ func TestTypeGeneratorGenerateSizedPayload(t *testing.T) {
 		{
 			lambda: ast.NewVariableLambda(
 				nil,
-				true,
 				ast.NewConstructorApplication(ast.NewConstructor(a, 0), []ast.Atom{ast.NewFloat64(42)}),
 				a,
 			),
@@ -31,16 +30,15 @@ func TestTypeGeneratorGenerateSizedPayload(t *testing.T) {
 					ast.NewArgument("x", types.NewFloat64()),
 					ast.NewArgument("y", types.NewFloat64()),
 				},
-				true,
 				ast.NewConstructorApplication(ast.NewConstructor(a, 0), []ast.Atom{ast.NewFloat64(42)}),
 				a,
 			),
 			size: 16,
 		},
 		{
-			lambda: ast.NewVariableLambda(
+			lambda: ast.NewFunctionLambda(
 				nil,
-				false,
+				[]ast.Argument{ast.NewArgument("y", types.NewFloat64())},
 				ast.NewConstructorApplication(ast.NewConstructor(a, 0), []ast.Atom{ast.NewFloat64(42)}),
 				a,
 			),

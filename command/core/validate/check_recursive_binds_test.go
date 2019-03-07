@@ -21,7 +21,6 @@ func TestValidateError(t *testing.T) {
 						"x",
 						ast.NewVariableLambda(
 							nil,
-							true,
 							ast.NewFunctionApplication(ast.NewVariable("x"), nil),
 							types.NewBoxed(tt),
 						),
@@ -45,14 +44,12 @@ func TestValidateErrorWithLetExpressions(t *testing.T) {
 						"x",
 						ast.NewVariableLambda(
 							nil,
-							true,
 							ast.NewLet(
 								[]ast.Bind{
 									ast.NewBind(
 										"y",
 										ast.NewVariableLambda(
 											[]ast.Argument{ast.NewArgument("y", types.NewBoxed(tt))},
-											true,
 											ast.NewFunctionApplication(ast.NewVariable("y"), nil),
 											types.NewBoxed(tt),
 										),

@@ -84,7 +84,7 @@ func (c compiler) compileBind(b ast.Bind) (coreast.Bind, error) {
 
 		return coreast.NewBind(
 			b.Name(),
-			coreast.NewVariableLambda(vs, true, e, t.(coretypes.Bindable)),
+			coreast.NewVariableLambda(vs, e, t.(coretypes.Bindable)),
 		), nil
 	}
 
@@ -181,7 +181,6 @@ func (c compiler) compileBinaryOperation(o ast.BinaryOperation) (coreast.Express
 				"$boxedResult",
 				coreast.NewVariableLambda(
 					vs,
-					true,
 					c.bindNumberPrimitive(
 						coreast.NewFunctionApplication(coreast.NewVariable(x), nil),
 						"$lhs",
@@ -287,7 +286,7 @@ func (c compiler) compilePrimitiveCase(cc ast.Case) (coreast.Expression, error) 
 		[]coreast.Bind{
 			coreast.NewBind(
 				d.Variable(),
-				coreast.NewVariableLambda(vs, true, arg, cc.Type().ToCore().(coretypes.Bindable)),
+				coreast.NewVariableLambda(vs, arg, cc.Type().ToCore().(coretypes.Bindable)),
 			),
 		},
 		coreast.NewPrimitiveCase(
@@ -338,7 +337,6 @@ func (c compiler) compileList(l ast.List) (coreast.Expression, error) {
 			s,
 			coreast.NewVariableLambda(
 				nil,
-				true,
 				coreast.NewConstructorApplication(coreast.NewConstructor(t, 1), nil),
 				t,
 			),
@@ -366,7 +364,6 @@ func (c compiler) compileList(l ast.List) (coreast.Expression, error) {
 				ss,
 				coreast.NewVariableLambda(
 					vs,
-					true,
 					coreast.NewConstructorApplication(
 						coreast.NewConstructor(t, 0),
 						[]coreast.Atom{

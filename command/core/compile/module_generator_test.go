@@ -26,7 +26,6 @@ func TestModuleGeneratorInitializeWithAlgebraicTypes(t *testing.T) {
 			"foo",
 			ast.NewVariableLambda(
 				nil,
-				true,
 				ast.NewConstructorApplication(
 					ast.NewConstructor(tt0, 0),
 					[]ast.Atom{ast.NewFloat64(42)},
@@ -38,7 +37,6 @@ func TestModuleGeneratorInitializeWithAlgebraicTypes(t *testing.T) {
 			"foo",
 			ast.NewVariableLambda(
 				nil,
-				true,
 				ast.NewConstructorApplication(
 					ast.NewConstructor(tt1, 0),
 					[]ast.Atom{ast.NewFloat64(42)},
@@ -56,7 +54,6 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 	a1 := types.NewAlgebraic(types.NewConstructor(types.NewFloat64()))
 	l0 := ast.NewVariableLambda(
 		nil,
-		true,
 		ast.NewConstructorApplication(ast.NewConstructor(a0, 0), nil),
 		a0,
 	)
@@ -137,7 +134,6 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				"y",
 				ast.NewVariableLambda(
 					nil,
-					true,
 					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
 					types.NewBoxed(a0),
 				),
@@ -184,7 +180,6 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 								"y",
 								ast.NewVariableLambda(
 									[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
-									true,
 									ast.NewConstructorApplication(
 										ast.NewConstructor(a1, 0),
 										[]ast.Atom{ast.NewVariable("x")},
@@ -243,7 +238,6 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 								"y",
 								ast.NewVariableLambda(
 									[]ast.Argument{ast.NewArgument("x", types.NewFloat64())},
-									true,
 									ast.NewConstructorApplication(
 										ast.NewConstructor(a1, 0),
 										[]ast.Atom{ast.NewVariable("x")},
@@ -255,7 +249,6 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 								"z",
 								ast.NewVariableLambda(
 									[]ast.Argument{ast.NewArgument("y", types.NewBoxed(a1))},
-									true,
 									ast.NewFunctionApplication(ast.NewVariable("y"), nil),
 									types.NewBoxed(a1),
 								),
@@ -273,7 +266,6 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				"x",
 				ast.NewVariableLambda(
 					nil,
-					true,
 					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
 					types.NewBoxed(a0),
 				),
@@ -285,7 +277,6 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				"x",
 				ast.NewVariableLambda(
 					nil,
-					true,
 					ast.NewFunctionApplication(ast.NewVariable("y"), nil),
 					types.NewBoxed(a0),
 				),
@@ -294,7 +285,6 @@ func TestModuleGeneratorGenerate(t *testing.T) {
 				"y",
 				ast.NewVariableLambda(
 					nil,
-					true,
 					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
 					types.NewBoxed(a0),
 				),
@@ -490,7 +480,6 @@ func TestModuleGeneratorGenerateWithAlgebraicTypes(t *testing.T) {
 				"foo",
 				ast.NewVariableLambda(
 					nil,
-					true,
 					ast.NewConstructorApplication(
 						ast.NewConstructor(tt, 0),
 						[]ast.Atom{ast.NewFloat64(42)},
@@ -518,7 +507,6 @@ func TestModuleGeneratorGenerateWithAlgebraicTypesOfMultipleConstructors(t *test
 				"foo",
 				ast.NewVariableLambda(
 					nil,
-					true,
 					ast.NewConstructorApplication(
 						ast.NewConstructor(tt, 1),
 						[]ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)},
@@ -548,7 +536,6 @@ func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
 						"x",
 						ast.NewVariableLambda(
 							nil,
-							true,
 							ast.NewConstructorApplication(
 								ast.NewConstructor(tt0, 0),
 								[]ast.Atom{ast.NewFloat64(42)},
@@ -574,7 +561,6 @@ func TestModuleGeneratorGenerateWithAlgebraicCaseExpressions(t *testing.T) {
 						"x",
 						ast.NewVariableLambda(
 							nil,
-							true,
 							ast.NewConstructorApplication(
 								ast.NewConstructor(tt1, 1),
 								[]ast.Atom{ast.NewFloat64(42), ast.NewFloat64(42)},
@@ -620,13 +606,12 @@ func TestModuleGeneratorGenerateWithDeclarations(t *testing.T) {
 	tt := types.NewBoxed(a)
 
 	m := ast.NewModule(
-		[]ast.Declaration{ast.NewDeclaration("x", ast.NewLambdaDeclaration(nil, true, nil, tt))},
+		[]ast.Declaration{ast.NewDeclaration("x", ast.NewLambdaDeclaration(nil, nil, tt))},
 		[]ast.Bind{
 			ast.NewBind(
 				"y",
 				ast.NewVariableLambda(
 					nil,
-					true,
 					ast.NewFunctionApplication(ast.NewVariable("x"), nil),
 					tt,
 				),

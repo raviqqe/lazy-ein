@@ -16,7 +16,6 @@ var algebraicType = types.NewAlgebraic(
 
 var algebraicLambda = ast.NewVariableLambda(
 	nil,
-	true,
 	ast.NewConstructorApplication(ast.NewConstructor(algebraicType, 1), nil),
 	algebraicType,
 )
@@ -56,7 +55,6 @@ func TestCheckTypes(t *testing.T) {
 				"x",
 				ast.NewVariableLambda(
 					nil,
-					true,
 					ast.NewConstructorApplication(
 						ast.NewConstructor(algebraicType, 0),
 						[]ast.Atom{ast.NewFloat64(42)},
@@ -71,7 +69,6 @@ func TestCheckTypes(t *testing.T) {
 				"x",
 				ast.NewVariableLambda(
 					nil,
-					true,
 					ast.NewLet(
 						[]ast.Bind{ast.NewBind("a", algebraicLambda)},
 						ast.NewFunctionApplication(ast.NewVariable("a"), nil),
@@ -255,7 +252,6 @@ func TestCheckTypesError(t *testing.T) {
 				"x",
 				ast.NewVariableLambda(
 					nil,
-					true,
 					ast.NewFloat64(42),
 					algebraicType,
 				),
@@ -267,7 +263,6 @@ func TestCheckTypesError(t *testing.T) {
 				"x",
 				ast.NewVariableLambda(
 					nil,
-					true,
 					ast.NewFunctionApplication(ast.NewVariable("y"), nil),
 					types.NewBoxed(algebraicType),
 				),
@@ -280,7 +275,6 @@ func TestCheckTypesError(t *testing.T) {
 				"g",
 				ast.NewVariableLambda(
 					nil,
-					true,
 					ast.NewFunctionApplication(ast.NewVariable("f"), []ast.Atom{ast.NewFloat64(42)}),
 					algebraicType,
 				),
@@ -339,7 +333,6 @@ func TestCheckTypesError(t *testing.T) {
 				"x",
 				ast.NewVariableLambda(
 					nil,
-					true,
 					ast.NewConstructorApplication(
 						ast.NewConstructor(algebraicType, 0),
 						[]ast.Atom{ast.NewVariable("a")},
@@ -354,7 +347,6 @@ func TestCheckTypesError(t *testing.T) {
 				"x",
 				ast.NewVariableLambda(
 					nil,
-					true,
 					ast.NewConstructorApplication(ast.NewConstructor(algebraicType, 0), nil),
 					algebraicType,
 				),
@@ -412,7 +404,7 @@ func TestCheckTypesWithDeclarations(t *testing.T) {
 				[]ast.Declaration{
 					ast.NewDeclaration(
 						"x",
-						ast.NewLambdaDeclaration(nil, true, nil, algebraicType),
+						ast.NewLambdaDeclaration(nil, nil, algebraicType),
 					),
 				},
 				[]ast.Bind{
@@ -420,7 +412,6 @@ func TestCheckTypesWithDeclarations(t *testing.T) {
 						"y",
 						ast.NewVariableLambda(
 							nil,
-							true,
 							ast.NewFunctionApplication(ast.NewVariable("x"), nil),
 							types.NewBoxed(algebraicType),
 						),

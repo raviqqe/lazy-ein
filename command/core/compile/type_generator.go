@@ -136,7 +136,7 @@ func (g typeGenerator) generateEntryFunction(as []types.Type, r types.Type) llvm
 func (g typeGenerator) generateSizedPayload(l ast.LambdaDeclaration) llvm.Type {
 	n := g.GetSize(g.GenerateEnvironment(l))
 
-	if m := g.GetSize(g.Generate(types.Unbox(l.ResultType()))); l.IsUpdatable() && m > n {
+	if m := g.GetSize(g.Generate(types.Unbox(l.ResultType()))); l.IsThunk() && m > n {
 		n = m
 	}
 

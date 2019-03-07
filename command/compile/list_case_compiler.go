@@ -85,7 +85,7 @@ func (c listCaseCompiler) Compile(cc ast.Case) (coreast.Expression, error) {
 
 	return coreast.NewLet(
 		[]coreast.Bind{
-			coreast.NewBind(s, coreast.NewVariableLambda(vs, true, arg, coretypes.NewBoxed(t))),
+			coreast.NewBind(s, coreast.NewVariableLambda(vs, arg, coretypes.NewBoxed(t))),
 		},
 		coreast.NewAlgebraicCase(
 			coreast.NewFunctionApplication(coreast.NewVariable(s), nil),
@@ -98,7 +98,6 @@ func (c listCaseCompiler) Compile(cc ast.Case) (coreast.Expression, error) {
 							d.Variable(),
 							coreast.NewVariableLambda(
 								[]coreast.Argument{coreast.NewArgument(s, coretypes.NewBoxed(t))},
-								true,
 								coreast.NewFunctionApplication(coreast.NewVariable(s), nil),
 								coretypes.NewBoxed(t),
 							),
