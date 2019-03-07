@@ -1,8 +1,12 @@
 macro_rules! eval {
-    ($thunk:expr) => { ($thunk.entry)(&mut $thunk.payload) };
-    ($thunk:expr, $($arg:expr),+) => {
-        ($thunk.entry)(&mut $thunk.payload, $($arg),+)
-    };
+    ($thunk:expr) => {{
+        let thunk = $thunk;
+        (thunk.entry)(&mut thunk.payload)
+    }};
+    ($thunk:expr, $($arg:expr),+) => {{
+        let thunk = &mut $thunk;
+        (thunk.entry)(&mut thunk.payload, $($arg),+)
+    }};
 }
 
 macro_rules! closure {
