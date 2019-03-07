@@ -230,7 +230,10 @@ func (g *moduleGenerator) createVariableLambda(f llvm.Value, l ast.Lambda, n str
 	}
 
 	if l.IsUpdatable() {
-		b.CreateStore(v, b.CreateBitCast(f.FirstParam(), llir.PointerType(v.Type()), ""))
+		p := b.CreateBitCast(f.FirstParam(), v.Type(), "")
+		b.CreateStore(b.CreateLoad(v, ""), p)
+		v = p
+
 		b.CreateCall(
 			g.module.NamedFunction(atomicStoreFunctionName),
 			[]llvm.Value{
@@ -260,12 +263,7 @@ func (g *moduleGenerator) createNormalFormEntryFunction(n string, t llvm.Type) l
 
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
-	b.CreateRet(
-		b.CreateLoad(
-			b.CreateBitCast(f.FirstParam(), llir.PointerType(f.Type().ElementType().ReturnType()), ""),
-			"",
-		),
-	)
+	b.CreateRet(b.CreateBitCast(f.FirstParam(), f.Type().ElementType().ReturnType(), ""))
 
 	return f
 }

@@ -24,15 +24,7 @@ func (g typeGenerator) Generate(t types.Type) llvm.Type {
 
 	switch t := t.(type) {
 	case types.Algebraic:
-		if types.IsRecursive(t) {
-			s := llvm.GlobalContext().StructCreateNamed(t.String())
-			g.cache[t.String()] = s
-
-			s.StructSetBody(g.pushType(s).generateAlgebraicBody(t), false)
-			return s
-		}
-
-		return llir.StructType(g.pushDummyType().generateAlgebraicBody(t))
+		return g.generateUnboxedAlgebraic(t)
 	case types.Boxed:
 		return llir.PointerType(
 			g.generateClosure(g.generateEntryFunction(nil, t.Content()), g.GenerateUnsizedPayload()),
@@ -78,6 +70,20 @@ func (g typeGenerator) generateAlgebraicBody(t types.Algebraic) []llvm.Type {
 	}
 }
 
+func (g typeGenerator) generateUnboxedAlgebraic(t types.Algebraic) llvm.Type {
+	if tt, ok := g.cache[t.String()]; ok {
+		return tt
+	} else if !types.IsRecursive(t) {
+		return llir.StructType(g.pushDummyType().generateAlgebraicBody(t))
+	}
+
+	s := llvm.GlobalContext().StructCreateNamed(t.String())
+	g.cache[t.String()] = s
+
+	s.StructSetBody(g.pushType(s).generateAlgebraicBody(t), false)
+	return s
+}
+
 func (g typeGenerator) generateFunctionClosure(t types.Function) llvm.Type {
 	return g.generateClosure(
 		g.generateEntryFunction(t.Arguments(), t.Result()),
@@ -112,8 +118,14 @@ func (g typeGenerator) GenerateLambdaEntryFunction(l ast.LambdaDeclaration) llvm
 }
 
 func (g typeGenerator) generateEntryFunction(as []types.Type, r types.Type) llvm.Type {
+	t := g.Generate(r)
+
+	if _, ok := r.(types.Algebraic); ok {
+		t = llir.PointerType(t)
+	}
+
 	return llir.FunctionType(
-		g.Generate(r),
+		t,
 		append(
 			[]llvm.Type{llir.PointerType(g.GenerateUnsizedPayload())},
 			g.generateMany(as)...,
@@ -165,7 +177,7 @@ func (g typeGenerator) GenerateConstructorUnionifyFunction(
 	a types.Algebraic,
 	c types.Constructor,
 ) llvm.Type {
-	return llir.FunctionType(g.Generate(a), g.generateMany(c.Elements()))
+	return llir.FunctionType(g.generateUnboxedAlgebraic(a), g.generateMany(c.Elements()))
 }
 
 func (g typeGenerator) GenerateConstructorStructifyFunction(
@@ -174,7 +186,7 @@ func (g typeGenerator) GenerateConstructorStructifyFunction(
 ) llvm.Type {
 	return llir.FunctionType(
 		g.GenerateConstructorElements(c),
-		[]llvm.Type{g.Generate(a)},
+		[]llvm.Type{g.generateUnboxedAlgebraic(a)},
 	)
 }
 

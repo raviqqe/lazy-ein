@@ -19,7 +19,7 @@ pub extern "C" fn main() {
         gc::Allocator::enable_gc();
     }
 
-    let output: f64 = eval!(unsafe { eval!(ein_main, &mut 42.0.into()) }).into();
+    let output: f64 = (*eval!(unsafe { eval!(ein_main, &mut 42.0.into()) })).into();
 
     println!("{}", output);
 

@@ -7,7 +7,7 @@ macro_rules! eval {
 
 macro_rules! closure {
     ($result:ty) => {
-        crate::core::Closure<extern "fastcall" fn(&mut $result) -> $result, $result>
+        crate::core::Closure<extern "fastcall" fn(&mut $result) -> &mut $result, $result>
     };
     ($result:ty, $($arg:ty),+) => {
         crate::core::Closure<extern "fastcall" fn(&mut crate::core::Environment, $($arg),+) -> $result, crate::core::Environment>
@@ -45,12 +45,14 @@ pub struct Environment(i8); // avoid zero-sized type for compatibility with C
 pub type List<T> = closure!(algebraic::List<T>);
 pub type Number = closure!(algebraic::Number);
 
-extern "fastcall" fn list_entry<T: Clone>(list: &mut algebraic::List<T>) -> algebraic::List<T> {
-    list.clone()
+extern "fastcall" fn list_entry<T: Clone>(
+    list: &mut algebraic::List<T>,
+) -> &mut algebraic::List<T> {
+    list
 }
 
-extern "fastcall" fn number_entry(number: &mut algebraic::Number) -> algebraic::Number {
-    *number
+extern "fastcall" fn number_entry(number: &mut algebraic::Number) -> &mut algebraic::Number {
+    number
 }
 
 pub mod algebraic {

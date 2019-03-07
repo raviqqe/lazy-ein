@@ -108,7 +108,7 @@ func (g *functionBodyGenerator) generateAlgebraicCase(c ast.AlgebraicCase) (llvm
 		return llvm.Value{}, err
 	}
 
-	arg = forceThunk(g.builder, arg, g.typeGenerator)
+	arg = g.builder.CreateLoad(forceThunk(g.builder, arg, g.typeGenerator), "")
 	tag := llvm.ConstInt(g.typeGenerator.GenerateConstructorTag(), 0, false)
 
 	if len(c.Alternatives()) != 0 && len(c.Alternatives()[0].Constructor().AlgebraicType().Constructors()) != 1 {
@@ -227,11 +227,15 @@ func (g *functionBodyGenerator) generateConstructor(c ast.ConstructorApplication
 		return llvm.Value{}, err
 	}
 
-	return llir.CreateCall(
+	v := llir.CreateCall(
 		g.builder,
 		g.module().NamedFunction(names.ToUnionify(c.Constructor().ID())),
 		vs,
-	), nil
+	)
+
+	p := g.builder.CreateAlloca(v.Type(), "")
+	g.builder.CreateStore(v, p)
+	return p, nil
 }
 
 func (g *functionBodyGenerator) generateLet(l ast.Let) (llvm.Value, error) {
