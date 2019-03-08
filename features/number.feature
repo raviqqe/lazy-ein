@@ -5,25 +5,25 @@ Feature: Number
     f : Number -> Number
     f x = x
 
-    main : Number -> Number
-    <bind>
+    main : Number -> [Number]
+    main x = [<expression>]
     """
     When I successfully run `ein build main.ein`
     And I successfully run `sh -c ./a.out`
     Then the stdout from "sh -c ./a.out" should contain exactly "42"
     Examples:
-      | bind                         |
-      | main x = 42                  |
-      | main x = 40 + 2              |
-      | main x = 21 + 7 * 3          |
-      | main x = 7 + 12 / 3 * 10 - 5 |
-      | main x = f 40 + 2            |
+      | expression          |
+      | 42                  |
+      | 40 + 2              |
+      | 21 + 7 * 3          |
+      | 7 + 12 / 3 * 10 - 5 |
+      | f 40 + 2            |
 
   Scenario: Use case expressions
     Given a file named "main.ein" with:
     """
-    main : Number -> Number
-    main x = case 1 of 1 -> 42
+    main : Number -> [Number]
+    main x = case 1 of 1 -> [42]
     """
     When I successfully run `ein build main.ein`
     And I successfully run `sh -c ./a.out`
@@ -32,11 +32,11 @@ Feature: Number
   Scenario: Use default alternatives in case expressions
     Given a file named "main.ein" with:
     """
-    main : Number -> Number
+    main : Number -> [Number]
     main x =
       case 1 of
-        2 -> 13
-        x -> 41 + x
+        2 -> [13]
+        x -> [41 + x]
     """
     When I successfully run `ein build main.ein`
     And I successfully run `sh -c ./a.out`
@@ -45,13 +45,13 @@ Feature: Number
   Scenario: Use nested case expressions
     Given a file named "main.ein" with:
     """
-    main : Number -> Number
+    main : Number -> [Number]
     main x =
       case 1 of
-        2 -> 13
+        2 -> [13]
         x -> case 2 of
-               3 -> 13
-               x -> 40 + x
+               3 -> [13]
+               x -> [40 + x]
     """
     When I successfully run `ein build main.ein`
     And I successfully run `sh -c ./a.out`
@@ -66,8 +66,8 @@ Feature: Number
         0 -> 0
         x -> x + sum (x - 1)
 
-    main : Number -> Number
-    main x = sum 100
+    main : Number -> [Number]
+    main x = [sum 100]
     """
     When I successfully run `ein build main.ein`
     And I successfully run `sh -c ./a.out`

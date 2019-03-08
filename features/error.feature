@@ -2,7 +2,7 @@ Feature: Error
   Scenario: Emit build errors
     Given a file named "main.ein" with:
     """
-    main : Number -> Number
+    main : Number -> [Number]
     main x =
     """
     When I run `ein build main.ein`
@@ -16,8 +16,8 @@ Feature: Error
   Scenario: Emit build errors
     Given a file named "main.ein" with:
     """
-    main : Number -> Number
-    main x = case 1 of 2 -> 3
+    main : Number -> [Number]
+    main x = case 1 of 2 -> [3]
     """
     And I run `ein build main.ein`
     When I run `sh -c ./a.out`

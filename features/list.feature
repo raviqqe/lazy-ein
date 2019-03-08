@@ -5,8 +5,8 @@ Feature: List
     l : [Number]
     l = [42]
 
-    main : Number -> Number
-    main x = 42
+    main : Number -> [Number]
+    main x = [42]
     """
     When I successfully run `ein build main.ein`
     And I successfully run `sh -c ./a.out`
@@ -15,8 +15,8 @@ Feature: List
   Scenario Outline: Use list case expressions with single alternatives
     Given a file named "main.ein" with:
     """
-    main : Number -> Number
-    main x = <case expression>
+    main : Number -> [Number]
+    main x = [<case expression>]
     """
     When I successfully run `ein build main.ein`
     And I successfully run `sh -c ./a.out`
@@ -36,11 +36,11 @@ Feature: List
   Scenario: Use list case expressions with multiple alternatives
     Given a file named "main.ein" with:
     """
-    main : Number -> Number
+    main : Number -> [Number]
     main x =
       case [42] of
-        [42, 0] -> 13
-        [y] -> 42
+        [42, 0] -> [13]
+        [y] -> [42]
     """
     When I successfully run `ein build main.ein`
     And I successfully run `sh -c ./a.out`
@@ -49,12 +49,12 @@ Feature: List
   Scenario: Use complex list case expressions
     Given a file named "main.ein" with:
     """
-    main : Number -> Number
+    main : Number -> [Number]
     main x =
       case [1, 2, 3] of
-        [x, 2, 4] -> 13
-        [1, x, 4] -> 13
-        [1, 2, x] -> 42
+        [x, 2, 4] -> [13]
+        [1, x, 4] -> [13]
+        [1, 2, x] -> [42]
     """
     When I successfully run `ein build main.ein`
     And I successfully run `sh -c ./a.out`

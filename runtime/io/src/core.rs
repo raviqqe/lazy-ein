@@ -63,7 +63,7 @@ pub mod algebraic {
     #[derive(Clone, Copy)]
     #[repr(C)]
     pub enum List<T: Clone> {
-        Cons(T, *mut super::List<T>),
+        Cons(*mut T, *mut super::List<T>),
         Nil,
     }
 
@@ -73,7 +73,7 @@ pub mod algebraic {
 
             for x in xs.into_iter().rev() {
                 l = List::Cons(
-                    x.clone().into(),
+                    &mut x.clone().into(),
                     &mut super::Closure::new(super::list_entry, l),
                 )
             }

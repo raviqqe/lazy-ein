@@ -2,8 +2,8 @@ Feature: Build
   Scenario: Build exectuables
     Given a file named "main.ein" with:
     """
-    main : Number -> Number
-    main x = 42
+    main : Number -> [Number]
+    main x = [42]
     """
     And I successfully run `ein build main.ein`
     When I run `ls a.out`
@@ -33,8 +33,8 @@ Feature: Build
     """
     import "tmp/aruba/foo"
 
-    main : Number -> Number
-    main x = foo.x
+    main : Number -> [Number]
+    main x = [foo.x]
     """
     And I successfully run `ein build main.ein`
     When I run `ls a.out`
