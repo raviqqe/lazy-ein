@@ -9,4 +9,7 @@ name = "io"
 crate-type = ["staticlib"]
 
 [dependencies]
+coroutine = "0.8"
+crossbeam = "0.7"
 gc = { path = "../gc" }
+num_cpus = "1"
