@@ -44,7 +44,9 @@ impl From<f64> for Number {
 }
 
 #[repr(C)]
-pub struct Environment(i8); // avoid zero-sized type for compatibility with C
+pub struct Environment {
+    _private: [u8; 0],
+}
 
 pub type List<T> = closure!(algebraic::List<T>);
 pub type Number = closure!(algebraic::Number);
