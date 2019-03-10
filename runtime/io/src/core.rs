@@ -1,7 +1,7 @@
 #[repr(C)]
 pub struct MainFunction {
-    pub entry: extern "fastcall" fn(&Environment, &mut Number) -> &'static mut List<Number>,
-    pub payload: Environment,
+    entry: extern "fastcall" fn(&Environment, &mut Number) -> &'static mut List<Number>,
+    payload: Environment,
 }
 
 impl MainFunction {
