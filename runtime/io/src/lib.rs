@@ -27,7 +27,6 @@ pub extern "C" fn main<'a, 'b>() {
     scope(|scope| {
         runner.spawn_main_thread(scope, unsafe { &ein_main });
         runner.spawn_worker_threads(scope);
-        runner.spawn_gc_starter(scope);
     })
     .unwrap();
 }

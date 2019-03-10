@@ -8,8 +8,8 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 pub struct Runner {
     effect_injector: Injector<EffectRef>,
     gc_started: AtomicBool,
-    num_spawned_threads: AtomicUsize,
     num_rest_effects: AtomicUsize,
+    num_spawned_workers: AtomicUsize,
     num_workers: usize,
 }
 
@@ -18,8 +18,8 @@ impl Runner {
         Runner {
             effect_injector: Injector::new(),
             gc_started: AtomicBool::new(false),
-            num_spawned_threads: AtomicUsize::new(0),
             num_rest_effects: AtomicUsize::new(0),
+            num_spawned_workers: AtomicUsize::new(0),
             num_workers: num_cpus::get(),
         }
     }
@@ -27,8 +27,9 @@ impl Runner {
     pub fn spawn_main_thread<'a, 'b>(&'a self, scope: &'b Scope<'a>, main: &'static MainFunction) {
         scope.spawn(move |_| {
             gc::Allocator::register_current_thread().unwrap();
-            self.num_spawned_threads.fetch_add(1, Ordering::SeqCst);
-            while !self.gc_started.load(Ordering::SeqCst) {}
+            while self.num_spawned_workers.load(Ordering::SeqCst) < self.num_workers {}
+            unsafe { gc::Allocator::start_gc() }
+            self.gc_started.store(true, Ordering::SeqCst);
 
             let mut output = main.call(&mut 42.0.into()).force();
 
@@ -51,7 +52,7 @@ impl Runner {
         for _ in 0..self.num_workers {
             scope.spawn(move |_| {
                 gc::Allocator::register_current_thread().unwrap();
-                self.num_spawned_threads.fetch_add(1, Ordering::SeqCst);
+                self.num_spawned_workers.fetch_add(1, Ordering::SeqCst);
                 while !self.gc_started.load(Ordering::SeqCst) {}
 
                 loop {
@@ -67,14 +68,6 @@ impl Runner {
                 }
             });
         }
-    }
-
-    pub fn spawn_gc_starter<'a, 'b>(&'a self, scope: &'b Scope<'a>) {
-        scope.spawn(move |_| {
-            while self.num_spawned_threads.load(Ordering::SeqCst) < self.num_workers + 1 {}
-            unsafe { gc::Allocator::start_gc() }
-            self.gc_started.store(true, Ordering::SeqCst);
-        });
     }
 }
 
