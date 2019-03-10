@@ -43,14 +43,12 @@ impl Allocator {
             reg_base: std::ptr::null(),
         };
 
-        unsafe {
-            if GC_get_stack_base(&mut base) != GC_SUCCESS {
-                return Err(error::Error::new("failed to get stack base"));
-            }
+        if unsafe { GC_get_stack_base(&mut base) } != GC_SUCCESS {
+            return Err(error::Error::new("failed to get stack base"));
+        }
 
-            if GC_register_my_thread(&base) != GC_SUCCESS {
-                return Err(error::Error::new("failed to register a thread for GC"));
-            }
+        if unsafe { GC_register_my_thread(&base) } != GC_SUCCESS {
+            return Err(error::Error::new("failed to register a thread for GC"));
         }
 
         Ok(())
