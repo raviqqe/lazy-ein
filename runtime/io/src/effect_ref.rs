@@ -16,5 +16,4 @@ impl EffectRef {
     }
 }
 
-unsafe impl Sync for EffectRef {}
 unsafe impl Send for EffectRef {}
