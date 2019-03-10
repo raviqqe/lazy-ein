@@ -24,7 +24,7 @@ extern "C" {
     fn GC_register_my_thread(stack_base: *const GCStackBase) -> c_int;
 }
 
-static mut GC_ENABLED: bool = false;
+static mut GC_STARTED: bool = false;
 pub struct Allocator;
 
 impl Allocator {
@@ -33,8 +33,8 @@ impl Allocator {
         GC_allow_register_threads();
     }
 
-    pub unsafe fn enable_gc() {
-        GC_ENABLED = true
+    pub unsafe fn start_gc() {
+        GC_STARTED = true
     }
 
     pub fn register_current_thread() -> Result<(), error::Error> {
@@ -63,7 +63,7 @@ impl Allocator {
 
 unsafe impl GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        return if GC_ENABLED {
+        return if GC_STARTED {
             GC_malloc(layout.size())
         } else {
             GC_malloc_uncollectable(layout.size())

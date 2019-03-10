@@ -26,7 +26,7 @@ pub extern "C" fn main() {
 
     let thunk_injector = Injector::new();
     let num_rest_effects = AtomicUsize::new(0);
-    let gc_enabled = AtomicBool::new(false);
+    let gc_started = AtomicBool::new(false);
     let gc_ready = AtomicUsize::new(0);
 
     scope(|scope| {
@@ -35,13 +35,13 @@ pub extern "C" fn main() {
         {
             let thunk_injector = &thunk_injector;
             let num_rest_effects = &num_rest_effects;
-            let gc_enabled = &gc_enabled;
+            let gc_started = &gc_started;
             let gc_ready = &gc_ready;
 
             scope.spawn(move |_| {
                 gc::Allocator::register_current_thread().unwrap();
                 gc_ready.fetch_add(1, Ordering::SeqCst);
-                while !gc_enabled.load(Ordering::SeqCst) {}
+                while !gc_started.load(Ordering::SeqCst) {}
 
                 let mut output = unsafe { ein_main.call(&mut 42.0.into()) }.force();
 
@@ -66,13 +66,13 @@ pub extern "C" fn main() {
         for _ in 0..num_workers {
             let thunk_injector = &thunk_injector;
             let num_rest_effects = &num_rest_effects;
-            let gc_enabled = &gc_enabled;
+            let gc_started = &gc_started;
             let gc_ready = &gc_ready;
 
             scope.spawn(move |_| {
                 gc::Allocator::register_current_thread().unwrap();
                 gc_ready.fetch_add(1, Ordering::SeqCst);
-                while !gc_enabled.load(Ordering::SeqCst) {}
+                while !gc_started.load(Ordering::SeqCst) {}
 
                 loop {
                     match thunk_injector.steal() {
@@ -90,13 +90,13 @@ pub extern "C" fn main() {
 
         // GC starter thread
 
-        let gc_enabled = &gc_enabled;
+        let gc_started = &gc_started;
         let gc_ready = &gc_ready;
 
         scope.spawn(move |_| {
             while gc_ready.load(Ordering::SeqCst) < num_workers + 1 {}
-            unsafe { gc::Allocator::enable_gc() }
-            gc_enabled.store(true, Ordering::SeqCst);
+            unsafe { gc::Allocator::start_gc() }
+            gc_started.store(true, Ordering::SeqCst);
         });
     })
     .unwrap();
