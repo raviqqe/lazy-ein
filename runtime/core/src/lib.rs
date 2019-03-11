@@ -1,16 +1,10 @@
 extern crate atty;
+extern crate coro;
 extern crate gc;
 extern crate termcolor;
 
-use std::cell::RefCell;
 use std::io::Write;
-use std::vec::Vec;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
-
-thread_local! {
-    // TODO: Vec::with_capacity()
-    pub static BLACK_HOLE: RefCell<Vec<*mut u8>> = RefCell::new(Vec::new())
-}
 
 #[no_mangle]
 pub extern "C" fn core_alloc(size: usize) -> *mut u8 {
@@ -18,8 +12,8 @@ pub extern "C" fn core_alloc(size: usize) -> *mut u8 {
 }
 
 #[no_mangle]
-pub extern "C" fn core_black_hole(thunk: *mut u8) {
-    BLACK_HOLE.with(|black_hole| black_hole.borrow_mut().push(thunk));
+pub extern "C" fn core_black_hole() {
+    coro::suspend();
 }
 
 #[no_mangle]

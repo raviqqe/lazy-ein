@@ -32,11 +32,7 @@ func (g *moduleGenerator) initialize(m ast.Module) error {
 	llvm.AddFunction(
 		g.module,
 		blackHoleFunctionName,
-		llvm.FunctionType(
-			llvm.VoidType(),
-			[]llvm.Type{llir.PointerType(llvm.Int8Type())},
-			false,
-		),
+		llvm.FunctionType(llvm.VoidType(), nil, false),
 	)
 	llvm.AddFunction(
 		g.module,
@@ -269,11 +265,7 @@ func (g *moduleGenerator) createBlackHoleEntryFunction(n string, t llvm.Type) ll
 
 	b := llvm.NewBuilder()
 	b.SetInsertPointAtEnd(llvm.AddBasicBlock(f, ""))
-	b.CreateCall(
-		g.module.NamedFunction(blackHoleFunctionName),
-		[]llvm.Value{b.CreateBitCast(g.getSelfThunk(b), llir.PointerType(llvm.Int8Type()), "")},
-		"",
-	)
+	b.CreateCall(g.module.NamedFunction(blackHoleFunctionName), nil, "")
 	b.CreateRet(forceThunk(b, g.getSelfThunk(b), g.typeGenerator))
 
 	return f

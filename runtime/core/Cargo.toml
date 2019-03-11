@@ -10,5 +10,6 @@ crate-type = ["staticlib"]
 
 [dependencies]
 atty = "0.2"
+coro = { path = "../coro" }
 gc = { path = "../gc" }
 termcolor = "1"
