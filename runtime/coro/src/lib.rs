@@ -48,14 +48,11 @@ pub fn spawn<F: FnOnce() + 'static>(func: F) -> Handle {
 pub struct Handle(asymmetric::Handle);
 
 impl Handle {
-    pub fn resume(&mut self) -> Result<(), error::Error> {
+    pub fn resume(&mut self) -> Result<State, error::Error> {
         self.0
             .resume(0)
-            .and(Ok(()))
-            .map_err(|err| error::Error::new(err.description().into()))
-    }
+            .map_err(|err| error::Error::new(err.description().into()))?;
 
-    pub fn state(&self) -> Result<State, error::Error> {
         match self.0.state() {
             asymmetric::State::Finished => Ok(State::Finished),
             asymmetric::State::Parked => Ok(State::Parked),
@@ -66,6 +63,8 @@ impl Handle {
         }
     }
 }
+
+unsafe impl Send for Handle {}
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum State {
@@ -78,39 +77,23 @@ mod test {
     #[test]
     fn spawn() {
         let mut handle = super::spawn(|| {});
-        assert_eq!(handle.state().unwrap(), super::State::Suspended);
 
-        let result = handle.resume();
-
-        assert!(result.is_ok());
-        assert_eq!(handle.state().unwrap(), super::State::Finished);
+        assert_eq!(handle.resume().unwrap(), super::State::Finished);
     }
 
     #[test]
     fn suspend() {
         let mut handle = super::spawn(|| super::suspend());
-        assert_eq!(handle.state().unwrap(), super::State::Suspended);
 
-        let result = handle.resume();
-        assert!(result.is_ok());
-        assert_eq!(handle.state().unwrap(), super::State::Suspended);
-
-        let result = handle.resume();
-        assert!(result.is_ok());
-        assert_eq!(handle.state().unwrap(), super::State::Finished);
+        assert_eq!(handle.resume().unwrap(), super::State::Suspended);
+        assert_eq!(handle.resume().unwrap(), super::State::Finished);
     }
 
     #[test]
     fn park() {
         let mut handle = super::spawn(|| super::park());
-        assert_eq!(handle.state().unwrap(), super::State::Suspended);
 
-        let result = handle.resume();
-        assert!(result.is_ok());
-        assert_eq!(handle.state().unwrap(), super::State::Parked);
-
-        let result = handle.resume();
-        assert!(result.is_ok());
-        assert_eq!(handle.state().unwrap(), super::State::Finished);
+        assert_eq!(handle.resume().unwrap(), super::State::Parked);
+        assert_eq!(handle.resume().unwrap(), super::State::Finished);
     }
 }
