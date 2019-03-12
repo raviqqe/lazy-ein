@@ -39,7 +39,7 @@ pub fn spawn<F: FnOnce() + 'static>(func: F) -> Handle {
             0
         },
         coroutine::Options {
-            stack_size: 2 * 1024,
+            stack_size: 2 * 1024 * 1024,
             name: None,
         },
     ))

@@ -1,12 +1,14 @@
 use crate::core::algebraic;
 use crate::core::MainFunction;
 use crate::effect_ref::EffectRef;
+use coro;
 use crossbeam::deque::{Injector, Steal};
 use crossbeam::thread::Scope;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 pub struct Runner {
     effect_injector: Injector<EffectRef>,
+    suspended_coroutine_injector: Injector<coro::Handle>,
     gc_started: AtomicBool,
     num_rest_effects: AtomicUsize,
     num_spawned_workers: AtomicUsize,
@@ -17,6 +19,7 @@ impl Runner {
     pub fn new() -> Runner {
         Runner {
             effect_injector: Injector::new(),
+            suspended_coroutine_injector: Injector::new(),
             gc_started: AtomicBool::new(false),
             num_rest_effects: AtomicUsize::new(0),
             num_spawned_workers: AtomicUsize::new(0),
@@ -56,14 +59,37 @@ impl Runner {
                 while !self.gc_started.load(Ordering::SeqCst) {}
 
                 loop {
-                    match self.effect_injector.steal() {
-                        Steal::Success(thunk) => {
+                    let mut handle = match self.effect_injector.steal() {
+                        Steal::Success(thunk) => coro::spawn(move || {
                             let num: f64 = (*unsafe { &mut *thunk.pointer() }.force()).into();
                             println!("{}", num);
+                        }),
+                        Steal::Empty => match self.suspended_coroutine_injector.steal() {
+                            Steal::Success(handle) => handle,
+                            Steal::Empty => {
+                                delay();
+                                continue;
+                            }
+                            Steal::Retry => continue,
+                        },
+                        Steal::Retry => continue,
+                    };
+
+                    match handle.resume() {
+                        Ok(coro::State::Finished) => {
                             self.num_rest_effects.fetch_sub(1, Ordering::SeqCst);
                         }
-                        Steal::Empty => delay(),
-                        Steal::Retry => {}
+                        Ok(coro::State::Suspended) => {
+                            self.suspended_coroutine_injector.push(handle)
+                        }
+                        Ok(coro::State::Parked) => {
+                            eprintln!("parked coroutines not implemented");
+                            std::process::exit(1);
+                        }
+                        Err(error) => {
+                            eprintln!("{}", error);
+                            std::process::exit(1);
+                        }
                     }
                 }
             });

@@ -1,3 +1,4 @@
+extern crate coro;
 extern crate crossbeam;
 extern crate gc;
 extern crate num_cpus;
