@@ -1,6 +1,9 @@
+extern crate chashmap;
 extern crate coro;
 extern crate crossbeam;
 extern crate gc;
+#[macro_use]
+extern crate lazy_static;
 extern crate num_cpus;
 
 #[macro_use]
@@ -10,7 +13,7 @@ mod runner;
 
 use crate::core::MainFunction;
 use crossbeam::scope;
-use runner::Runner;
+use runner::RUNNER;
 
 #[global_allocator]
 static mut GLOBAL_ALLOCATOR: gc::Allocator = gc::Allocator;
@@ -23,11 +26,9 @@ extern "C" {
 pub extern "C" fn main<'a, 'b>() {
     unsafe { gc::Allocator::initialize() }
 
-    let runner = Runner::new();
-
     scope(|scope| {
-        runner.spawn_main_thread(scope, unsafe { &ein_main });
-        runner.spawn_worker_threads(scope);
+        RUNNER.spawn_main_thread(scope, unsafe { &ein_main });
+        RUNNER.spawn_worker_threads(scope);
     })
     .unwrap();
 }

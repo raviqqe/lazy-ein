@@ -9,7 +9,9 @@ name = "io"
 crate-type = ["staticlib"]
 
 [dependencies]
+chashmap = "2.2"
 coro = { path = "../coro" }
 crossbeam = "0.7"
 gc = { path = "../gc" }
+lazy_static = "1.3"
 num_cpus = "1"
