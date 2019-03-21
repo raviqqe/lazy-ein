@@ -26,9 +26,5 @@ extern "C" {
 pub extern "C" fn main<'a, 'b>() {
     unsafe { gc::Allocator::initialize() }
 
-    scope(|scope| {
-        RUNNER.spawn_main_thread(scope, unsafe { &ein_main });
-        RUNNER.spawn_worker_threads(scope);
-    })
-    .unwrap();
+    scope(|scope| RUNNER.spawn_threads(scope, unsafe { &ein_main })).unwrap();
 }

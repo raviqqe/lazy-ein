@@ -3,19 +3,13 @@ use crate::core::MainFunction;
 use crate::effect_ref::EffectRef;
 use chashmap::CHashMap;
 use coro;
-use crossbeam::deque::{self, Injector};
+use crossbeam::deque::{Injector, Steal};
 use crossbeam::thread::Scope;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Mutex;
 
 lazy_static! {
     pub static ref RUNNER: Runner = Runner::new();
-}
-
-enum Steal {
-    Success(coro::Handle),
-    Retry,
-    Empty,
 }
 
 pub struct Runner {
@@ -43,7 +37,12 @@ impl Runner {
         }
     }
 
-    pub fn spawn_main_thread<'a, 'b>(&'a self, scope: &'b Scope<'a>, main: &'static MainFunction) {
+    pub fn spawn_threads<'a, 'b>(&'a self, scope: &'b Scope<'a>, main: &'static MainFunction) {
+        self.spawn_main_thread(scope, main);
+        self.spawn_worker_threads(scope);
+    }
+
+    fn spawn_main_thread<'a, 'b>(&'a self, scope: &'b Scope<'a>, main: &'static MainFunction) {
         scope.spawn(move |_| {
             gc::Allocator::register_current_thread().unwrap();
             while self.num_spawned_workers.load(Ordering::SeqCst) < self.num_workers {}
@@ -67,7 +66,7 @@ impl Runner {
         });
     }
 
-    pub fn spawn_worker_threads<'a, 'b>(&'a self, scope: &'b Scope<'a>) {
+    fn spawn_worker_threads<'a, 'b>(&'a self, scope: &'b Scope<'a>) {
         for _ in 0..self.num_workers {
             scope.spawn(move |_| {
                 gc::Allocator::register_current_thread().unwrap();
@@ -76,12 +75,11 @@ impl Runner {
 
                 loop {
                     let mut handle = match self.steal() {
-                        Steal::Success(handle) => handle,
-                        Steal::Empty => {
+                        Some(handle) => handle,
+                        None => {
                             delay();
                             continue;
                         }
-                        Steal::Retry => continue,
                     };
 
                     match handle.resume() {
@@ -118,28 +116,34 @@ impl Runner {
         }
     }
 
-    fn steal(&self) -> Steal {
-        match self.effect_injector.steal() {
-            deque::Steal::Success(thunk) => {
-                return Steal::Success(coro::spawn(move || {
-                    let num: f64 = (*unsafe { &mut *thunk.pointer() }.force()).into();
-                    println!("{}", num);
-                }))
+    fn steal(&self) -> Option<coro::Handle> {
+        loop {
+            match self.ready_coroutine_injector.steal() {
+                Steal::Success(handle) => return Some(handle),
+                Steal::Empty => break,
+                Steal::Retry => {}
             }
-            deque::Steal::Retry => return Steal::Retry,
-            deque::Steal::Empty => {}
         }
 
-        match self.ready_coroutine_injector.steal() {
-            deque::Steal::Success(handle) => return Steal::Success(handle),
-            deque::Steal::Retry => return Steal::Retry,
-            deque::Steal::Empty => {}
+        loop {
+            match self.effect_injector.steal() {
+                Steal::Success(thunk) => {
+                    return Some(coro::spawn(move || {
+                        let num: f64 = (*unsafe { &mut *thunk.pointer() }.force()).into();
+                        println!("{}", num);
+                    }))
+                }
+                Steal::Empty => break,
+                Steal::Retry => {}
+            }
         }
 
-        match self.suspended_coroutine_injector.steal() {
-            deque::Steal::Success(handle) => Steal::Success(handle),
-            deque::Steal::Retry => Steal::Retry,
-            deque::Steal::Empty => Steal::Empty,
+        loop {
+            match self.suspended_coroutine_injector.steal() {
+                Steal::Success(handle) => return Some(handle),
+                Steal::Empty => return None,
+                Steal::Retry => {}
+            }
         }
     }
 }
