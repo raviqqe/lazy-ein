@@ -1,11 +1,10 @@
-use crate::core::algebraic;
-use crate::core::MainFunction;
+use crate::core::{algebraic, MainFunction};
 use crate::effect_ref::EffectRef;
+use crate::io::create_input;
 use chashmap::CHashMap;
 use coro;
 use crossbeam::deque::{Injector, Steal};
-use crossbeam::thread::Scope;
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Mutex;
 
 lazy_static! {
@@ -17,10 +16,7 @@ pub struct Runner {
     ready_coroutine_injector: Injector<coro::Handle>,
     suspended_coroutine_injector: Injector<coro::Handle>,
     parked_coroutine_map: CHashMap<usize, Mutex<coro::Handle>>,
-    gc_started: AtomicBool,
     num_rest_effects: AtomicUsize,
-    num_spawned_workers: AtomicUsize,
-    num_workers: usize,
 }
 
 impl Runner {
@@ -30,77 +26,78 @@ impl Runner {
             ready_coroutine_injector: Injector::new(),
             suspended_coroutine_injector: Injector::new(),
             parked_coroutine_map: CHashMap::new(),
-            gc_started: AtomicBool::new(false),
             num_rest_effects: AtomicUsize::new(0),
-            num_spawned_workers: AtomicUsize::new(0),
-            num_workers: num_cpus::get(),
         }
     }
 
-    pub fn spawn_threads<'a, 'b>(&'a self, scope: &'b Scope<'a>, main: &'static MainFunction) {
-        self.spawn_main_thread(scope, main);
-        self.spawn_worker_threads(scope);
-    }
-
-    fn spawn_main_thread<'a, 'b>(&'a self, scope: &'b Scope<'a>, main: &'static MainFunction) {
-        scope.spawn(move |_| {
-            gc::Allocator::register_current_thread().unwrap();
-            while self.num_spawned_workers.load(Ordering::SeqCst) < self.num_workers {}
-            unsafe { gc::Allocator::start_gc() }
-            self.gc_started.store(true, Ordering::SeqCst);
-
-            let mut output = main.call(&mut 42.0.into()).force();
-
-            while let algebraic::List::Cons(elem, list) = *output {
-                self.num_rest_effects.fetch_add(1, Ordering::SeqCst);
-                self.effect_injector
-                    .push(EffectRef::new(unsafe { &mut *elem }));
-                output = unsafe { &mut *list }.force();
-            }
-
-            while self.num_rest_effects.load(Ordering::SeqCst) != 0 {
-                delay()
-            }
-
-            std::process::exit(0)
-        });
-    }
-
-    fn spawn_worker_threads<'a, 'b>(&'a self, scope: &'b Scope<'a>) {
-        for _ in 0..self.num_workers {
-            scope.spawn(move |_| {
+    pub fn run(&'static self, main: &'static MainFunction) {
+        let mut runtime = tokio::runtime::Builder::new()
+            .after_start(move || {
+                // This thread registration assumes that no heap allocation is done before itself.
                 gc::Allocator::register_current_thread().unwrap();
-                self.num_spawned_workers.fetch_add(1, Ordering::SeqCst);
-                while !self.gc_started.load(Ordering::SeqCst) {}
+            })
+            .before_stop(move || {
+                // TODO: gc::Allocator::unregister_current_thread().unwrap();
+            })
+            .build()
+            .unwrap();
 
-                loop {
-                    let mut handle = match self.steal() {
-                        Some(handle) => handle,
-                        None => {
-                            delay();
-                            continue;
-                        }
-                    };
+        for _ in 0..num_cpus::get() {
+            runtime.spawn(tokio_async_await::compat::backward::Compat::new(
+                async move {
+                    loop {
+                        let mut handle = match self.steal() {
+                            Some(handle) => handle,
+                            None => {
+                                await!(delay()).unwrap();
+                                continue;
+                            }
+                        };
 
-                    match handle.resume() {
-                        Ok(coro::State::Finished) => {
-                            self.num_rest_effects.fetch_sub(1, Ordering::SeqCst);
-                        }
-                        Ok(coro::State::Suspended) => {
-                            self.suspended_coroutine_injector.push(handle)
-                        }
-                        Ok(coro::State::Parked) => {
-                            self.parked_coroutine_map
-                                .insert(handle.coroutine_id(), Mutex::new(handle));
-                        }
-                        Err(error) => {
-                            eprintln!("{}", error);
-                            std::process::exit(1);
+                        match handle.resume() {
+                            Ok(coro::State::Finished) => {
+                                // TODO: Check if a coroutine is of an effect.
+                                self.num_rest_effects.fetch_sub(1, Ordering::SeqCst);
+                            }
+                            Ok(coro::State::Suspended) => {
+                                self.suspended_coroutine_injector.push(handle)
+                            }
+                            Ok(coro::State::Parked) => {
+                                self.parked_coroutine_map
+                                    .insert(handle.coroutine_id(), Mutex::new(handle));
+                            }
+                            Err(error) => {
+                                eprintln!("{}", error);
+                                std::process::exit(1);
+                            }
                         }
                     }
-                }
-            });
+                },
+            ));
         }
+
+        runtime
+            .block_on::<_, (), ()>(tokio_async_await::compat::backward::Compat::new(
+                async move {
+                    {
+                        let mut output = main.call(create_input()).force();
+
+                        while let algebraic::List::Cons(elem, list) = *output {
+                            self.num_rest_effects.fetch_add(1, Ordering::SeqCst);
+                            self.effect_injector
+                                .push(EffectRef::new(unsafe { &mut *elem }));
+                            output = unsafe { &mut *list }.force();
+                        }
+                    }
+
+                    while self.num_rest_effects.load(Ordering::SeqCst) != 0 {
+                        await!(delay()).unwrap();
+                    }
+
+                    std::process::exit(0)
+                },
+            ))
+            .unwrap();
     }
 
     pub fn unpark(&self, coroutine_id: usize) {
@@ -113,6 +110,8 @@ impl Runner {
                 }
                 None => {}
             }
+
+            // TODO: Consider inserting delay here.
         }
     }
 
@@ -148,6 +147,8 @@ impl Runner {
     }
 }
 
-fn delay() {
-    std::thread::sleep(std::time::Duration::from_millis(1))
+async fn delay() -> Result<(), tokio::timer::Error> {
+    await!(tokio::timer::Delay::new(
+        std::time::Instant::now() + std::time::Duration::from_millis(1)
+    ))
 }

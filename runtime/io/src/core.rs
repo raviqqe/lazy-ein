@@ -30,6 +30,10 @@ impl<T> Thunk<T> {
         Thunk { entry, payload }
     }
 
+    pub fn new_with_entry(entry: extern "fastcall" fn(&mut T) -> &mut T, payload: T) -> Self {
+        Thunk { entry, payload }
+    }
+
     pub fn force(&mut self) -> &mut T {
         (self.entry)(&mut self.payload)
     }
