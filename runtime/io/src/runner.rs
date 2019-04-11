@@ -37,7 +37,7 @@ impl Runner {
                 gc::Allocator::register_current_thread().unwrap();
             })
             .before_stop(move || {
-                // TODO: gc::Allocator::unregister_current_thread().unwrap();
+                gc::Allocator::unregister_current_thread();
             })
             .build()
             .unwrap();

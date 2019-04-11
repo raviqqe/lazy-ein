@@ -22,6 +22,7 @@ extern "C" {
     fn GC_malloc(size: size_t) -> *mut c_void;
     fn GC_malloc_uncollectable(size: size_t) -> *mut c_void;
     fn GC_register_my_thread(stack_base: *const GCStackBase) -> c_int;
+    fn GC_unregister_my_thread();
 }
 
 static mut GC_STARTED: bool = false;
@@ -52,6 +53,10 @@ impl Allocator {
         }
 
         Ok(())
+    }
+
+    pub fn unregister_current_thread() {
+        unsafe { GC_unregister_my_thread() }
     }
 
     pub fn alloc(size: usize) -> *mut u8 {
