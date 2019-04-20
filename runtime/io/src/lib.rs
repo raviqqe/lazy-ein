@@ -1,9 +1,9 @@
 #![feature(async_await, await_macro, futures_api)]
 
+extern crate bdwgc_alloc;
 extern crate chashmap;
 extern crate coro;
 extern crate crossbeam;
-extern crate gc;
 #[macro_use]
 extern crate lazy_static;
 extern crate num_cpus;
@@ -21,7 +21,7 @@ use crate::core::MainFunction;
 use runner::RUNNER;
 
 #[global_allocator]
-static mut GLOBAL_ALLOCATOR: gc::Allocator = gc::Allocator;
+static GLOBAL_ALLOCATOR: bdwgc_alloc::Allocator = bdwgc_alloc::Allocator;
 
 extern "C" {
     static ein_main: MainFunction;
@@ -29,8 +29,7 @@ extern "C" {
 
 #[no_mangle]
 pub extern "C" fn main<'a, 'b>() {
-    unsafe { gc::Allocator::initialize() }
-    unsafe { gc::Allocator::start_gc() }
+    unsafe { bdwgc_alloc::Allocator::initialize() }
 
     RUNNER.run(unsafe { &ein_main });
 }

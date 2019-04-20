@@ -1,14 +1,15 @@
 extern crate atty;
+extern crate bdwgc_alloc;
 extern crate coro;
-extern crate gc;
 extern crate termcolor;
 
+use std::alloc::GlobalAlloc;
 use std::io::Write;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 #[no_mangle]
 pub extern "C" fn core_alloc(size: usize) -> *mut u8 {
-    gc::Allocator::alloc(size)
+    unsafe { bdwgc_alloc::Allocator.alloc(std::alloc::Layout::from_size_align(size, 8).unwrap()) }
 }
 
 #[no_mangle]

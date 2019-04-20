@@ -32,12 +32,12 @@ impl Runner {
 
     pub fn run(&'static self, main: &'static MainFunction) {
         let mut runtime = tokio::runtime::Builder::new()
-            .after_start(move || {
+            .after_start(move || unsafe {
                 // This thread registration assumes that no heap allocation is done before itself.
-                gc::Allocator::register_current_thread().unwrap();
+                bdwgc_alloc::Allocator::register_current_thread().unwrap();
             })
-            .before_stop(move || {
-                gc::Allocator::unregister_current_thread();
+            .before_stop(move || unsafe {
+                bdwgc_alloc::Allocator::unregister_current_thread();
             })
             .build()
             .unwrap();
