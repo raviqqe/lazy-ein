@@ -1,63 +1,46 @@
 use crate::core;
 use crate::core::algebraic;
-use crate::runner::RUNNER;
+use crate::util;
 use coro;
-use std::ops::{Deref, DerefMut};
 use tokio;
 use tokio::io;
 use tokio::prelude::*;
 
 extern "fastcall" fn entry(payload: &mut algebraic::Number) -> &mut algebraic::Number {
-    // TODO: Lock thunks here.
-
-    let mut payload_ref = Ref::new(payload);
-    let id = coro::current_id();
+    let unlocker = match util::lock(coro::current_id(), payload, entry) {
+        Ok(unlocker) => unlocker,
+        Err(_payload) => return payload,
+    };
 
     tokio::spawn_async(async move {
         let mut stdin = io::stdin();
         let mut buf: [u8; 1024] = [0; 1024];
 
-        *payload_ref = match await!(stdin.read_async(&mut buf)) {
-            Ok(_) => 123.0,
-            Err(_) => 456.0,
+        unsafe {
+            unlocker.unlock(
+                match await!(stdin.read_async(&mut buf)) {
+                    Ok(n) => {
+                        if n > 0 {
+                            buf[0].into()
+                        } else {
+                            13.0
+                        }
+                    }
+                    Err(_) => 13.0,
+                }
+                .into(),
+            )
         }
-        .into();
-
-        RUNNER.unpark(id)
     });
 
-    coro::park();
-    return payload;
+    unsafe { unlocker.wait_unlock() }
+    payload
 }
 
 pub fn create_input() -> &'static mut core::Number {
-    let ptr = unsafe { std::alloc::alloc(std::alloc::Layout::new::<core::Number>()) }
-        as *mut core::Number;
-    unsafe { *ptr = core::Number::new_with_entry(entry, 42.0.into()) };
-    unsafe { &mut *ptr }
-}
-
-#[derive(Debug)]
-struct Ref<T>(*mut T);
-
-impl<T> Ref<T> {
-    fn new(ptr: *mut T) -> Self {
-        Ref(ptr)
-    }
-}
-
-unsafe impl<T> Send for Ref<T> {}
-
-impl<T> Deref for Ref<T> {
-    type Target = T;
-
-    fn deref(&self) -> &T {
-        unsafe { &*self.0 }
-    }
-}
-
-impl<T> DerefMut for Ref<T> {
-    fn deref_mut(&mut self) -> &mut T {
-        unsafe { &mut *self.0 }
-    }
+    let ptr: &'static mut core::Number = unsafe {
+        &mut *(std::alloc::alloc(std::alloc::Layout::new::<core::Number>()) as *mut core::Number)
+    };
+    *ptr = core::Number::new_with_entry(entry, 0.0.into());
+    ptr
 }

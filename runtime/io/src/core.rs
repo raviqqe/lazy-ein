@@ -1,3 +1,5 @@
+use std::sync::atomic::{AtomicUsize, Ordering};
+
 #[repr(C)]
 pub struct MainFunction {
     entry: extern "fastcall" fn(&Environment, &mut Number) -> &'static mut List<Number>,
@@ -19,6 +21,8 @@ extern "fastcall" fn entry<T>(payload: &mut T) -> &mut T {
     payload
 }
 
+pub type Entry<T> = extern "fastcall" fn(payload: &mut T) -> &mut T;
+
 #[repr(C)]
 pub struct Thunk<T> {
     entry: extern "fastcall" fn(&mut T) -> &mut T,
@@ -35,7 +39,11 @@ impl<T> Thunk<T> {
     }
 
     pub fn force(&mut self) -> &mut T {
-        (self.entry)(&mut self.payload)
+        (unsafe {
+            std::mem::transmute::<usize, Entry<T>>(
+                std::mem::transmute::<&Entry<T>, &AtomicUsize>(&self.entry).load(Ordering::SeqCst),
+            )
+        })(&mut self.payload)
     }
 }
 
