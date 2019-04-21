@@ -45,13 +45,7 @@ impl Runner {
             runtime.spawn(tokio_async_await::compat::backward::Compat::new(
                 async move {
                     loop {
-                        let mut handle = match self.steal() {
-                            Some(handle) => handle,
-                            None => {
-                                await!(delay()).unwrap();
-                                continue;
-                            }
-                        };
+                        let mut handle = await!(self.steal());
 
                         match handle.resume() {
                             Ok(coro::State::Finished) => {}
@@ -113,22 +107,24 @@ impl Runner {
         }
     }
 
-    fn steal(&'static self) -> Option<coro::Handle> {
-        for injector in &[
-            &self.ready_coroutine_injector,
-            &self.effect_injector,
-            &self.suspended_coroutine_injector,
-        ] {
-            loop {
-                match injector.steal() {
-                    Steal::Success(handle) => return Some(handle),
-                    Steal::Empty => break,
-                    Steal::Retry => {}
+    async fn steal(&'static self) -> coro::Handle {
+        loop {
+            for injector in &[
+                &self.ready_coroutine_injector,
+                &self.effect_injector,
+                &self.suspended_coroutine_injector,
+            ] {
+                loop {
+                    match injector.steal() {
+                        Steal::Success(handle) => return handle,
+                        Steal::Empty => break,
+                        Steal::Retry => {}
+                    }
                 }
             }
-        }
 
-        None
+            await!(delay()).unwrap();
+        }
     }
 }
 
