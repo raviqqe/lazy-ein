@@ -65,7 +65,6 @@ func (b builder) Build(fname string) error {
 		"-flto",
 		f.Name(),
 		b.resolveRuntimeLibrary("runtime/target/release/libio.a"),
-		b.resolveRuntimeLibrary("runtime/target/release/libcore.a"),
 		b.resolveRuntimeLibrary("runtime/llvm/atomic.ll"),
 		"-ldl",
 		"-lgc",

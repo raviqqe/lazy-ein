@@ -9,11 +9,13 @@ name = "io"
 crate-type = ["staticlib"]
 
 [dependencies]
+atty = "0.2"
 bdwgc-alloc = "0.2"
 chashmap = "2.2"
 coro = { path = "../coro" }
 crossbeam = "0.7"
 lazy_static = "1.3"
 num_cpus = "1"
+termcolor = "1"
 tokio = { version = "0.1.18", features = ["async-await-preview"] }
 tokio-async-await = { version = "0.1.6" }
