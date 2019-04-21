@@ -15,7 +15,7 @@ pub struct Runner {
     ready_coroutine_injector: Injector<coro::Handle>,
     suspended_coroutine_injector: Injector<coro::Handle>,
     parked_coroutine_map: CHashMap<usize, Mutex<coro::Handle>>,
-    num_rest_effects: AtomicUsize,
+    rest_effect_count: AtomicUsize,
 }
 
 impl Runner {
@@ -25,7 +25,7 @@ impl Runner {
             ready_coroutine_injector: Injector::new(),
             suspended_coroutine_injector: Injector::new(),
             parked_coroutine_map: CHashMap::new(),
-            num_rest_effects: AtomicUsize::new(0),
+            rest_effect_count: AtomicUsize::new(0),
         }
     }
 
@@ -73,17 +73,17 @@ impl Runner {
                         let mut output = main.call(create_input()).force();
 
                         while let algebraic::List::Cons(elem, list) = *output {
-                            self.num_rest_effects.fetch_add(1, Ordering::SeqCst);
+                            self.rest_effect_count.fetch_add(1, Ordering::SeqCst);
                             self.effect_injector.push(coro::spawn(move || {
                                 let num: f64 = (*unsafe { &mut *elem }.force()).into();
                                 println!("{}", num);
-                                self.num_rest_effects.fetch_sub(1, Ordering::SeqCst);
+                                self.rest_effect_count.fetch_sub(1, Ordering::SeqCst);
                             }));
                             output = unsafe { &mut *list }.force();
                         }
                     }
 
-                    while self.num_rest_effects.load(Ordering::SeqCst) != 0 {
+                    while self.rest_effect_count.load(Ordering::SeqCst) != 0 {
                         await!(delay()).unwrap();
                     }
 
