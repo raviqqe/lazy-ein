@@ -84,8 +84,7 @@ impl Runner {
 
                         while let algebraic::List::Cons(elem, list) = *output {
                             self.num_rest_effects.fetch_add(1, Ordering::SeqCst);
-                            self.effect_injector
-                                .push(EffectRef::new(unsafe { &mut *elem }));
+                            self.effect_injector.push(EffectRef::new(elem));
                             output = unsafe { &mut *list }.force();
                         }
                     }

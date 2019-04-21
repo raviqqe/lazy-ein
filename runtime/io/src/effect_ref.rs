@@ -5,10 +5,8 @@ pub struct EffectRef {
 }
 
 impl EffectRef {
-    pub fn new(thunk: &mut Number) -> Self {
-        EffectRef {
-            pointer: thunk as *mut Number,
-        }
+    pub fn new(pointer: *mut Number) -> Self {
+        EffectRef { pointer }
     }
 
     pub fn pointer(&self) -> *mut Number {
