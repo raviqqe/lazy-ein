@@ -55,10 +55,7 @@ impl Runner {
                         };
 
                         match handle.resume() {
-                            Ok(coro::State::Finished) => {
-                                // TODO: Check if a coroutine is of an effect.
-                                self.num_rest_effects.fetch_sub(1, Ordering::SeqCst);
-                            }
+                            Ok(coro::State::Finished) => {}
                             Ok(coro::State::Suspended) => {
                                 self.suspended_coroutine_injector.push(handle)
                             }
@@ -114,7 +111,7 @@ impl Runner {
         }
     }
 
-    fn steal(&self) -> Option<coro::Handle> {
+    fn steal(&'static self) -> Option<coro::Handle> {
         loop {
             match self.ready_coroutine_injector.steal() {
                 Steal::Success(handle) => return Some(handle),
@@ -129,6 +126,7 @@ impl Runner {
                     return Some(coro::spawn(move || {
                         let num: f64 = (*unsafe { &mut *thunk.pointer() }.force()).into();
                         println!("{}", num);
+                        self.num_rest_effects.fetch_sub(1, Ordering::SeqCst);
                     }))
                 }
                 Steal::Empty => break,
