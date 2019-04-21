@@ -1,5 +1,4 @@
 use crate::core::{algebraic, MainFunction};
-use crate::effect_ref::EffectRef;
 use crate::io::create_input;
 use chashmap::CHashMap;
 use coro;
@@ -12,7 +11,7 @@ lazy_static! {
 }
 
 pub struct Runner {
-    effect_injector: Injector<EffectRef>,
+    effect_injector: Injector<coro::Handle>,
     ready_coroutine_injector: Injector<coro::Handle>,
     suspended_coroutine_injector: Injector<coro::Handle>,
     parked_coroutine_map: CHashMap<usize, Mutex<coro::Handle>>,
@@ -81,7 +80,11 @@ impl Runner {
 
                         while let algebraic::List::Cons(elem, list) = *output {
                             self.num_rest_effects.fetch_add(1, Ordering::SeqCst);
-                            self.effect_injector.push(EffectRef::new(elem));
+                            self.effect_injector.push(coro::spawn(move || {
+                                let num: f64 = (*unsafe { &mut *elem }.force()).into();
+                                println!("{}", num);
+                                self.num_rest_effects.fetch_sub(1, Ordering::SeqCst);
+                            }));
                             output = unsafe { &mut *list }.force();
                         }
                     }
@@ -122,13 +125,7 @@ impl Runner {
 
         loop {
             match self.effect_injector.steal() {
-                Steal::Success(thunk) => {
-                    return Some(coro::spawn(move || {
-                        let num: f64 = (*unsafe { &mut *thunk.pointer() }.force()).into();
-                        println!("{}", num);
-                        self.num_rest_effects.fetch_sub(1, Ordering::SeqCst);
-                    }))
-                }
+                Steal::Success(handle) => return Some(handle),
                 Steal::Empty => break,
                 Steal::Retry => {}
             }

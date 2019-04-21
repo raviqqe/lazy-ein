@@ -12,7 +12,6 @@ extern crate tokio;
 extern crate tokio_async_await;
 
 mod core;
-mod effect_ref;
 mod io;
 mod runner;
 mod util;
