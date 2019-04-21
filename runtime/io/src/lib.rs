@@ -2,7 +2,7 @@
 
 extern crate bdwgc_alloc;
 extern crate chashmap;
-extern crate coro;
+extern crate coroutine;
 extern crate crossbeam;
 #[macro_use]
 extern crate lazy_static;
@@ -12,6 +12,7 @@ extern crate tokio;
 extern crate tokio_async_await;
 
 mod core;
+mod coro;
 mod io;
 mod runner;
 mod util;

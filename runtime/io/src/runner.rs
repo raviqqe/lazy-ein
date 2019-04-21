@@ -1,7 +1,7 @@
 use crate::core::{algebraic, MainFunction};
+use crate::coro;
 use crate::io::create_input;
 use chashmap::CHashMap;
-use coro;
 use crossbeam::deque::{Injector, Steal};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Mutex;

@@ -1,6 +1,6 @@
 use crate::core::{Entry, Thunk};
+use crate::coro;
 use crate::runner::RUNNER;
-use coro;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 pub fn lock<T>(
