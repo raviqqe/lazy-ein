@@ -115,29 +115,21 @@ impl Runner {
     }
 
     fn steal(&'static self) -> Option<coro::Handle> {
-        loop {
-            match self.ready_coroutine_injector.steal() {
-                Steal::Success(handle) => return Some(handle),
-                Steal::Empty => break,
-                Steal::Retry => {}
+        for injector in &[
+            &self.ready_coroutine_injector,
+            &self.effect_injector,
+            &self.suspended_coroutine_injector,
+        ] {
+            loop {
+                match injector.steal() {
+                    Steal::Success(handle) => return Some(handle),
+                    Steal::Empty => break,
+                    Steal::Retry => {}
+                }
             }
         }
 
-        loop {
-            match self.effect_injector.steal() {
-                Steal::Success(handle) => return Some(handle),
-                Steal::Empty => break,
-                Steal::Retry => {}
-            }
-        }
-
-        loop {
-            match self.suspended_coroutine_injector.steal() {
-                Steal::Success(handle) => return Some(handle),
-                Steal::Empty => return None,
-                Steal::Retry => {}
-            }
-        }
+        None
     }
 }
 
