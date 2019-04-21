@@ -100,6 +100,7 @@ impl Runner {
     }
 
     pub fn unpark(&self, coroutine_id: usize) {
+        // TODO: Consider making this operation asynchronous and inserting delay.
         loop {
             match self.parked_coroutine_map.remove(&coroutine_id) {
                 Some(mutex) => {
@@ -109,8 +110,6 @@ impl Runner {
                 }
                 None => {}
             }
-
-            // TODO: Consider inserting delay here.
         }
     }
 
