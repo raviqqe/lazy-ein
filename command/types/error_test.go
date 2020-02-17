@@ -3,7 +3,7 @@ package types
 import (
 	"testing"
 
-	"github.com/ein-lang/ein/command/debug"
+	"github.com/raviqqe/lazy-ein/command/debug"
 )
 
 func TestNewTypeError(t *testing.T) {

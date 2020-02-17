@@ -3,7 +3,7 @@ package ast
 import (
 	"testing"
 
-	"github.com/ein-lang/ein/command/types"
+	"github.com/raviqqe/lazy-ein/command/types"
 	"github.com/stretchr/testify/assert"
 )
 

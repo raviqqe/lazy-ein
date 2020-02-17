@@ -1,9 +1,9 @@
 package types
 
 import (
-	coreast "github.com/ein-lang/ein/command/core/ast"
-	coretypes "github.com/ein-lang/ein/command/core/types"
-	"github.com/ein-lang/ein/command/debug"
+	coreast "github.com/raviqqe/lazy-ein/command/core/ast"
+	coretypes "github.com/raviqqe/lazy-ein/command/core/types"
+	"github.com/raviqqe/lazy-ein/command/debug"
 )
 
 // Number is a number type.

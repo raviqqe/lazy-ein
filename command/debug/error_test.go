@@ -3,7 +3,7 @@ package debug_test
 import (
 	"testing"
 
-	"github.com/ein-lang/ein/command/debug"
+	"github.com/raviqqe/lazy-ein/command/debug"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -1,9 +1,9 @@
 package desugar
 
 import (
-	"github.com/ein-lang/ein/command/ast"
-	"github.com/ein-lang/ein/command/compile/desugar/names"
-	"github.com/ein-lang/ein/command/types"
+	"github.com/raviqqe/lazy-ein/command/ast"
+	"github.com/raviqqe/lazy-ein/command/compile/desugar/names"
+	"github.com/raviqqe/lazy-ein/command/types"
 )
 
 func desugarBinaryOperations(m ast.Module) ast.Module {

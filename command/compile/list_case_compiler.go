@@ -1,10 +1,10 @@
 package compile
 
 import (
-	"github.com/ein-lang/ein/command/ast"
-	coreast "github.com/ein-lang/ein/command/core/ast"
-	coretypes "github.com/ein-lang/ein/command/core/types"
-	"github.com/ein-lang/ein/command/types"
+	"github.com/raviqqe/lazy-ein/command/ast"
+	coreast "github.com/raviqqe/lazy-ein/command/core/ast"
+	coretypes "github.com/raviqqe/lazy-ein/command/core/types"
+	"github.com/raviqqe/lazy-ein/command/types"
 )
 
 type listCaseCompiler struct {

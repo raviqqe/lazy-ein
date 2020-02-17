@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/ein-lang/ein/command/core/types"
+import "github.com/raviqqe/lazy-ein/command/core/types"
 
 // Declaration is a declaration.
 type Declaration struct {

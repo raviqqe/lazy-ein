@@ -1,7 +1,7 @@
 package compile
 
 import (
-	"github.com/ein-lang/ein/command/core/compile/llir"
+	"github.com/raviqqe/lazy-ein/command/core/compile/llir"
 	"github.com/llvm-mirror/llvm/bindings/go/llvm"
 )
 

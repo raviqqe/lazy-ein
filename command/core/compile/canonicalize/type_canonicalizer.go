@@ -1,6 +1,6 @@
 package canonicalize
 
-import "github.com/ein-lang/ein/command/core/types"
+import "github.com/raviqqe/lazy-ein/command/core/types"
 
 type typeCanonicalizer struct {
 	environment []types.Type

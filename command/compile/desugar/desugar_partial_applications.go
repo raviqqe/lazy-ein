@@ -3,8 +3,8 @@ package desugar
 import (
 	"fmt"
 
-	"github.com/ein-lang/ein/command/ast"
-	"github.com/ein-lang/ein/command/types"
+	"github.com/raviqqe/lazy-ein/command/ast"
+	"github.com/raviqqe/lazy-ein/command/types"
 )
 
 func desugarPartialApplications(m ast.Module) ast.Module {

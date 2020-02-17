@@ -1,8 +1,8 @@
 package canonicalize
 
 import (
-	"github.com/ein-lang/ein/command/core/ast"
-	"github.com/ein-lang/ein/command/core/types"
+	"github.com/raviqqe/lazy-ein/command/core/ast"
+	"github.com/raviqqe/lazy-ein/command/core/types"
 )
 
 // Canonicalize canonicalizes a module.

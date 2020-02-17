@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/ein-lang/ein/command/core/types"
+import "github.com/raviqqe/lazy-ein/command/core/types"
 
 // Float64 is a float64 literal.
 type Float64 struct {

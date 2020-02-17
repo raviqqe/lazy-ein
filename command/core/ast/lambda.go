@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"github.com/ein-lang/ein/command/core/types"
+	"github.com/raviqqe/lazy-ein/command/core/types"
 )
 
 // Lambda is a lambda form.

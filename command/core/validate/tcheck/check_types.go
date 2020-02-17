@@ -1,6 +1,6 @@
 package tcheck
 
-import "github.com/ein-lang/ein/command/core/ast"
+import "github.com/raviqqe/lazy-ein/command/core/ast"
 
 // CheckTypes checks types.
 func CheckTypes(m ast.Module) error {

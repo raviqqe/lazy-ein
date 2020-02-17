@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/ein-lang/ein/command/types"
+import "github.com/raviqqe/lazy-ein/command/types"
 
 // Module is a module.
 type Module struct {

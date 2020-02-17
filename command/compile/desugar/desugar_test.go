@@ -3,8 +3,8 @@ package desugar_test
 import (
 	"testing"
 
-	"github.com/ein-lang/ein/command/ast"
-	"github.com/ein-lang/ein/command/compile/desugar"
+	"github.com/raviqqe/lazy-ein/command/ast"
+	"github.com/raviqqe/lazy-ein/command/compile/desugar"
 	"github.com/stretchr/testify/assert"
 )
 

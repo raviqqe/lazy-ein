@@ -1,6 +1,6 @@
 package types
 
-import "github.com/ein-lang/ein/command/debug"
+import "github.com/raviqqe/lazy-ein/command/debug"
 
 // NewTypeError creates a type error.
 func NewTypeError(m string, i *debug.Information) error {

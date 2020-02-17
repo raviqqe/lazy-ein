@@ -3,9 +3,9 @@ package parse
 import (
 	"testing"
 
-	"github.com/ein-lang/ein/command/ast"
-	"github.com/ein-lang/ein/command/debug"
-	"github.com/ein-lang/ein/command/types"
+	"github.com/raviqqe/lazy-ein/command/ast"
+	"github.com/raviqqe/lazy-ein/command/debug"
+	"github.com/raviqqe/lazy-ein/command/types"
 	"github.com/raviqqe/parcom"
 	"github.com/stretchr/testify/assert"
 )

@@ -3,9 +3,9 @@ package tcheck_test
 import (
 	"testing"
 
-	"github.com/ein-lang/ein/command/core/ast"
-	"github.com/ein-lang/ein/command/core/types"
-	"github.com/ein-lang/ein/command/core/validate/tcheck"
+	"github.com/raviqqe/lazy-ein/command/core/ast"
+	"github.com/raviqqe/lazy-ein/command/core/types"
+	"github.com/raviqqe/lazy-ein/command/core/validate/tcheck"
 	"github.com/stretchr/testify/assert"
 )
 

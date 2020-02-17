@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ein-lang/ein/command"
+	"github.com/raviqqe/lazy-ein/command"
 )
 
 func main() {

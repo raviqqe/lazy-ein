@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/ein-lang/ein/command/core/types"
+import "github.com/raviqqe/lazy-ein/command/core/types"
 
 // AlgebraicCase is an algebraic case expression.
 type AlgebraicCase struct {

@@ -1,6 +1,6 @@
 package compile
 
-import "github.com/ein-lang/ein/command/ast"
+import "github.com/raviqqe/lazy-ein/command/ast"
 
 type freeVariableFinder struct {
 	variables map[string]struct{}

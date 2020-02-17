@@ -3,9 +3,9 @@ package canonicalize_test
 import (
 	"testing"
 
-	"github.com/ein-lang/ein/command/core/ast"
-	"github.com/ein-lang/ein/command/core/compile/canonicalize"
-	"github.com/ein-lang/ein/command/core/types"
+	"github.com/raviqqe/lazy-ein/command/core/ast"
+	"github.com/raviqqe/lazy-ein/command/core/compile/canonicalize"
+	"github.com/raviqqe/lazy-ein/command/core/types"
 	"github.com/stretchr/testify/assert"
 )
 

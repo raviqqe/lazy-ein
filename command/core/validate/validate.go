@@ -1,8 +1,8 @@
 package validate
 
 import (
-	"github.com/ein-lang/ein/command/core/ast"
-	"github.com/ein-lang/ein/command/core/validate/tcheck"
+	"github.com/raviqqe/lazy-ein/command/core/ast"
+	"github.com/raviqqe/lazy-ein/command/core/validate/tcheck"
 )
 
 // Validate validates a module.

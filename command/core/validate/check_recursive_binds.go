@@ -3,7 +3,7 @@ package validate
 import (
 	"errors"
 
-	"github.com/ein-lang/ein/command/core/ast"
+	"github.com/raviqqe/lazy-ein/command/core/ast"
 )
 
 func checkRecursiveBinds(m ast.Module) error {

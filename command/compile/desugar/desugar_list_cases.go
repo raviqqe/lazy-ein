@@ -1,6 +1,6 @@
 package desugar
 
-import "github.com/ein-lang/ein/command/ast"
+import "github.com/raviqqe/lazy-ein/command/ast"
 
 // desugarListCases converts all elements of list patterns into variables.
 func desugarListCases(m ast.Module) ast.Module {

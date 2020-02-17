@@ -1,8 +1,8 @@
 package types
 
 import (
-	coretypes "github.com/ein-lang/ein/command/core/types"
-	"github.com/ein-lang/ein/command/debug"
+	coretypes "github.com/raviqqe/lazy-ein/command/core/types"
+	"github.com/raviqqe/lazy-ein/command/debug"
 )
 
 // Unboxed is an unboxed type.

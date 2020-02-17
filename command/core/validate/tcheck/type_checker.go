@@ -3,8 +3,8 @@ package tcheck
 import (
 	"errors"
 
-	"github.com/ein-lang/ein/command/core/ast"
-	"github.com/ein-lang/ein/command/core/types"
+	"github.com/raviqqe/lazy-ein/command/core/ast"
+	"github.com/raviqqe/lazy-ein/command/core/types"
 )
 
 type typeChecker struct {

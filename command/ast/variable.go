@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/ein-lang/ein/command/types"
+import "github.com/raviqqe/lazy-ein/command/types"
 
 // Variable is a variable.
 type Variable struct {

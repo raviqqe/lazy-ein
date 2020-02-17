@@ -3,10 +3,10 @@ package tinfer_test
 import (
 	"testing"
 
-	"github.com/ein-lang/ein/command/ast"
-	"github.com/ein-lang/ein/command/compile/metadata"
-	"github.com/ein-lang/ein/command/compile/tinfer"
-	"github.com/ein-lang/ein/command/types"
+	"github.com/raviqqe/lazy-ein/command/ast"
+	"github.com/raviqqe/lazy-ein/command/compile/metadata"
+	"github.com/raviqqe/lazy-ein/command/compile/tinfer"
+	"github.com/raviqqe/lazy-ein/command/types"
 	"github.com/stretchr/testify/assert"
 )
 

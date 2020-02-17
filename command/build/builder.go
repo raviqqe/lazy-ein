@@ -6,10 +6,10 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/ein-lang/ein/command/ast"
-	"github.com/ein-lang/ein/command/compile"
-	"github.com/ein-lang/ein/command/compile/metadata"
-	"github.com/ein-lang/ein/command/parse"
+	"github.com/raviqqe/lazy-ein/command/ast"
+	"github.com/raviqqe/lazy-ein/command/compile"
+	"github.com/raviqqe/lazy-ein/command/compile/metadata"
+	"github.com/raviqqe/lazy-ein/command/parse"
 	"github.com/llvm-mirror/llvm/bindings/go/llvm"
 )
 

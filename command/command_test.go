@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ein-lang/ein/command"
+	"github.com/raviqqe/lazy-ein/command"
 	"github.com/stretchr/testify/assert"
 )
 

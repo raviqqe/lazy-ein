@@ -1,12 +1,12 @@
 package compile
 
 import (
-	"github.com/ein-lang/ein/command/ast"
-	"github.com/ein-lang/ein/command/compile/desugar"
-	"github.com/ein-lang/ein/command/compile/metadata"
-	"github.com/ein-lang/ein/command/compile/tinfer"
-	coreast "github.com/ein-lang/ein/command/core/ast"
-	corecompile "github.com/ein-lang/ein/command/core/compile"
+	"github.com/raviqqe/lazy-ein/command/ast"
+	"github.com/raviqqe/lazy-ein/command/compile/desugar"
+	"github.com/raviqqe/lazy-ein/command/compile/metadata"
+	"github.com/raviqqe/lazy-ein/command/compile/tinfer"
+	coreast "github.com/raviqqe/lazy-ein/command/core/ast"
+	corecompile "github.com/raviqqe/lazy-ein/command/core/compile"
 	"github.com/llvm-mirror/llvm/bindings/go/llvm"
 )
 

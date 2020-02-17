@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/ein-lang/ein/command/core/types"
+import "github.com/raviqqe/lazy-ein/command/core/types"
 
 // PrimitiveAlternative is a primitive alternative.
 type PrimitiveAlternative struct {

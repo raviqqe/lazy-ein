@@ -3,7 +3,7 @@ package ast
 import (
 	"fmt"
 
-	"github.com/ein-lang/ein/command/core/types"
+	"github.com/raviqqe/lazy-ein/command/core/types"
 )
 
 // Constructor is a constructor.

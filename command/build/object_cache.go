@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ein-lang/ein/command/ast"
-	"github.com/ein-lang/ein/command/parse"
+	"github.com/raviqqe/lazy-ein/command/ast"
+	"github.com/raviqqe/lazy-ein/command/parse"
 	"github.com/llvm-mirror/llvm/bindings/go/llvm"
 )
 

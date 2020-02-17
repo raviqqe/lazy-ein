@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/ein-lang/ein/command/core/types"
+import "github.com/raviqqe/lazy-ein/command/core/types"
 
 // Bind is a bind statement.
 type Bind struct {

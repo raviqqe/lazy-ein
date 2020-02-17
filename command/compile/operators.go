@@ -1,8 +1,8 @@
 package compile
 
 import (
-	"github.com/ein-lang/ein/command/ast"
-	coreast "github.com/ein-lang/ein/command/core/ast"
+	"github.com/raviqqe/lazy-ein/command/ast"
+	coreast "github.com/raviqqe/lazy-ein/command/core/ast"
 )
 
 func binaryOperatorToPrimitive(o ast.BinaryOperator) coreast.PrimitiveOperator {

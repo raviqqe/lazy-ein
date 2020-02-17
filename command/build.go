@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ein-lang/ein/command/build"
-	"github.com/ein-lang/ein/command/debug"
+	"github.com/raviqqe/lazy-ein/command/build"
+	"github.com/raviqqe/lazy-ein/command/debug"
 	"github.com/spf13/cobra"
 )
 

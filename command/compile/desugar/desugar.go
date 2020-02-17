@@ -1,6 +1,6 @@
 package desugar
 
-import "github.com/ein-lang/ein/command/ast"
+import "github.com/raviqqe/lazy-ein/command/ast"
 
 // WithoutTypes desugars an AST without type information.
 func WithoutTypes(m ast.Module) ast.Module {

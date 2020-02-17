@@ -3,8 +3,8 @@ package parse
 import (
 	"strings"
 
-	"github.com/ein-lang/ein/command/ast"
-	"github.com/ein-lang/ein/command/debug"
+	"github.com/raviqqe/lazy-ein/command/ast"
+	"github.com/raviqqe/lazy-ein/command/debug"
 	"github.com/raviqqe/parcom"
 )
 
