@@ -1,85 +1,68 @@
-macro_rules! eval {
-    ($thunk:expr) => {{
-        let thunk = $thunk;
-        (thunk.entry)(&mut thunk.payload)
-    }};
-    ($thunk:expr, $($arg:expr),+) => {{
-        let thunk = &mut $thunk;
-        (thunk.entry)(&mut thunk.payload, $($arg),+)
-    }};
-}
+use std::sync::atomic::{AtomicUsize, Ordering};
 
-macro_rules! closure {
-    ($result:ty) => {
-        crate::core::Closure<extern "fastcall" fn(&mut $result) -> &mut $result, $result>
-    };
-    ($result:ty, $($arg:ty),+) => {
-        crate::core::Closure<extern "fastcall" fn(&mut crate::core::Environment, $($arg),+) -> $result, crate::core::Environment>
-    };
-}
-
-#[derive(Clone, Copy)]
 #[repr(C)]
-pub struct Closure<E, P> {
-    pub entry: E,
-    pub payload: P,
+pub struct MainFunction {
+    entry: extern "fastcall" fn(&Environment, &mut Number) -> &'static mut List<Number>,
+    payload: Environment,
 }
 
-impl<E, P> Closure<E, P> {
-    pub fn new(entry: E, payload: P) -> Self {
-        Closure { entry, payload }
+impl MainFunction {
+    pub fn call(&self, num: &mut Number) -> &'static mut List<Number> {
+        (self.entry)(&self.payload, num)
     }
 }
 
-impl<T: Clone> From<&[T]> for List<T> {
-    fn from(xs: &[T]) -> List<T> {
-        Closure::new(list_entry, xs.into())
+#[repr(C)]
+pub struct Environment {
+    _private: [u8; 0],
+}
+
+extern "fastcall" fn entry<T>(payload: &mut T) -> &mut T {
+    payload
+}
+
+pub type Entry<T> = extern "fastcall" fn(payload: &mut T) -> &mut T;
+
+#[repr(C)]
+pub struct Thunk<T> {
+    entry: extern "fastcall" fn(&mut T) -> &mut T,
+    payload: T,
+}
+
+impl<T> Thunk<T> {
+    pub fn new(payload: T) -> Self {
+        Thunk { entry, payload }
+    }
+
+    pub fn new_with_entry(entry: extern "fastcall" fn(&mut T) -> &mut T, payload: T) -> Self {
+        Thunk { entry, payload }
+    }
+
+    pub fn force(&mut self) -> &mut T {
+        (unsafe {
+            std::mem::transmute::<usize, Entry<T>>(
+                std::mem::transmute::<&Entry<T>, &AtomicUsize>(&self.entry).load(Ordering::SeqCst),
+            )
+        })(&mut self.payload)
     }
 }
 
 impl From<f64> for Number {
     fn from(n: f64) -> Number {
-        Closure::new(number_entry, n.into())
+        Thunk::new(n.into())
     }
 }
 
-#[repr(C)]
-pub struct Environment(i8); // avoid zero-sized type for compatibility with C
-
-pub type List<T> = closure!(algebraic::List<T>);
-pub type Number = closure!(algebraic::Number);
-
-extern "fastcall" fn list_entry<T: Clone>(
-    list: &mut algebraic::List<T>,
-) -> &mut algebraic::List<T> {
-    list
-}
-
-extern "fastcall" fn number_entry(number: &mut algebraic::Number) -> &mut algebraic::Number {
-    number
-}
+pub type List<T> = Thunk<algebraic::List<T>>;
+pub type Number = Thunk<algebraic::Number>;
 
 pub mod algebraic {
-    #[derive(Clone, Copy)]
     #[repr(C)]
-    pub enum List<T: Clone> {
+    pub enum List<T> {
+        #[allow(dead_code)]
         Cons(*mut T, *mut super::List<T>),
+        #[allow(dead_code)]
         Nil,
-    }
-
-    impl<T: Clone, S: Clone + Into<T>> From<&[S]> for List<T> {
-        fn from(xs: &[S]) -> List<T> {
-            let mut l = List::Nil;
-
-            for x in xs.into_iter().rev() {
-                l = List::Cons(
-                    &mut x.clone().into(),
-                    &mut super::Closure::new(super::list_entry, l),
-                )
-            }
-
-            l
-        }
     }
 
     #[derive(Clone, Copy)]

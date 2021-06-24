@@ -18,8 +18,8 @@ Feature: Function
     main x = [<expression>]
     """
     When I successfully run `ein build main.ein`
-    And I successfully run `sh -c ./a.out`
-    Then the stdout from "sh -c ./a.out" should contain exactly "42"
+    And I successfully run `sh -c 'echo \* | ./a.out'`
+    Then the stdout from "sh -c 'echo \* | ./a.out'" should contain exactly "42"
     Examples:
       | expression     |
       | 42             |
@@ -52,8 +52,8 @@ Feature: Function
     <bind>
     """
     When I successfully run `ein build main.ein`
-    And I successfully run `sh -c ./a.out`
-    Then the stdout from "sh -c ./a.out" should contain exactly "42"
+    And I successfully run `sh -c 'echo \* | ./a.out'`
+    Then the stdout from "sh -c 'echo \* | ./a.out'" should contain exactly "42"
     Examples:
       | bind                         |
       | main = f                     |

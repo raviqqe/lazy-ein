@@ -1,10 +1,10 @@
 #[derive(Debug)]
 pub struct Error {
-    description: &'static str,
+    description: String,
 }
 
 impl Error {
-    pub fn new(description: &'static str) -> Error {
+    pub fn new(description: String) -> Error {
         Error { description }
     }
 }
@@ -17,6 +17,6 @@ impl std::fmt::Display for Error {
 
 impl std::error::Error for Error {
     fn description(&self) -> &str {
-        self.description
+        &self.description
     }
 }
